@@ -1,0 +1,755 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.co.passcombine.mes.dao.SYShipmentDAO">
+	<!-- new start -->
+	<select id="select_shipment_count" parameterType="SYShipmentHordTblVo" resultType="int">
+		select count(*) as cnt
+		from shipment_hord_tbl a, shipment_dord_tbl b
+		where a.delivery_no = b.delivery_no
+		and a.delivery_item = b.delivery_item
+	</select>
+	
+	<select id="select_shipment" parameterType="SYShipmentHordTblVo" resultType="SYShipmentHordTblVo">
+		select *
+		from shipment_hord_tbl a, shipment_dord_tbl b
+		where a.delivery_no = b.delivery_no
+		and a.delivery_item = b.delivery_item
+		<if test="page != null and !page.equals('')">
+			 limit #{page}, #{rows}
+		</if>
+	</select>
+	<!-- new end -->
+	 
+		<insert id="insert_zsdfm_deliv_dat" parameterType="SYShipmentVo">
+		INSERT INTO shipment_tbl (
+		 vbeln, posnr,if_flag,lfart,vtext_lfart,vstel,vtext_vstel,werks,name1_werks,lgort,lgobe,matnr,arktx,lfimg,
+		 vrkme_do,lgmng,meins_do, umvkz,umvkn,uebto, erdat_do, ernam_do,wadat,text_z001,vkorg,vtext_vkorg,vtweg,vtext_vtweg,spart,
+		 vtext_spart, vkbur,bezei_vkbur, vkgrp,bezei_vkgrp,inco1,inco2, vgbel, vgpos, kunnr_ag,name1_kunnr_ag,name2_kunnr_ag,
+		 land1_kunnr_ag,city1_kunnr_ag,street_kunnr_ag, str_suppl1_kunnr_ag,str_suppl2_kunnr_ag,pstlz_kunnr_ag,j_1kfrepre_kunnr_ag,
+		 j_1kftind_kunnr_ag,j_1kftbus_kunnr_ag,stcd1_kunnr_ag,stcd2_kunnr_ag,stcd3_kunnr_ag,telf1_kunnr_ag,telf2_kunnr_ag,telfx_kunnr_ag,
+		 smtp_addr_kunnr_ag, kunnr_we,name1_kunnr_we,name2_kunnr_we,land1_kunnr_we,city1_kunnr_we,street_kunnr_we,str_suppl1_kunnr_we,
+		 str_suppl2_kunnr_we,pstlz_kunnr_we, j_1kfrepre_kunnr_we, j_1kftind_kunnr_we,j_1kftbus_kunnr_we,stcd1_kunnr_we,stcd2_kunnr_we, stcd3_kunnr_we,
+		 telf1_kunnr_we, telf2_kunnr_we,telfx_kunnr_we, smtp_addr_kunnr_we, kunnr_z1, name1_kunnr_z1,name2_kunnr_z1, kunnr_z2,
+		 name1_kunnr_z2, telf2_kunnr_z2, erdat_so,ernam_so, auart, bezei_auart, augru, bezei_augru, edatu, kwmeng, vrkme_so, origin_vbeln,
+		 zzwarranty,bstkd, name_p4,pst_p4, dpt_p4, phone_p4,email_p4,sernp, strgr
+		) 
+		SELECT * 
+		FROM (
+			SELECT #{vbeln} as vbeln,#{posnr} as posnr,#{if_flag} as if_flag,#{lfart} as lfart,
+					#{vtext_lfart} as vtext_lfart,#{vstel} as vstel,#{vtext_vstel} as vtext_vstel,#{werks} as werks,#{name1_werks} as name1_werks,
+					#{lgort} as lgort,#{lgobe} as lgobe,#{matnr} as matnr,#{arktx} as arktx,#{lfimg} as lfimg,#{vrkme_do} as vrkme_do,
+					#{lgmng} as lgmng,#{meins_do} as meins_do,#{umvkz} as umvkz,#{umvkn} as umvkn,#{uebto} as uebto,#{erdat_do} as erdat_do,
+					#{ernam_do} as ernam_do,#{wadat} as wadat,#{text_z001} as text_z001,#{vkorg} as vkorg,#{vtext_vkorg} as vtext_vkorg,
+					#{vtweg} as vtweg,#{vtext_vtweg} as vtext_vtweg,#{spart} as spart,#{vtext_spart} as vtext_spart,#{vkbur} as vkbur,
+					#{bezei_vkbur} as bezei_vkbur,#{vkgrp} as vkgrp,#{bezei_vkgrp} as bezei_vkgrp,#{inco1} as inco1,#{inco2} as inco2,
+					#{vgbel} as vgbel,#{vgpos} as vgpos,#{kunnr_ag} as kunnr_ag,#{name1_kunnr_ag} as name1_kunnr_ag,#{name2_kunnr_ag} as name2_kunnr_ag,
+					#{land1_kunnr_ag} as land1_kunnr_ag,#{city1_kunnr_ag} as city1_kunnr_ag,#{street_kunnr_ag} as street_kunnr_ag,
+					#{str_suppl1_kunnr_ag} as str_suppl1_kunnr_ag,#{str_suppl2_kunnr_ag} as str_suppl2_kunnr_ag,#{pstlz_kunnr_ag} as pstlz_kunnr_ag,
+					#{j_1kfrepre_kunnr_ag} as j_1kfrepre_kunnr_ag,#{j_1kftind_kunnr_ag} as j_1kftind_kunnr_ag,#{j_1kftbus_kunnr_ag} as j_1kftbus_kunnr_ag,
+					#{stcd1_kunnr_ag} as stcd1_kunnr_ag,#{stcd2_kunnr_ag} as stcd2_kunnr_ag,#{stcd3_kunnr_ag} as stcd3_kunnr_ag,
+					#{telf1_kunnr_ag} as telf1_kunnr_ag,#{telf2_kunnr_ag} as telf2_kunnr_ag,#{telfx_kunnr_ag} as telfx_kunnr_ag,
+					#{smtp_addr_kunnr_ag} as smtp_addr_kunnr_ag,#{kunnr_we} as kunnr_we,#{name1_kunnr_we} as name1_kunnr_we,
+					#{name2_kunnr_we} as name2_kunnr_we,#{land1_kunnr_we} as land1_kunnr_we,#{city1_kunnr_we} as city1_kunnr_we,
+					#{street_kunnr_we} as street_kunnr_we,#{str_suppl1_kunnr_we} as str_suppl1_kunnr_we,
+					#{str_suppl2_kunnr_we} as str_suppl2_kunnr_we,#{pstlz_kunnr_we} as pstlz_kunnr_we,#{j_1kfrepre_kunnr_we} as j_1kfrepre_kunnr_we,
+					#{j_1kftind_kunnr_we} as j_1kftind_kunnr_we,#{j_1kftbus_kunnr_we} as j_1kftbus_kunnr_we,#{stcd1_kunnr_we} as stcd1_kunnr_we,
+					#{stcd2_kunnr_we} as stcd2_kunnr_we,#{stcd3_kunnr_we} as stcd3_kunnr_we,#{telf1_kunnr_we} as telf1_kunnr_we,
+					#{telf2_kunnr_we} as telf2_kunnr_we,#{telfx_kunnr_we} as telfx_kunnr_we,#{smtp_addr_kunnr_we} as smtp_addr_kunnr_we,
+					#{kunnr_z1} as kunnr_z1,#{name1_kunnr_z1} as name1_kunnr_z1,#{name2_kunnr_z1} as name2_kunnr_z1,
+					#{kunnr_z2} as kunnr_z2,#{name1_kunnr_z2} as name1_kunnr_z2,#{telf2_kunnr_z2} as telf2_kunnr_z2,
+					#{erdat_so} as erdat_so,#{ernam_so} as ernam_so,#{auart} as auart,#{bezei_auart} as bezei_auart,
+					#{augru} as augru,#{bezei_augru} as bezei_augru,#{edatu} as edatu,#{kwmeng} as kwmeng,#{vrkme_so} as vrkme_so,
+					#{origin_vbeln} as origin_vbeln,#{zzwarranty} as zzwarranty,#{bstkd} as bstkd,#{name_p4} as name_p4,
+					#{pst_p4} as pst_p4,#{dpt_p4} as dpt_p4,#{phone_p4} as phone_p4,#{email_p4} as email_p4,#{sernp} as sernp,
+					#{strgr} as strgr
+		) sp
+		ON DUPLICATE KEY
+		UPDATE  
+		 
+			if_flag= sp.if_flag,
+			lfart= sp.lfart,
+			vtext_lfart= sp.vtext_lfart,
+			vstel= sp.vstel,
+			vtext_vstel= sp.vtext_vstel,
+			werks= sp.werks,
+			name1_werks= sp.name1_werks,
+			lgort= sp.lgort,
+			lgobe= sp.lgobe,
+			matnr= sp.matnr,
+			arktx= sp.arktx,
+			lfimg= sp.lfimg,
+			vrkme_do= sp.vrkme_do,
+			lgmng= sp.lgmng,
+			meins_do= sp.meins_do,
+			umvkz= sp.umvkz,
+			umvkn= sp.umvkn,
+			uebto= sp.uebto,
+			erdat_do= sp.erdat_do,
+			ernam_do= sp.ernam_do,
+			wadat= sp.wadat,
+			text_z001= sp.text_z001,
+			vkorg= sp.vkorg,
+			vtext_vkorg= sp.vtext_vkorg,
+			vtweg= sp.vtweg,
+			vtext_vtweg= sp.vtext_vtweg,
+			spart= sp.spart,
+			vtext_spart= sp.vtext_spart,
+			vkbur= sp.vkbur,
+			bezei_vkbur= sp.bezei_vkbur,
+			vkgrp= sp.vkgrp,
+			bezei_vkgrp= sp.bezei_vkgrp,
+			inco1= sp.inco1,
+			inco2= sp.inco2,
+			vgbel= sp.vgbel,
+			vgpos= sp.vgpos,
+			kunnr_ag= sp.kunnr_ag,
+			name1_kunnr_ag= sp.name1_kunnr_ag,
+			name2_kunnr_ag= sp.name2_kunnr_ag,
+			land1_kunnr_ag= sp.land1_kunnr_ag,
+			city1_kunnr_ag= sp.city1_kunnr_ag,
+			street_kunnr_ag= sp.street_kunnr_ag,
+			str_suppl1_kunnr_ag= sp.str_suppl1_kunnr_ag,
+			str_suppl2_kunnr_ag= sp.str_suppl2_kunnr_ag,
+			pstlz_kunnr_ag= sp.pstlz_kunnr_ag,
+			j_1kfrepre_kunnr_ag= sp.j_1kfrepre_kunnr_ag,
+			j_1kftind_kunnr_ag= sp.j_1kftind_kunnr_ag,
+			j_1kftbus_kunnr_ag= sp.j_1kftbus_kunnr_ag,
+			stcd1_kunnr_ag= sp.stcd1_kunnr_ag,
+			stcd2_kunnr_ag= sp.stcd2_kunnr_ag,
+			stcd3_kunnr_ag= sp.stcd3_kunnr_ag,
+			telf1_kunnr_ag= sp.telf1_kunnr_ag,
+			telf2_kunnr_ag= sp.telf2_kunnr_ag,
+			telfx_kunnr_ag= sp.telfx_kunnr_ag,
+			smtp_addr_kunnr_ag= sp.smtp_addr_kunnr_ag,
+			kunnr_we= sp.kunnr_we,
+			name1_kunnr_we= sp.name1_kunnr_we,
+			name2_kunnr_we= sp.name2_kunnr_we,
+			land1_kunnr_we= sp.land1_kunnr_we,
+			city1_kunnr_we= sp.city1_kunnr_we,
+			street_kunnr_we= sp.street_kunnr_we,
+			str_suppl1_kunnr_we= sp.str_suppl1_kunnr_we,
+			str_suppl2_kunnr_we= sp.str_suppl2_kunnr_we,
+			pstlz_kunnr_we= sp.pstlz_kunnr_we,
+			j_1kfrepre_kunnr_we= sp.j_1kfrepre_kunnr_we,
+			j_1kftind_kunnr_we= sp.j_1kftind_kunnr_we,
+			j_1kftbus_kunnr_we= sp.j_1kftbus_kunnr_we,
+			stcd1_kunnr_we= sp.stcd1_kunnr_we,
+			stcd2_kunnr_we= sp.stcd2_kunnr_we,
+			stcd3_kunnr_we= sp.stcd3_kunnr_we,
+			telf1_kunnr_we= sp.telf1_kunnr_we,
+			telf2_kunnr_we= sp.telf2_kunnr_we,
+			telfx_kunnr_we= sp.telfx_kunnr_we,
+			smtp_addr_kunnr_we= sp.smtp_addr_kunnr_we,
+			kunnr_z1= sp.kunnr_z1,
+			name1_kunnr_z1= sp.name1_kunnr_z1,
+			name2_kunnr_z1= sp.name2_kunnr_z1,
+			kunnr_z2= sp.kunnr_z2,
+			name1_kunnr_z2= sp.name1_kunnr_z2,
+			telf2_kunnr_z2= sp.telf2_kunnr_z2,
+			erdat_so= sp.erdat_so,
+			ernam_so= sp.ernam_so,
+			auart= sp.auart,
+			bezei_auart= sp.bezei_auart,
+			augru= sp.augru,
+			bezei_augru= sp.bezei_augru,
+			edatu= sp.edatu,
+			kwmeng= sp.kwmeng,
+			vrkme_so= sp.vrkme_so,
+			origin_vbeln= sp.origin_vbeln,
+			zzwarranty= sp.zzwarranty,
+			bstkd= sp.bstkd,
+			name_p4= sp.name_p4,
+			pst_p4= sp.pst_p4,
+			dpt_p4= sp.dpt_p4,
+			phone_p4= sp.phone_p4,
+			email_p4= sp.email_p4,
+			sernp= sp.sernp,
+			strgr= sp.strgr 
+
+	</insert>
+	
+	<update id="update_zsdfm_deliv_dat" parameterType="SYShipmentVo">
+		UPDATE SHIPMENT_TBL
+		<set>
+			<if test="if_flag !=null and !''.equals(if_flag) ">
+			if_flag = #{if_flag}
+			</if>
+			 
+		</set>
+		WHERE VBELN = #{vbeln} and  posnr = #{posnr}
+		 
+	</update>
+	
+		<update id="update_zsdfm_deliv_datall" parameterType="SYShipmentVo">
+		UPDATE SHIPMENT_TBL
+		<set>
+			<if test="if_flag !=null and !''.equals(if_flag) ">
+			if_flag = #{if_flag}
+			</if>
+			 
+		</set>
+		WHERE VBELN = #{vbeln} 
+		 
+	</update>
+	
+ 
+ 	<select id="shipment_do_group_select" parameterType="SYShipmentVo" resultType="SYShipmentVo">
+		SELECT (CONCAT(VBELN, "A",POSNR)) as uni_key,VBELN, POSNR, IF_FLAG, SHIPMENT_STATUS, LFART, VTEXT_LFART, VSTEL, VTEXT_VSTEL, WERKS, NAME1_WERKS, 
+				LGORT, LGOBE, MATNR, ARKTX, LFIMG, VRKME_DO, LGMNG, MEINS_DO, UMVKZ, UMVKN, UEBTO, ERDAT_DO, ERNAM_DO, 
+				WADAT, TEXT_Z001, VKORG, VTEXT_VKORG, VTWEG, VTEXT_VTWEG, SPART, VTEXT_SPART, VKBUR, BEZEI_VKBUR, 
+				VKGRP, BEZEI_VKGRP, INCO1, INCO2, VGBEL, VGPOS, KUNNR_AG, NAME1_KUNNR_AG, NAME2_KUNNR_AG, LAND1_KUNNR_AG, 
+				CITY1_KUNNR_AG, STREET_KUNNR_AG, STR_SUPPL1_KUNNR_AG, STR_SUPPL2_KUNNR_AG, PSTLZ_KUNNR_AG, 
+				J_1KFREPRE_KUNNR_AG, J_1KFTIND_KUNNR_AG, J_1KFTBUS_KUNNR_AG, STCD1_KUNNR_AG, STCD2_KUNNR_AG, 
+				STCD3_KUNNR_AG, TELF1_KUNNR_AG, TELF2_KUNNR_AG, TELFX_KUNNR_AG, SMTP_ADDR_KUNNR_AG, KUNNR_WE, 
+				NAME1_KUNNR_WE, NAME2_KUNNR_WE, LAND1_KUNNR_WE, CITY1_KUNNR_WE, STREET_KUNNR_WE, STR_SUPPL1_KUNNR_WE, 
+				STR_SUPPL2_KUNNR_WE, PSTLZ_KUNNR_WE, J_1KFREPRE_KUNNR_WE, J_1KFTIND_KUNNR_WE, J_1KFTBUS_KUNNR_WE, 
+				STCD1_KUNNR_WE, STCD2_KUNNR_WE, STCD3_KUNNR_WE, TELF1_KUNNR_WE, TELF2_KUNNR_WE, TELFX_KUNNR_WE, 
+				SMTP_ADDR_KUNNR_WE, KUNNR_Z1, NAME1_KUNNR_Z1, NAME2_KUNNR_Z1, KUNNR_Z2, NAME1_KUNNR_Z2, 
+				TELF2_KUNNR_Z2, ERDAT_SO, ERNAM_SO, AUART, BEZEI_AUART, AUGRU, BEZEI_AUGRU, EDATU, KWMENG, VRKME_SO, 
+				ORIGIN_VBELN, ZZWARRANTY, BSTKD, NAME_P4, PST_P4, DPT_P4, PHONE_P4, EMAIL_P4, SERNP, STRGR
+  		  FROM SHIPMENT_TBL
+		 WHERE 1=1
+		<if test="wadat_from != null and !''.equals(wadat_from) ">
+			AND (wadat <![CDATA[ >= ]]> #{wadat_from} and wadat <![CDATA[ <= ]]> #{wadat_to})
+		</if>
+		<if test="edatu_from != null and !''.equals(edatu_from) ">
+			AND (edatu <![CDATA[ >= ]]> #{edatu_from} and edatu <![CDATA[ <= ]]> #{edatu_to})
+		</if>
+		<if test="vbeln != null and !''.equals(vbeln) ">
+			AND vbeln LIKE CONCAT('%',#{vbeln},'%')
+		</if>
+		<if test="name1_kunnr_z2 != null and !''.equals(name1_kunnr_z2) ">
+			AND name1_kunnr_z2 LIKE CONCAT('%',#{name1_kunnr_z2},'%')
+		</if>
+		<if test="name1_kunnr_we != null and !''.equals(name1_kunnr_we) ">
+			AND name1_kunnr_we LIKE CONCAT('%',#{name1_kunnr_we},'%')
+		</if>
+		<if test="werks != null and !''.equals(werks) ">
+			AND werks = #{werks}
+		</if>
+		<if test="shipment_status != null and !''.equals(shipment_status) ">
+			AND shipment_status = #{shipment_status}
+		</if>
+		<if test="i_shipment_gubun != null and !''.equals(i_shipment_gubun) ">
+			AND auart like CONCAT('%',#{i_shipment_gubun},'%')  
+		</if>
+		<if test="vbeln != null and !''.equals(vbeln)">
+			AND vbeln = #{vbeln}
+		</if>
+		<if test="posnr != null and !''.equals(posnr)">
+			AND posnr = #{posnr}
+		</if>
+		<if test="lfart != null and !''.equals(lfart)">
+			AND lfart = #{lfart}
+		</if>
+	</select>
+	
+	<select id="select_shipment_tbl" parameterType="SYShipmentVo" resultType="SYShipmentVo">
+		SELECT (CONCAT(VBELN, "-",POSNR)) as uni_key,VBELN, POSNR, IF_FLAG, SHIPMENT_STATUS, LFART, VTEXT_LFART, VSTEL, VTEXT_VSTEL, WERKS, NAME1_WERKS, 
+				LGORT, LGOBE, MATNR, ARKTX, LFIMG, VRKME_DO, LGMNG, MEINS_DO, UMVKZ, UMVKN, UEBTO, ERDAT_DO, ERNAM_DO, 
+				WADAT, TEXT_Z001, VKORG, VTEXT_VKORG, VTWEG, VTEXT_VTWEG, SPART, VTEXT_SPART, VKBUR, BEZEI_VKBUR, 
+				VKGRP, BEZEI_VKGRP, INCO1, INCO2, VGBEL, VGPOS, KUNNR_AG, NAME1_KUNNR_AG, NAME2_KUNNR_AG, LAND1_KUNNR_AG, 
+				CITY1_KUNNR_AG, STREET_KUNNR_AG, STR_SUPPL1_KUNNR_AG, STR_SUPPL2_KUNNR_AG, PSTLZ_KUNNR_AG, 
+				J_1KFREPRE_KUNNR_AG, J_1KFTIND_KUNNR_AG, J_1KFTBUS_KUNNR_AG, STCD1_KUNNR_AG, STCD2_KUNNR_AG, 
+				STCD3_KUNNR_AG, TELF1_KUNNR_AG, TELF2_KUNNR_AG, TELFX_KUNNR_AG, SMTP_ADDR_KUNNR_AG, KUNNR_WE, 
+				NAME1_KUNNR_WE, NAME2_KUNNR_WE, LAND1_KUNNR_WE, CITY1_KUNNR_WE, STREET_KUNNR_WE, STR_SUPPL1_KUNNR_WE, 
+				STR_SUPPL2_KUNNR_WE, PSTLZ_KUNNR_WE, J_1KFREPRE_KUNNR_WE, J_1KFTIND_KUNNR_WE, J_1KFTBUS_KUNNR_WE, 
+				STCD1_KUNNR_WE, STCD2_KUNNR_WE, STCD3_KUNNR_WE, TELF1_KUNNR_WE, TELF2_KUNNR_WE, TELFX_KUNNR_WE, 
+				SMTP_ADDR_KUNNR_WE, KUNNR_Z1, NAME1_KUNNR_Z1, NAME2_KUNNR_Z1, KUNNR_Z2, NAME1_KUNNR_Z2, 
+				TELF2_KUNNR_Z2, ERDAT_SO, ERNAM_SO, AUART, BEZEI_AUART, AUGRU, BEZEI_AUGRU, EDATU, KWMENG, VRKME_SO, 
+				ORIGIN_VBELN, ZZWARRANTY, BSTKD, NAME_P4, PST_P4, DPT_P4, PHONE_P4, EMAIL_P4, SERNP, STRGR, fn_mes_code_nm('shipment_status', shipment_status) SHIPMENT_STATUS_NM
+  		  FROM SHIPMENT_TBL
+		 WHERE 1=1 AND IF_FLAG != 'D'
+ 		<if test="wadat_from != null and !''.equals(wadat_from) ">  
+			AND (wadat <![CDATA[ >= ]]> #{wadat_from} and wadat <![CDATA[ <= ]]> #{wadat_to})  
+		</if> 
+			<!-- AND wadat = #{wadat} -->
+		<if test="edatu_from != null and !''.equals(edatu_from) ">
+			AND (edatu <![CDATA[ >= ]]> #{edatu_from} and edatu <![CDATA[ <= ]]> #{edatu_to})
+		</if>
+	 	<if test="vbeln != null and !''.equals(vbeln) ">
+			AND vbeln LIKE CONCAT('%',#{vbeln},'%')
+		</if>
+		<if test="name1_kunnr_z2 != null and !''.equals(name1_kunnr_z2) ">
+			AND name1_kunnr_z2 LIKE CONCAT('%',#{name1_kunnr_z2},'%')
+		</if>
+		<if test="name1_kunnr_we != null and !''.equals(name1_kunnr_we) ">
+			AND name1_kunnr_we LIKE CONCAT('%',#{name1_kunnr_we},'%')
+		</if>
+		<if test="werks != null and !''.equals(werks) ">
+			AND werks = #{werks}
+		</if>
+		<if test="shipment_status != null and !''.equals(shipment_status) ">
+			AND shipment_status = #{shipment_status}
+		</if>
+		<if test="i_shipment_gubun != null and !''.equals(i_shipment_gubun) ">
+			AND auart like CONCAT('%',#{i_shipment_gubun},'%')  
+		</if>
+		<if test="posnr != null and !''.equals(posnr) ">
+			AND posnr = #{posnr}
+		</if>
+		<if test="lfart != null and !''.equals(lfart) ">
+			AND lfart = #{lfart}
+		</if>
+		<if test="true">
+			AND posnr <![CDATA[<> ]]>'000000'
+			
+		</if>
+		<if test="vbeln != null and !''.equals(vbeln) ">
+			AND vbeln  LIKE CONCAT('%',#{vbeln},'%')
+		</if>
+		<if test="vbeln_gr != null and !''.equals(vbeln_gr) ">
+<!-- 			AND vbeln  LIKE CONCAT('%',#{vbeln},'%') -->
+			GROUP BY VBELN 
+		</if>
+	</select>
+	 
+	<select id="shipmentSernr_select" parameterType="SYShipmentSernrVo" resultType="SYShipmentSernrVo">
+		SELECT A.*, CONCAT(A.vbeln, A.POSNR, A.MATNR) AS UKEY
+		  FROM SHIPMENT_SERNR_TBL A
+		<where>
+		   <if test="vbeln != null and !''.equals(vbeln) ">
+				AND A.vbeln = #{vbeln}
+			</if>
+			<if test="posnr != null and !''.equals(posnr) ">
+				AND A.posnr = #{posnr}
+			</if>
+			<if test="matnr != null and !''.equals(matnr) ">
+				AND A.matnr = #{matnr}
+			</if>
+		</where>
+	</select>
+	
+	<insert id="shipmentSernr_insert" parameterType="SYShipmentSernrVo">
+		insert into shipment_sernr_tbl
+		(vbeln, posnr, matnr, sernr, mng)
+		values
+		(#{vbeln}, #{posnr}, #{matnr}, #{sernr}, #{mng})
+	</insert>
+
+	<delete id="shipmentSernr_delete" parameterType="SYShipmentSernrVo">
+		delete from shipment_sernr_tbl
+		where vbeln = #{vbeln}
+	</delete>
+		
+	<update id="shipment_update" parameterType="SYShipmentVo">
+		UPDATE SHIPMENT_TBL
+		<set>
+			<if test="shipment_status !=null and shipment_status !='' ">
+			SHIPMENT_STATUS = #{shipment_status}
+			</if>
+			<if test="shipment_status == 's3'">
+			, wadat_ist = CURDATE() + 0
+			</if>
+			<if test="shipment_status != 's3'">
+			, wadat_ist = null
+			</if>
+		</set>
+		WHERE VBELN = #{vbeln}
+		  AND POSNR = #{posnr}
+	</update>
+	
+	<insert id="insert_stock_header_tbl" parameterType="SYStockVo">
+		INSERT INTO stock_header_tbl (
+			werks, lgort, lifnr, kunnr, matnr, labst, creator, updater
+		) 
+		SELECT * 
+		FROM (
+			SELECT #{werks} as werks,
+			#{lgort} as lgort,
+			#{lifnr} as lifnr,
+			#{kunnr} as kunnr,
+			#{matnr} as matnr,
+			#{labst} as labst,
+			#{creator} as creator,
+			#{updater} as updater
+		) sp
+		ON DUPLICATE KEY
+		UPDATE 
+			lifnr= sp.lifnr,
+			kunnr= sp.kunnr,
+			labst= sp.labst,
+			updater= sp.updater
+	</insert>
+	
+	<insert id="insert_stock_item_tbl" parameterType="SYStockVo">
+		INSERT INTO stock_item_tbl (
+			b_werk,
+			b_lager,
+			kunnr,
+			lifnr,
+			kdauf,
+			kdpos,
+			ps_psp_pnr,
+			matnr,
+			sernr,
+			creator,
+			updater
+		) 
+		SELECT * 
+		FROM (
+			SELECT
+				#{b_werk} as b_werk, 
+				#{b_lager} as b_lager, 
+				#{kunnr} as kunnr, 
+				#{lifnr} as lifnr, 
+				#{kdauf} as kdauf, 
+				#{kdpos} as kdpos, 
+				#{ps_psp_pnr} as ps_psp_pnr, 
+				#{matnr} as matnr, 
+				#{sernr} as sernr, 
+				#{creator} as creator, 
+				#{updater} as updater
+		) sp
+		ON DUPLICATE KEY
+		UPDATE 
+			kunnr= sp.kunnr, 
+			lifnr= sp.lifnr,
+			kdauf= sp.kdauf, 
+			kdpos= sp.kdpos,
+			ps_psp_pnr= sp.ps_psp_pnr, 
+			updater= sp.updater
+	</insert>
+	
+	<select id="stock_header_tbl_select" parameterType="SYStockVo" resultType="SYStockVo">
+		select * from stock_header_tbl
+		<where>
+			<if test="werks != null and !''.equals(werks) ">
+				AND werks = #{werks}
+			</if>
+			<if test="lgort != null and !''.equals(lgort) ">
+				AND lgort = #{lgort}
+			</if>
+			<if test="matnr != null and !''.equals(matnr) ">
+				AND matnr = #{matnr}
+			</if>
+			<if test="matnrList != null  and matnrList.size() > 0">
+				 and MATNR IN 
+			 	<foreach collection="matnrList" item="item" index="index" separator="," open="(" close=")">
+					#{item}
+			 	</foreach>
+		 	</if>
+		</where>
+	</select>
+	
+	<select id="stock_item_tbl_select" parameterType="SYStockVo" resultType="SYStockVo">
+		select * from stock_item_tbl
+		<where>
+			<if test="b_werk != null and !''.equals(b_werk) ">
+				AND b_werk = #{b_werk}
+			</if>
+			<if test="b_lager != null and !''.equals(lgort) ">
+				AND b_lager = #{b_lager}
+			</if>
+			<if test="matnr != null and !''.equals(matnr) ">
+				AND matnr = #{matnr}
+			</if>
+<!-- 			<if test="kdauf != null and kdauf != ''"> -->
+<!-- 				AND kdauf = #{kdauf} -->
+<!-- 			</if> -->
+<!-- 			<if test="kdpos != null and kdpos != ''"> -->
+<!-- 				AND kdpos = #{kdpos} -->
+<!-- 			</if> -->
+			<if test="sernr != null and !''.equals(sernr) ">
+				AND sernr = #{sernr}
+			</if>
+		</where>
+	</select>
+	
+	<select id="packing_joblist_select_count" parameterType="SYProdVo" resultType="int">
+		SELECT count(*)
+		  FROM PROD_TBL
+		 WHERE ROUTING_GNO_GUBUN = 'C'
+		 	AND PDSTS <![CDATA[ <> ]]> 'p8'
+		 	<if test="cmdat_from != null and !cmdat_from.equals('')">
+		    AND (CMDAT <![CDATA[ >= ]]> #{cmdat_from} and CMDAT <![CDATA[ <= ]]> #{cmdat_to})
+		    </if>
+	</select>
+	
+	<select id="packing_joblist_select" parameterType="SYProdVo" resultType="SYProdVo">
+		SELECT A.PORDNO, A.ZAUART, A.ZBEZEI, A.ZGRADE, 
+				(select min(routing_no) from prod_ord_tbl where pordno = A.pordno) first_routing_no,
+				A.PORDNO_CHILD, A.DEPT_CD, A.CUSTOMER_NM, A.ZZSWOPTION, A.ZLONGTEXT, 
+				(select itnbr from prod_tbl where max(a.pordno) = pordno) ITNBR,
+				A.PORDNO_STATUS, A.AUART,
+			   ( case A.CMDAT_SEQ when "" then null else  A.CMDAT_SEQ  end ) AS ORDER_SEQ  ,A.PORDNO_POP, A.FEDAT,
+			    A.SEDAT, A.JIDAT, A.PDQTY, 
+			    (select max(lgort) from prod_tbl where max(A.PORDNO) = PORDNO) LGORT, 
+			    (select max(sernp) from prod_tbl where max(A.PORDNO) = PORDNO) sernp
+			    , A.ROUTING_GNO, A.WKCTR, 
+				A.PROJECT_NO, MIN(A.PORDNO_SEQ) PORDNO_SEQ, 
+				( SELECT PDSTS 
+					FROM PROD_ORD_TBL 
+				   WHERE MIN(A.PORDNO_SEQ) = PORDNO_SEQ 
+				     AND MAX(A.PORDNO_POP) = PORDNO_POP ) PDSTS,
+				fn_mes_code_nm('pdsts', 
+					( SELECT PDSTS 
+						FROM PROD_ORD_TBL 
+					   WHERE MIN(A.PORDNO_SEQ) = PORDNO_SEQ 
+					     AND MAX(A.PORDNO_POP) = PORDNO_POP )
+				) AS PDSTS_NM,
+				( SELECT ROUTING_NO 
+					FROM PROD_ORD_TBL 
+				   WHERE PORDNO_SEQ = MIN(A.PORDNO_SEQ)
+				     AND PORDNO_POP = A.PORDNO_POP ) AS ROUTING_NO,
+				( SELECT ROUTING_DSCR 
+					FROM ROUTING_HEADER_MASTER 
+				   WHERE ROUTING_NO = (SELECT ROUTING_NO 
+					FROM PROD_ORD_TBL 
+				   WHERE PORDNO_SEQ = MIN(A.PORDNO_SEQ)
+				     AND PORDNO_POP = A.PORDNO_POP) ) ROUTING_NM,
+				MIN(A.PORDNO_SEQ)+1 NEXT_PORDNO_SEQ,
+				( SELECT ROUTING_NO 
+					FROM PROD_ORD_TBL 
+				   WHERE MIN(A.PORDNO_SEQ)+1 = PORDNO_SEQ 
+				     AND MAX(A.PORDNO_POP) = PORDNO_POP ) NEXT_ROUTING,
+				( SELECT ROUTING_DSCR 
+					FROM ROUTING_HEADER_MASTER 
+				   WHERE ROUTING_NO = ( SELECT ROUTING_NO 
+				   						  FROM PROD_ORD_TBL 
+				   						 WHERE MIN(A.PORDNO_SEQ)+1 = PORDNO_SEQ 
+				   						   AND MAX(A.PORDNO_POP) = PORDNO_POP ) ) NEXT_ROUTING_CODE, AD_NAME1
+		  FROM PROD_ORD_TBL A 
+		 WHERE A.PORDNO IN (SELECT A.PORDNO
+							  FROM PROD_ORD_TBL A, ROUTING_HEADER_MASTER B 
+							 WHERE A.ROUTING_NO = B.ROUTING_NO 
+							   AND A.ROUTING_GNO = B.ROUTING_GNO 
+							   AND A.ROUTING_GNO_GUBUN = 'C'
+		    				   <if test="cmdat_from != null and !cmdat_from.equals('')">
+		    				   AND ( A.CMDAT <![CDATA[ >= ]]> #{cmdat_from} AND A.CMDAT <![CDATA[ <= ]]> #{cmdat_to})
+							   </if>
+						       <if test="dept_cd != null and !dept_cd.equals('')">
+						       AND A.DEPT_CD = #{dept_cd}
+							   </if>
+							   AND A.PDSTS IN ('p2','p3','p4','p5')
+							   GROUP BY PORDNO) 
+		   AND A.PDSTS IN ('p2','p3','p4','p5')
+		   AND A.ROUTING_GNO_GUBUN = 'C'
+		    <if test="cmdat_from != null and !cmdat_from.equals('')">
+ 		   AND ( A.CMDAT <![CDATA[ >= ]]> #{cmdat_from} AND A.CMDAT <![CDATA[ <= ]]> #{cmdat_to})
+		   </if>
+	       <if test="dept_cd != null and !dept_cd.equals('')">
+	       AND A.DEPT_CD = #{dept_cd}
+		   </if>
+		GROUP BY A.PORDNO ORDER BY ORDER_SEQ is NULL ASC,A.CMDAT_SEQ+0 ASC    
+		<!--  SELECT A.PORDNO, A.PORDNO_CHILD, A.DEPT_CD, A.CUSTOMER_NM, A.ZZSWOPTION, A.ZLONGTEXT, A.ITNBR, A.PORDNO_STATUS, A.AUART,
+			   ( case A.CMDAT_SEQ when "" then null else  A.CMDAT_SEQ  end ) AS ORDER_SEQ  ,A.PORDNO_POP, A.FEDAT,
+			    A.SEDAT, A.JIDAT, A.PDQTY, A.LGORT, A.ROUTING_GNO, A.WKCTR, 
+				A.PROJECT_NO, MIN(A.PORDNO_SEQ) PORDNO_SEQ, 
+				( SELECT PDSTS 
+					FROM PROD_ORD_TBL 
+				   WHERE MIN(A.PORDNO_SEQ) = PORDNO_SEQ 
+				     AND MAX(A.PORDNO_POP) = PORDNO_POP ) PDSTS,
+				fn_mes_code_nm('pdsts', PDSTS) AS PDSTS_NM,
+				A.ROUTING_NO,
+				( SELECT ROUTING_DSCR 
+					FROM ROUTING_HEADER_MASTER 
+				   WHERE ROUTING_NO = A.ROUTING_NO ) ROUTING_NM,
+				MIN(A.PORDNO_SEQ)+1 NEXT_PORDNO_SEQ,
+				( SELECT ROUTING_NO 
+					FROM PROD_ORD_TBL 
+				   WHERE MIN(A.PORDNO_SEQ)+1 = PORDNO_SEQ 
+				     AND MAX(A.PORDNO_POP) = PORDNO_POP ) next_routing,
+				( SELECT ROUTING_DSCR 
+					FROM ROUTING_HEADER_MASTER 
+				   WHERE ROUTING_NO = ( SELECT ROUTING_NO 
+				   						  FROM PROD_ORD_TBL 
+				   						 WHERE MIN(A.PORDNO_SEQ)+1 = PORDNO_SEQ 
+				   						   AND MAX(A.PORDNO_POP) = PORDNO_POP ) ) next_routing_code
+		  FROM PROD_ORD_TBL A 
+		 WHERE A.PORDNO IN (SELECT A.PORDNO
+							  FROM PROD_ORD_TBL A, ROUTING_HEADER_MASTER B 
+							 WHERE A.ROUTING_NO = B.ROUTING_NO 
+							   AND A.ROUTING_GNO = B.ROUTING_GNO 
+							   AND A.ROUTING_GNO_GUBUN = 'C'
+							   <if test="cmdat_from != null and !cmdat_from.equals('')">
+		    				   AND ( A.CMDAT <![CDATA[ >= ]]> #{cmdat_from} AND A.CMDAT <![CDATA[ <= ]]> #{cmdat_to})
+							   </if>
+						       <if test="dept_cd != null and !dept_cd.equals('')">
+						       AND A.DEPT_CD = #{dept_cd}
+							   </if> 
+							   AND A.PDSTS IN ('p2','p3','p4','p5')
+							   GROUP BY PORDNO) 
+		   AND A.PDSTS IN ('p2','p3','p4','p5')
+		   AND A.ROUTING_GNO_GUBUN = 'C'
+		   <if test="cmdat_from != null and !cmdat_from.equals('')">
+ 		   AND ( A.CMDAT <![CDATA[ >= ]]> #{cmdat_from} AND A.CMDAT <![CDATA[ <= ]]> #{cmdat_to})
+		   </if>
+	       <if test="dept_cd != null and !dept_cd.equals('')">
+	       AND A.DEPT_CD = #{dept_cd}
+		   </if> 
+		GROUP BY A.PORDNO ORDER BY ORDER_SEQ is NULL ASC,A.CMDAT_SEQ ASC
+		<if test="page != null and !page.equals('')">
+		LIMIT #{page}, #{rows}
+		</if> -->
+	</select>
+	
+	<select id="packing_jobDetailList_select" parameterType="SYProdVo" resultType="SYProdVo">
+		SELECT  
+				A.PORDNO_POP,A.PORDNO_SEQ,A.PORDNO,A.PORDNO_CHILD,A.SCHEDULE_SEQ,A.PDSTS,A.PORDNO_STATUS,A.KUNNR_SE,A.CUSTOMER_NM,A.JIDAT,A.SEDAT,A.CMDAT,A.CMDAT_SEQ,A.ITNBR,
+				A.PSPEC,A.PDQTY,A.FEDAT,A.EDATU,A.PROJECT_NO,A.PROJECT_NO_YN,A.SUB_SERNR,A.KDAUF,A.KDPOS,A.HISTNO,A.dept_cd,A.member_emp_no,A.member_nm,A.member_cnt,A.JOCOD,
+				A.WKCTR,A.STEUS,A.FRDLB,A.BEZEI,A.LGORT,A.DISPO,A.ZAUFNR,A.KTEXT,A.ZCSREQ,A.AD_NAME1,A.ZZAPPLICATION,
+				(select ZZSWOPTIONT from prod_tbl where A.pordno = pordno) ZZSWOPTION,
+				A.ZTFTSERIAL,A.ZLONGTEXT,A.ZAUART,A.ZBEZEI,
+				A.routing_gno,A.routing_no,A.ROUTING_GNO_GUBUN,A.routing_nm,A.routing_gubun,A.WORKER_NM,A.PROD_MEMO,A.PROD_STR_DATE,A.PROD_STR_TIME,A.PROD_END_DATE,
+				A.PROD_END_TIME,A.SAPDEL_YN,A.CREATE_DATE,A.CHANGE_DATE,A.ZGRADE,A.IF_STATUS,A.IF_MSG,A.AUART,A.INOUT_PROJECT_NO,A.INOUT_SAP_STS,A.IF_OUT_SAP,
+				A.IF_OUT_SAP_MSG,A.IF_IN_SAP,A.IF_IN_SAP_MSG,
+				fn_mes_code_nm('pdsts', A.PDSTS) AS PDSTS_NM, 
+				(select wrkst from material_recv_master where matnr = A.itnbr) wrkst,		
+				CONCAT(PROD_STR_DATE, '', PROD_STR_TIME) AS START_DT_TM,
+  				CONCAT(PROD_END_DATE, '', PROD_END_TIME) AS END_DT_TM, B.ROUTING_PLAST_GUBUN, B.ROUTING_DSCR, B.ROUTING_CODE 
+		  FROM PROD_ORD_TBL A, ROUTING_HEADER_MASTER B 
+		 WHERE A.ROUTING_NO = B.ROUTING_NO 
+		   AND A.ROUTING_GNO = B.ROUTING_GNO
+		   AND A.PDSTS <![CDATA[ <> ]]> 'p6'
+		   AND pordno = #{pordno} 
+		ORDER BY PORDNO_SEQ*1 
+	</select>
+	
+<!-- 	<select id="shipment_select" parameterType="SYShipmentVo" resultType="SYShipmentVo">
+		SELECT a.*, fn_mes_code_nm('shipment_status', a.shipment_status) SHIPMENT_STATUS_NM
+		  FROM SHIPMENT_TBL a
+		 WHERE 1=1
+		<if test="vstel!=null and !''.equals(vstel)">
+		   AND VSTEL = #{vstel}
+		</if>
+		<if test="wadat_ist_from!=null and !''.equals(wadat_ist_from)">
+		   AND (WADAT_IST <![CDATA[ >= ]]> #{wadat_ist_from} AND WADAT_IST <![CDATA[ <= ]]> #{wadat_ist_to} )
+		</if>
+		<if test="wadat_from!=null and !''.equals(wadat_from)">
+		   AND (WADAT <![CDATA[ >= ]]> #{wadat_from} AND WADAT <![CDATA[ <= ]]> #{wadat_to} )
+		</if>
+		<if test="name1_kunnr_we!=null and !''.equals(name1_kunnr_we)">
+		   AND name1_kunnr_we LIKE CONCAT('%',#{name1_kunnr_we},'%')
+		</if>
+		<if test="sernr!=null and !''.equals(sernr)">
+		   AND VBELN = (SELECT VBELN
+						FROM SHIPMENT_SERNR_TBL
+						WHERE SERNR = #{sernr})
+		</if>
+		<if test="matnr!=null and !''.equals(matnr)">
+		   AND MATNR LIKE CONCAT('%',#{matnr},'%')
+		</if>
+	</select> -->
+	
+		<select id="shipment_select" parameterType="SYShipmentVo" resultType="SYShipmentVo">		 
+	SELECT * from (
+		SELECT * from (
+			SELECT * from (
+				SELECT * from (
+					select * from (
+						select * from (
+						 SELECT *  from (		 
+							SELECT a.werks,a.wadat,a.wadat_ist,a.vbeln,a.posnr,a.vgbel,a.vgpos,a.name1_kunnr_we,a.matnr,a.arktx, fn_mes_code_nm('shipment_status', a.shipment_status) SHIPMENT_STATUS_NM,b.sernr,(select DISTINCT(IFNULL(ZZSWOPTIONT,'')) AS ZZSWOPTION  FROM prod_tbl where project_no = b.sernr and itnbr=b.matnr) as ZZSWOPTION
+									  FROM SHIPMENT_TBL a left join shipment_sernr_tbl b
+									 on   a.matnr=b.matnr and a.vbeln=b.vbeln and a.posnr =b.posnr where a.if_flag != 'D'  ) a left join (	 
+									 select a.project_no as dtproject_no,c.atwtb_s as dtatwtb_s,b.sernr as dtsernr,a.dmr_no as dtdmr_no,a.rn_no as dtrn_no,a.dept_cd as dtwerks from prod_tbl a , sernr_manage_tbl b ,material_recv_detail c
+									 where a.pordno = b.pordno and    a.itnbr in (
+									 select    matnr  from  material_recv_detail  where  atwtb_l ='FPD' and atwtb_m != 'Sub' 
+									 ) and  b.matnr =c.matnr and c.atwtb_l ='FPD' and c.atwtb_m != 'Sub' and a.dept_cd = c.werks ) b
+									 on a.sernr = b.dtproject_no and a.werks =b.dtwerks  ) a left join (	 
+									 select a.project_no as vsproject_no ,c.atwtb_s as vsatwtb_s,b.sernr as vssernr,a.dmr_no as vsdmr_no,a.rn_no as vsrn_no,a.dept_cd as vswerks from prod_tbl a , sernr_manage_tbl b ,material_recv_detail c
+									 where a.pordno = b.pordno and    a.itnbr in (
+									 select    matnr  from  material_recv_detail  where atwtb_l ='FPD' and atwtb_m = 'Sub' and atwtb_s = 'SCU'
+									 ) and  b.matnr =c.matnr and c.atwtb_l ='FPD' and c.atwtb_m = 'Sub' and c.atwtb_s = 'SCU' and a.dept_cd = c.werks ) b
+									 on a.sernr = b.vsproject_no and a.werks =b.vswerks   ) a left join (	 
+									 select a.project_no as psproject_no,c.atwtb_s as psatwtb_s,b.sernr as pssernr,a.dmr_no as psdmr_no,a.rn_no as psrn_no,a.dept_cd as pswerks from prod_tbl a , sernr_manage_tbl b ,material_recv_detail c
+									 where a.pordno = b.pordno and    a.itnbr in (
+									 select    matnr  from  material_recv_detail  where atwtb_l ='FPD' and atwtb_m = 'Sub' and atwtb_s = 'PSU'
+									 )  and  b.matnr =c.matnr and c.atwtb_l ='FPD' and c.atwtb_m = 'Sub' and c.atwtb_s = 'PSU' and a.dept_cd = c.werks ) b
+									 on a.sernr = b.psproject_no and a.werks =b.pswerks ) a left join (	 
+									 select a.project_no as chproject_no,c.atwtb_s as chatwtb_s,b.sernr as chsernr,a.dmr_no as chdmr_no,a.rn_no as chrn_no,a.dept_cd as chwerks from prod_tbl a , sernr_manage_tbl b ,material_recv_detail c
+									 where a.pordno = b.pordno and    a.itnbr in (
+									 select    matnr  from  material_recv_detail  where atwtb_l ='FPD' and atwtb_m = 'Sub' and atwtb_s = 'Charger'
+									 )  and  b.matnr =c.matnr and c.atwtb_l ='FPD' and c.atwtb_m = 'Sub' and c.atwtb_s = 'Charger' and a.dept_cd = c.werks ) b
+									 on a.sernr = b.chproject_no and a.werks =b.chwerks )  a left join (	 
+									 select a.project_no as rcproject_no,c.atwtb_s as rcatwtb_s,b.sernr as rcsernr,a.dmr_no as rcdmr_no,a.rn_no as rcrn_no,a.dept_cd as rcwerks from prod_tbl a , sernr_manage_tbl b ,material_recv_detail c
+									 where a.pordno = b.pordno and    a.itnbr in (
+									 select    matnr  from  material_recv_detail  where atwtb_l ='CCD' and atwtb_m = 'Dynamic(CCD)' and atwtb_s = 'RF Camera Module'
+									 ) and  b.matnr =c.matnr and c.atwtb_l ='CCD' and c.atwtb_m = 'Dynamic(CCD)' and c.atwtb_s = 'RF Camera Module' and a.dept_cd = c.werks ) b
+									 on a.sernr = b.rcproject_no and a.werks =b.rcwerks  ) a left join (	 
+									 select a.project_no as rsproject_no ,c.atwtb_s as rsatwtb_s,b.sernr as rssernr,a.dmr_no as rsdmr_no,a.rn_no as rsrn_no,a.dept_cd as rswerks from prod_tbl a , sernr_manage_tbl b ,material_recv_detail c
+									 where a.pordno = b.pordno and    a.itnbr in (
+									 select    matnr  from  material_recv_detail  where atwtb_l ='CCD' and atwtb_m = 'Dynamic(CCD)' and atwtb_s = 'RF SCU' 
+									 ) and  b.matnr =c.matnr and c.atwtb_l ='CCD' and c.atwtb_m = 'Dynamic(CCD)' and c.atwtb_s = 'RF SCU' and a.dept_cd = c.werks ) b
+									 on a.sernr = b.rsproject_no and a.werks =b.rswerks   ) a left join (	 
+									 select a.project_no as rwproject_no,c.atwtb_s as rwatwtb_s,b.sernr as rwsernr,a.dmr_no as rwdmr_no,a.rn_no as rwrn_no,a.dept_cd as rwwerks from prod_tbl a , sernr_manage_tbl b ,material_recv_detail c
+									 where a.pordno = b.pordno and    a.itnbr in (
+									 select    matnr  from  material_recv_detail  where atwtb_l ='CCD' and atwtb_m = 'Dynamic(CCD)' and atwtb_s = 'RF Workstation'
+									 ) and  b.matnr =c.matnr and c.atwtb_l ='CCD' and c.atwtb_m = 'Dynamic(CCD)' and c.atwtb_s = 'RF Workstation' and a.dept_cd = c.werks ) b
+									 on a.sernr = b.rwproject_no and a.werks =b.rwwerks     WHERE 1=1  
+		<if test="vstel!=null and !''.equals(vstel)">
+		   AND WERKS = #{vstel}
+		</if>
+		<if test="wadat_ist_from!=null and !''.equals(wadat_ist_from)">
+		   AND ( (DATE_FORMAT(wadat, '%Y%m%d')) <![CDATA[ >= ]]> #{wadat_ist_from} AND  (DATE_FORMAT(wadat, '%Y%m%d')) <![CDATA[ <= ]]> #{wadat_ist_to} )
+		</if>
+		<if test="name1_kunnr_we!=null and !''.equals(name1_kunnr_we)">
+		   AND name1_kunnr_we LIKE CONCAT('%',#{name1_kunnr_we},'%')
+		</if>
+		<if test="sernr!=null and !''.equals(sernr)">
+		   AND VBELN = (SELECT VBELN
+						FROM SHIPMENT_SERNR_TBL
+						WHERE SERNR = #{sernr})
+		</if>
+		<if test="matnr!=null and !''.equals(matnr)">
+		   AND MATNR LIKE CONCAT('%',#{matnr},'%')
+		</if>
+	</select>
+	
+	<select id="shipment_select_o" parameterType="SYShipmentVo" resultType="SYShipmentVo">		 
+	 
+		select * from (
+			select * from (
+			 SELECT *  from (		 
+				SELECT a.werks,a.wadat,a.wadat_ist,a.vbeln,a.posnr,a.vgbel,a.vgpos,a.name1_kunnr_we,a.matnr,a.arktx, fn_mes_code_nm('shipment_status', a.shipment_status) SHIPMENT_STATUS_NM,b.sernr,(select DISTINCT(IFNULL(ZZSWOPTIONT,'')) AS ZZSWOPTION   FROM prod_tbl where project_no = b.sernr and itnbr=b.matnr) as ZZSWOPTION
+						  FROM SHIPMENT_TBL a left join shipment_sernr_tbl b
+						 on   a.matnr=b.matnr and a.vbeln=b.vbeln and a.posnr =b.posnr where a.if_flag != 'D'  ) a left join (	 
+						 select a.project_no as dtproject_no,c.atwtb_s as dtatwtb_s,b.sernr as dtsernr,a.dmr_no as dtdmr_no,a.rn_no as dtrn_no,a.dept_cd as dtwerks from prod_tbl a , sernr_manage_tbl b ,material_recv_detail c
+						 where a.pordno = b.pordno and    a.itnbr in (
+									 select    matnr  from  material_recv_detail  where  atwtb_l ='CCD' and atwtb_m = 'Dynamic(CCD)' and atwtb_s = 'RF Camera Module'
+									 ) and  b.matnr =c.matnr and c.atwtb_l ='CCD' and c.atwtb_m = 'Dynamic(CCD)' and c.atwtb_s = 'RF Camera Module' and a.dept_cd = c.werks ) b
+						 on a.sernr = b.dtproject_no and a.werks =b.dtwerks  ) a left join (	 
+						 select a.project_no as vsproject_no ,c.atwtb_s as vsatwtb_s,b.sernr as vssernr,a.dmr_no as vsdmr_no,a.rn_no as vsrn_no,a.dept_cd as vswerks from prod_tbl a , sernr_manage_tbl b ,material_recv_detail c
+						 where a.pordno = b.pordno and    a.itnbr in (
+									 select    matnr  from  material_recv_detail  where  atwtb_l ='CCD' and atwtb_m = 'Dynamic(CCD)' and atwtb_s = 'RF SCU'
+									 ) and  b.matnr =c.matnr and c.atwtb_l ='CCD' and c.atwtb_m = 'Dynamic(CCD)' and c.atwtb_s = 'RF SCU' and a.dept_cd = c.werks ) b
+						 on a.sernr = b.vsproject_no and a.werks =b.vswerks   ) a left join (	 
+						 select a.project_no as psproject_no,c.atwtb_s as psatwtb_s,b.sernr as pssernr,a.dmr_no as psdmr_no,a.rn_no as psrn_no,a.dept_cd as pswerks from prod_tbl a , sernr_manage_tbl b ,material_recv_detail c
+						 where a.pordno = b.pordno  and    a.itnbr in (
+									 select    matnr  from  material_recv_detail  where  atwtb_l ='CCD' and atwtb_m = 'Dynamic(CCD)' and atwtb_s = 'RF Workstation' 
+									 ) and  b.matnr =c.matnr and c.atwtb_l ='CCD' and c.atwtb_m = 'Dynamic(CCD)' and c.atwtb_s = 'RF Workstation' and a.dept_cd = c.werks ) b
+						 on a.sernr = b.psproject_no and a.werks =b.pswerks     WHERE 1=1  
+		<if test="vstel!=null and !''.equals(vstel)">
+		   AND WERKS = #{vstel}
+		</if>
+		<if test="wadat_ist_from!=null and !''.equals(wadat_ist_from)">
+		   AND (DATE_FORMAT(wadat, '%Y%m%d'))  <![CDATA[ >= ]]> #{wadat_ist_from} AND  (DATE_FORMAT(wadat, '%Y%m%d')) <![CDATA[ <= ]]> #{wadat_ist_to} )
+		</if>
+		<if test="name1_kunnr_we!=null and !''.equals(name1_kunnr_we)">
+		   AND name1_kunnr_we LIKE CONCAT('%',#{name1_kunnr_we},'%')
+		</if>
+		<if test="sernr!=null and !''.equals(sernr)">
+		   AND VBELN = (SELECT VBELN
+						FROM SHIPMENT_SERNR_TBL
+						WHERE SERNR = #{sernr})
+		</if>
+		<if test="matnr!=null and !''.equals(matnr)">
+		   AND MATNR LIKE CONCAT('%',#{matnr},'%')
+		</if>
+	</select>
+	
+	
+	
+	<select id="getSerialInfo" parameterType="SYShipmentVo" resultType="SYProdVo">
+		SELECT PORDNO_STATUS, ITNBR, PROJECT_NO, SUB_SERNR, DEPT_CD, GR_NO, ECR_NO, RN_NO, DMR_NO
+		  FROM PROD_TBL
+		 WHERE PROJECT_NO IN ( SELECT SERNR
+								FROM SHIPMENT_SERNR_TBL
+							   WHERE VBELN = #{vbeln}
+								 AND POSNR = #{posnr} )
+			and routing_gno_gubun = 'P'
+	</select>
+</mapper>

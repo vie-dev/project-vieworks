@@ -1,0 +1,994 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.co.passcombine.mes.dao.SYHubDAO">
+	<select id="qualityMaster_select" parameterType="SYHubRevInsMasVo" resultType="SYHubRevInsMasVo">
+		SELECT rvmaster_gr_code, gr_name, gr_dscr, dept_cd, fn_code_filter_nm('MC1009','1',dept_cd) as dept_nm, temp1, temp2, temp3, temp4, 
+				use_yn, creator, updater, substring(date_created,1,10) as date_created, 
+				substring(date_updated,1,10) as date_updated
+		  FROM RECEIVING_INSPECTION_MASTER
+		WHERE use_yn = 'Y' 
+		<if test="comp_kind != null and !''.equals(comp_kind) ">
+			AND gr_name like CONCAT('%', #{comp_kind}, '%')
+		</if>
+		<if test="dept_cd != null and !''.equals(dept_cd) ">
+			AND dept_cd = #{dept_cd}
+		</if>
+	</select>
+
+	<select id="qualityDetail_select" parameterType="SYHubRevInsCliVo" resultType="SYHubRevInsCliVo">
+		SELECT rvmaster_gr_code, rvdetail_code, rvdetail_seq, detail_name, detail_dscr, matnr, matnr_sub, matnr_rev, matnr_nm
+			   vendor_code, vendor_name, use_yn, creator, updater, substring(create_date,1,10) as create_date, substring(update_date,1,10) as update_date, 
+			   substring(date_created,1,10) as date_created, substring(date_updated,1,10) as date_updated
+		  FROM receiving_inspection_detail
+		 WHERE use_yn = 'Y' 
+		<if test="rvmaster_gr_code != null and !''.equals(rvmaster_gr_code) ">
+			AND rvmaster_gr_code = #{rvmaster_gr_code}
+		</if>
+		<if test="matnr != null and !''.equals(matnr) ">
+			AND matnr = #{matnr}
+		</if>
+		<if test="vendor_code != null and !''.equals(vendor_code) ">
+			AND vendor_code = #{vendor_code}
+		</if>
+	</select>
+
+	<select id="qualityDetailTest_select" parameterType="SYHubRevInsCliVo" resultType="SYHubRevInsCliVo">
+		SELECT rvmaster_gr_code, rvdetail_code, rvdetail_seq, matnr, matnr_sub, matnr_rev, 
+				inspection_item, inspection_standard, inspection_method, creator, updater,
+			   	substring(create_date,1,10) as create_date, substring(update_date,1,10) as update_date, 
+			   substring(date_created,1,10) as date_created, substring(date_updated,1,10) as date_updated
+		  FROM receiving_inspection_detail
+		 WHERE use_yn = 'Y' 
+		<if test="rvmaster_gr_code != null and !''.equals(rvmaster_gr_code) ">
+			AND rvmaster_gr_code = #{rvmaster_gr_code}
+		</if>
+		<if test="rvdetail_code != null and !''.equals(rvdetail_code) ">
+			AND rvdetail_code = #{rvdetail_code}
+		</if>
+		<if test="matnr != null and !''.equals(matnr) ">
+			AND matnr = #{matnr}
+		</if>
+	</select>
+
+	<select id="getRoutingGroupNo" resultType="java.lang.String">
+		SELECT CONCAT('RD',FN_COMMON_SEQ('ROUTING_DETAIL')) FROM DUAL
+	</select>
+
+	<select id="getRoutingNo" resultType="java.lang.String">
+		SELECT CONCAT('RH',FN_COMMON_SEQ('ROUTING_HEADER')) FROM DUAL
+	</select>
+	
+	<insert id="routingHeader_insert" parameterType="SYHubRoutingHeaderVo">
+		INSERT INTO ROUTING_HEADER_MASTER (
+		  ROUTING_GNO, ROUTING_GNM, ROUTING_NO, ROUTING_DSCR, ROUTING_CODE, ROUTING_GUBUN,ROUTING_GNO_GUBUN, DEPT_CD,
+		  USE_YN, CREATOR, UPDATER, DATE_CREATED, DATE_UPDATED )
+		VALUES (
+		  #{routing_gno}, #{routing_gnm}, #{routing_no}, #{routing_dscr}, #{routing_code}, #{routing_gubun},#{routing_gno_gubun}, #{dept_cd},
+		  'Y', #{creator}, #{updater}, current_timestamp(), current_timestamp()
+		)
+	</insert>
+
+	<insert id="routingDetail_insert" parameterType="SYHubRoutingDetailVo">
+		INSERT INTO ROUTING_DETAIL_MASTER (
+		  ROUTING_GNO, ITNBR, ITNBR_NM, ROUTING_GNO_GUBUN,USE_YN, CREATOR, UPDATER, DATE_CREATED, DATE_UPDATED )
+		VALUES (
+		  #{routing_gno}, #{matnr}, #{maktx}, #{routing_gno_gubun},'Y', #{creator}, #{updater}, current_timestamp(), current_timestamp()
+		)
+	</insert>
+
+	<insert id="routingHeaderItem_insert" parameterType="SYHubRoutingHeaderVo">
+		INSERT INTO ROUTING_HEADER_MASTER (
+		  ROUTING_GNO, ROUTING_GNM, ROUTING_NO, ROUTING_DSCR, ROUTING_CODE, ROUTING_GUBUN,ROUTING_GNO_GUBUN, DEPT_CD,
+		  USE_YN, CREATOR, UPDATER, DATE_CREATED, DATE_UPDATED )
+		VALUES (
+		  #{routing_gno}, #{routing_gnm}, #{routing_no}, #{routing_dscr}, #{routing_code}, #{routing_gubun},#{routing_gno_gubun}, #{dept_cd},
+		  'Y', #{creator}, #{updater}, current_timestamp(), current_timestamp()
+		)
+	</insert>
+
+	<update id="routingHeaderItem_update" parameterType="SYHubRoutingHeaderVo">
+		UPDATE ROUTING_HEADER_MASTER SET
+		<if test="routing_dscr!=null and !''.equals(routing_dscr) ">
+		  ROUTING_DSCR = #{routing_dscr},
+		</if>
+		<if test="routing_gubun!=null and !''.equals(routing_gubun)">
+		  ROUTING_GUBUN = #{routing_gubun},
+		</if>
+		<if test="routing_code!=null and !''.equals(routing_code)">
+		  ROUTING_CODE = #{routing_code},
+		</if>
+		  UPDATER = #{updater}, 
+		  DATE_UPDATED = current_timestamp()
+		WHERE ROUTING_GNO = #{routing_gno}
+		  AND ROUTING_NO = #{routing_no}
+	</update>
+
+	<select id="routingHeaderItem_count" resultType="java.lang.Integer">
+		SELECT COUNT(*) AS CNT
+		  FROM routing_header_master
+		 WHERE use_yn = 'Y'
+		   AND routing_gno = #{routing_gno} 
+	</select>
+
+	<select id="routingDetailItem_count" resultType="java.lang.Integer">
+		SELECT COUNT(*) AS CNT
+		  FROM routing_detail_master
+		 WHERE use_yn = 'Y'
+		   AND routing_gno = #{routing_gno} 
+	</select>
+	
+	<update id="routingHeaderGroup_delete" parameterType="SYHubRoutingHeaderVo">
+		UPDATE routing_header_master SET USE_YN='N'
+		 WHERE routing_gno = #{routing_gno}
+	</update>
+
+	<update id="routingHeaderItem_delete" parameterType="SYHubRoutingHeaderVo">
+		UPDATE routing_header_master SET USE_YN='N'
+		 WHERE routing_gno = #{routing_gno}
+		   AND routing_no = #{routing_no}
+	</update>
+	
+	<update id="routingHeaderItem_delete_1" parameterType="SYHubRoutingHeaderVo">
+		UPDATE routing_detail_master SET USE_YN='N'
+		 WHERE routing_gno = #{routing_gno}
+	</update>
+	
+	<insert id="insertVendor" parameterType="SYVendorVo">
+		INSERT INTO VENDOR_TBL (
+			vendor_code, txt30, name, addr, land1, telf1, telf2, telfx, smtp_addr, company_no,
+			j_1kfrepre, j_1kftbus, j_1kftind, id_yn, creater, updater, date_created, date_updated )
+		VALUES (
+			FN_COMMON_SEQ('vendor_code'), #{txt30}, #{name}, #{addr}, #{land1}, #{telf1}, #{telf2}, #{telfx}, #{smtp_addr}, #{company_no},
+			#{j_1kfrepre}, #{j_1kftbus}, #{j_1kftind}, 'Y', #{creater}, #{updater}, current_timestamp(), current_timestamp() )
+	</insert>
+	
+	<update id="updateVendor" parameterType="SYVendorVo">
+		UPDATE VENDOR_TBL
+		SET
+		<if test="txt30 != null and !txt30.equals('')"> 
+			txt30 = #{txt30}, 
+		</if>
+		<if test="name != null and !name.equals('')">
+			name = #{name}, 
+		</if>
+		<if test="addr != null and !addr.equals('')">
+			addr = #{addr}, 
+		</if>
+		<if test="land1 != null and !land1.equals('')">
+			land1 = #{land1}, 
+		</if>
+		<if test="telf1 != null and !telf1.equals('')">
+			telf1 = #{telf1}, 
+		</if>
+		<if test="telf2 != null and !telf2.equals('')">
+			telf2 = #{telf2}, 
+		</if>
+		<if test="telfx != null and !telfx.equals('')">
+			telfx = #{telfx}, 
+		</if>
+		<if test="smtp_addr != null and !smtp_addr.equals('')">
+			smtp_addr = #{smtp_addr}, 
+		</if>
+		<if test="company_no != null and !company_no.equals('')">
+			company_no = #{company_no},
+		</if>
+		<if test="j_1kfrepre != null and !j_1kfrepre.equals('')">
+			j_1kfrepre = #{j_1kfrepre}, 
+		</if>
+		<if test="j_1kftbus != null and !j_1kftbus.equals('')">
+			j_1kftbus = #{j_1kftbus}, 
+		</if>
+		<if test="j_1kftind != null and !j_1kftind.equals('')">
+			j_1kftind = #{j_1kftind}, 
+		</if>
+		<if test="id_yn != null and !id_yn.equals('')">
+			id_yn = #{id_yn}
+		</if>
+			date_updated = current_timestamp(),
+			updater = #{updater}
+		where 
+			vendor_code = #{vendor_code}
+	</update>
+	
+	<delete id="deleteVendor" parameterType="SYVendorVo">
+		delete from vendor_tbl
+		where 
+		vendor_code in 
+		<foreach collection="codeList" index="key" item="value"  separator="," open="(" close=")">
+     		 #{value}
+  		</foreach>
+	</delete>
+	
+	<select id="selectVendortbl" parameterType="SYVendorVo" resultType="SYVendorVo">
+		select *
+		  FROM vendor_tbl
+		<where>
+			<if test="vendor_code != null and !''.equals(vendor_code) ">
+				AND vendor_code = #{vendor_code}
+			</if>
+			<if test="name != null and !''.equals(name) ">
+				AND name like CONCAT('%', #{name}, '%')  
+			</if>
+		</where> 
+	</select>
+
+	<insert id="insert_ZIFFM_MES_PP002" parameterType="SYHubBomVo">
+		INSERT INTO prod_bom (
+		 matnr, werks, stlan, stlal, stufe, maktx,zmatnr,zmaktx,idnrk, ojtxp,menge, meins, sortf, potx1, schgt,
+         sobsl,sobsk, sernp, datuv, aennr, datub, aenra, date_created, date_updated
+		) 
+		SELECT * 
+		FROM (
+			SELECT #{matnr} as matnr, #{werks} as werks, #{stlan} as stlan, #{stlal} as stlal
+			, #{stufe} as stufe, #{maktx} as maktx, #{zmatnr} as zmatnr, #{zmaktx} as zmaktx, #{idnrk} as idnrk, #{ojtxp} as ojtxp, #{menge} as menge, #{meins} as meins
+			, #{sortf} as sortf, #{potx1} as potx1, #{schgt} as schgt, #{sobsl} as sobsl, #{sobsk} as sobsk, #{sernp} as sernp
+			, #{datuv} as datuv, #{aennr} as aennr, #{datub} as datub, #{aenra} as aenra
+			, current_timestamp() as date_created, current_timestamp() as date_updated
+		) sp
+		ON DUPLICATE KEY
+		UPDATE matnr = sp.matnr
+			, werks = sp.werks
+			, stlan = sp.stlan
+			, stlal = sp.stlal
+			, stufe = sp.stufe
+			, maktx = sp.maktx
+			, zmatnr = sp.zmatnr
+			, zmaktx = sp.zmaktx
+			, idnrk = sp.idnrk
+			, ojtxp = sp.ojtxp
+			, menge = sp.menge
+			, meins = sp.meins
+			, sortf = sp.sortf
+			, aennr = sp.aennr
+			, datub = sp.datub
+			, aenra = sp.aenra
+			, date_updated = sp.date_updated
+	</insert>
+	
+	<select id="selectBomtbl_count" parameterType="SYHubBomVo" resultType="int">
+		SELECT count(*)
+		  FROM select_bom
+		<where>
+			<if test="iv_date != null and !''.equals(iv_date) ">
+				AND (datuv <![CDATA[ <= ]]> #{iv_date} AND datub <![CDATA[ >= ]]> #{iv_date})
+			</if>
+			<if test="matnr != null and !''.equals(matnr) ">
+				AND matnr = #{matnr}
+			</if>
+			<if test="werks != null and !''.equals(werks) ">
+				AND werks = #{werks}
+			</if>
+		</where>
+	</select>
+	
+	<select id="selectBomtbl" parameterType="SYHubBomVo" resultType="SYHubBomVo">
+		SELECT    matnr, werks, stlan, stlal, stufe, maktx,zmatnr,zmaktx,idnrk, ojtxp,menge, meins, sortf, potx1, schgt,
+         sobsl,sobsk, sernp, datuv, aennr, datub, aenra
+		  FROM select_bom
+		<where>
+			<if test="iv_date != null and !''.equals(iv_date) ">
+				AND (datuv <![CDATA[ <= ]]> #{iv_date} AND datub <![CDATA[ >= ]]> #{iv_date})
+			</if>
+			<if test="matnr != null and !''.equals(matnr) ">
+				AND matnr = #{matnr}
+			</if>
+			<if test="werks != null and !''.equals(werks) ">
+				AND werks = #{werks}
+			</if>
+		 	<if test="page != null and !page.equals('')">
+			 limit #{page}, #{rows}
+			</if>
+		</where>
+	</select>
+	
+    <select id="checkmediSerYN" parameterType="String" resultType="String">
+		SELECT mess_medical_yn
+		  FROM material_recv_master
+		 WHERE matnr = #{matnr}
+		 and sap_manage_yn ='N'
+	</select>
+	
+	 <select id="checkoptiSerYN" parameterType="String" resultType="String">
+		SELECT mess_optical_yn
+		  FROM material_recv_master
+		 WHERE matnr = #{matnr}
+		 and sap_manage_yn ='N'
+	</select>
+	
+	<select id="material_req_mas_select" parameterType="SYReqmMatnrTblVo" resultType="SYReqmMatnrTblVo">
+		SELECT a.*, 
+		(select 
+			case when a.werks = '1110' then mess_medical_yn
+			when a.werks = '1210' then mess_optical_yn
+			end as sernp
+			from material_recv_master where a.matnr = matnr) sernp
+		FROM reqm_matnr_tbl a
+		<where>
+			<if test="from_req_date != null and !''.equals(from_req_date) ">
+				AND (a.creator_date <![CDATA[ >= ]]> #{from_req_date} and a.creator_date <![CDATA[ <= ]]> #{to_req_date})
+			</if>
+			<if test="grantor_status != null and !''.equals(grantor_status) ">
+				AND a.grantor_status = #{grantor_status}
+			</if>
+			<if test="werks != null and !''.equals(werks) ">
+				AND a.werks = #{werks}
+			</if>
+			<if test="reqm_matnr_key != null and !''.equals(reqm_matnr_key) ">
+				AND a.reqm_matnr_key = #{reqm_matnr_key}
+			</if>
+		</where>
+	</select>
+	
+	<select id="material_req_mas_select_1" parameterType="SYReqmMatnrTblVo" resultType="SYReqmMatnrTblVo">
+		select aa.*, max(b.plant) plant ,max(b.stge_loc)stge_loc, max(b.move_plant) move_plant, max(b.move_stloc) move_stloc
+		, fn_mes_code_nm("dept_cd", aa.werks) werks_nm
+		, fn_mes_code_nm("dept_cd", max(b.plant)) plant_nm
+		, fn_mes_code_nm("dept_cd", max(b.move_plant)) move_plant_nm
+		, (select lgobe from sloc_master where werks = max(b.plant) and lgort = max(b.stge_loc)) stge_loc_nm
+		, (select lgobe from sloc_master where werks = max(b.move_plant) and lgort = max(b.move_stloc)) move_stloc_nm  
+		from
+		(
+		select max(a.reqm_matnr_key) reqm_matnr_key, max(werks) werks,
+		max(requester_status) requester_status, max(proc_gubun) proc_gubun,
+		max(DATE_FORMAT(creator_date, '%Y-%m-%d' )) creator_date,
+		max(a.grantor_status) grantor_status, max(a.creator) creator, max(a.grantor) grantor
+		from reqm_matnr_tbl a 
+		<where>
+			<if test="from_req_date != null and !''.equals(from_req_date) ">
+				AND ((DATE_FORMAT(a.creator_date, '%Y-%m-%d' )) <![CDATA[ >= ]]> #{from_req_date} and (DATE_FORMAT(a.creator_date, '%Y-%m-%d' )) <![CDATA[ <= ]]> #{to_req_date})
+			</if>
+			<if test="grantor_status != null and !''.equals(grantor_status) ">
+				AND a.grantor_status = #{grantor_status}
+			</if>
+			<if test="werks != null and !''.equals(werks) ">
+				AND a.werks = #{werks}
+			</if>
+			<if test="reqm_matnr_key != null and !''.equals(reqm_matnr_key) ">
+				AND a.reqm_matnr_key = #{reqm_matnr_key}
+			</if>
+			<if test="pgm_nm != null and !''.equals(pgm_nm) ">
+				AND a.pgm_nm = #{pgm_nm}
+			</if>
+		</where> 
+		group by reqm_matnr_key
+		) aa, reqd_matnr_tbl b
+		where aa.reqm_matnr_key = b.reqm_matnr_key
+		and aa.requester_status = 'Y'
+		and aa.proc_gubun is null
+		group by reqm_matnr_key
+	
+	</select>
+	
+	<select id="selectCustomerMemberCount" parameterType="SYMemberVo" resultType="int">
+SELECT COUNT(*) AS cnt 
+FROM mes_vendor_member a
+<where>
+	<if test="vendor_cd != null and !vendor_cd.equals('')">
+		AND vendor_cd = #{vendor_cd}
+	</if>
+	<if test="member_nm != null and !member_nm.equals('')">
+		AND (member_nm LIKE concat('%', #{member_nm}, '%') OR member_nm_en LIKE concat('%', #{member_nm}, '%'))
+	</if>
+	<if test="use_yn != null and !use_yn.equals('')">
+		AND use_yn = #{use_yn}
+	</if>
+</where>
+	</select>
+	
+	<select id="selectCustomerMember" parameterType="SYMemberVo" resultType="SYMemberVo">
+SELECT vendor_cd
+	, fn_vendor_nm(a.vendor_cd, 'en') as customer_nm
+	, member_emp_no, member_id, member_email
+  , member_nm, member_nm_en, phone_no, extension
+  , company_cd, '' as customer_company_nm
+  , area_cd, '' as area_nm
+  , use_yn, init_yn
+  , pwd_chg_date, member_lang
+  , date_format(a.date_created, '%Y.%m.%d') as date_created, date_format(a.date_updated, '%Y.%m.%d') as date_updated
+  , creator, updater
+	, fn_member_nm(a.updater, #{lang}) as updater_nm
+FROM mes_vendor_member a
+<where>
+	<if test="vendor_cd != null and !vendor_cd.equals('')">
+		AND vendor_cd = #{vendor_cd}
+	</if>
+	<if test="member_nm != null and !member_nm.equals('')">
+		AND (member_nm LIKE concat('%', #{member_nm}, '%') OR member_nm_en LIKE concat('%', #{member_nm}, '%'))
+	</if>
+	<if test="use_yn != null and !use_yn.equals('')">
+		AND use_yn = #{use_yn}
+	</if>
+</where>
+	</select>
+	
+	<select id="grade_master_selc" parameterType="String" resultType="SYReqmMatnrTblVo">
+		select * from grade_master where grade_nm = #{grade_nm}
+	</select>
+	
+	<select id="selectCustomerMemberInfo" parameterType="SYMemberVo" resultType="SYMemberVo">
+SELECT vendor_cd 
+	, fn_vendor_nm(a.vendor_cd, 'en') as customer_nm
+	, member_emp_no, member_id, member_email
+  , member_nm, member_nm_en, phone_no, extension
+  , company_cd, '' as customer_company_nm
+  , area_cd, '' as area_nm
+  , use_yn, init_yn
+  , pwd_chg_date, member_lang
+  , date_format(a.date_created, '%Y.%m.%d') as date_created, date_format(a.date_updated, '%Y.%m.%d') as date_updated
+  , creator, updater
+	, fn_member_nm(a.updater, #{lang}) as updater_nm
+FROM mes_vendor_member a
+WHERE member_id = #{member_id}
+	</select>
+	
+	<insert id="insertCustomerMember" parameterType="SYMemberVo">
+INSERT INTO mes_vendor_member (
+	vendor_cd, member_emp_no, member_id, member_email
+	, member_pwd, member_nm, member_nm_en, phone_no, extension
+	, company_cd, area_cd, use_yn, init_yn, pwd_chg_date, member_lang
+	, date_created, date_updated, creator, updater
+) VALUES (
+	#{vendor_cd}, FN_COMMON_SEQ('member'), #{member_id}, #{member_email}
+	, PASSWORD(#{member_pwd}), #{member_nm}, #{member_nm_en}, #{phone_no}, #{extension}
+	, #{company_cd}, #{area_cd}, #{use_yn}, #{init_yn}, #{pwd_chg_date}, #{member_lang}
+	, current_timestamp(), current_timestamp(), #{creator}, #{updater}
+)
+	</insert>
+	
+	<update id="updateCustomerMember" parameterType="SYMemberVo">
+UPDATE mes_vendor_member
+SET vendor_cd = #{vendor_cd}
+	, member_emp_no = #{member_emp_no}
+	, member_email = #{member_email}
+	, member_nm = #{member_nm}
+	, member_nm_en = #{member_nm_en}
+	, phone_no = #{phone_no}
+	, extension = #{extension}
+	, company_cd = #{company_cd}
+	, area_cd = #{area_cd}
+	, use_yn = #{use_yn}
+	, init_yn = #{init_yn}
+	, member_lang = #{member_lang}
+	, date_updated = current_timestamp()
+	, updater = #{updater}
+WHERE member_id = #{member_id}
+	</update>
+	
+	<update id="updateCustomerMemberPwdChange" parameterType="SYMemberVo">
+UPDATE mes_vendor_member
+SET member_pwd = #{member_pwd}
+	, init_yn = #{init_yn}
+	, pwd_chg_date = date_format(current_timestamp(), '%Y%m%d')
+	, date_updated = current_timestamp()
+	, updater = #{updater}
+WHERE member_id = #{member_id}
+	</update>
+
+	<delete id="deleteCustomerMember" parameterType="SYMemberVo">
+UPDATE mes_vendor_member
+SET use_yn = #{use_yn}
+	, date_updated = current_timestamp()
+	, updater = #{updater}
+WHERE member_id = #{member_id}
+	</delete>
+	
+	<select id="tmp_matdoc_itm_select" parameterType="SYReqmMatnrTblVo" resultType="SYReqmMatnrTblVo">
+		<![CDATA[
+		select aa.*,  lpad(rownum, '4', 0) tmp_matdoc_itm
+		from
+		(
+		  select @ROWNUM:= @ROWNUM + 1 AS rownum, a.*
+		  from reqd_matnr_tbl a, (SELECT @ROWNUM := 0) R
+		  where reqm_matnr_key = #{reqm_matnr_key}
+		  and confirm_bdmng <> '0.000'
+		  order by reqm_sub_key, a.reqd_matnr_key
+		) aa
+		]]>
+	</select>
+	
+	<update id="matdoc_itm_update" parameterType="SYReqmMatnrTblVo">
+		update reqd_matnr_tbl 
+			set matdoc_itm = #{matdoc_itm} 
+		where 
+			reqm_matnr_key = #{reqm_matnr_key}
+			and reqm_sub_key = #{reqm_sub_key}
+			and reqd_matnr_key = #{reqd_matnr_key}
+	</update>
+	
+	<select id="rinspectionheader_select" parameterType="SYHubRecvinspeVo" resultType="SYHubRecvinspeVo">
+		SELECT DISTINCT inspection_gcode,inspection_gnm,updater, dept_cd,
+				CASE dept_cd
+					WHEN '1110' THEN '의료영상'
+					WHEN '1210' THEN '광영상'
+					ELSE dept_cd END AS dept_nm
+		  FROM recvinsp_header_master
+		 WHERE use_yn = 'Y' 
+		<if test="dept_cd != null and !''.equals(dept_cd) ">
+			AND dept_cd = #{dept_cd}
+		</if>
+		<if test="inspection_gcode != null and !''.equals(inspection_gcode) ">
+			AND inspection_gcode LIKE CONCAT('%', #{inspection_gcode}, '%')
+		</if>
+		<if test="inspection_gnm != null and !''.equals(inspection_gnm) ">
+			AND inspection_gnm LIKE CONCAT('%', #{inspection_gnm}, '%')
+		</if>
+	</select>
+
+	<select id="rinspectionItem_select" parameterType="SYHubRecvinspeVo" resultType="SYHubRecvinspeVo">
+		SELECT inspection_gcode,inspection_code,inspection_list, inspection_standard, inspection_value_max,inspection_value_low,
+			inspection_remark,use_yn,updater,date_created,date_updated
+		  FROM recvinsp_detail_master
+		 WHERE USE_YN = 'Y'
+		<if test="dept_cd != null and !''.equals(dept_cd) ">
+		   AND DEPT_CD = #{dept_cd}
+		</if>
+		<if test="inspection_gcode != null and !''.equals(inspection_gcode) ">
+		   AND inspection_gcode = #{inspection_gcode} 
+		</if>
+		ORDER BY CAST(SUBSTRING(inspection_code, 3) AS INT)
+	</select>
+	
+	<select id="getInspectionRemarkNm" resultType="java.lang.String">
+		select  fn_mes_code_nm('RI',  #{inspection_remark_code}) from dual
+	</select>
+	
+	<insert id="rinspectionHeader_insert" parameterType="SYHubRecvinspeVo">
+		INSERT INTO recvinsp_header_master (
+		  inspection_gcode, inspection_gnm, dept_cd,  updater, date_created, date_updated )
+		VALUES (
+		  #{inspection_gcode}, #{inspection_gnm}, #{dept_cd}, #{updater}, current_timestamp(), current_timestamp()
+		)
+	</insert>
+	
+	<select id="getInspectionGroupNo" resultType="java.lang.String">
+		select  concat('IH',fn_common_seq('inspection_header')) from dual
+	</select>	
+	<select id="getInspectionNo" resultType="java.lang.String">
+		SELECT concat('ID',fn_common_seq('inspection_detail')) from dual
+	</select>
+	
+	
+	<insert id="rinpsectionDetailItem_insert" parameterType="SYHubRecvinspeVo">
+		INSERT INTO `recvinsp_detail_master`  (
+		  inspection_gcode, inspection_code, dept_cd, inspection_list, inspection_standard, inspection_value_max, inspection_value_low,
+		  inspection_remark,inspection_remark_code, creator, updater, date_created,date_updated )
+		VALUES (
+		  #{inspection_gcode}, #{inspection_code}, #{dept_cd}, #{inspection_list}, #{inspection_standard}, #{inspection_value_max}, #{inspection_value_low},
+		   #{inspection_remark}, #{inspection_remark_code}, #{creator}, #{updater}, current_timestamp(), current_timestamp()
+		)
+	</insert>
+	
+	<insert id="rinspection_matnr_insert" parameterType="SYHubRecvinspeVo">
+		INSERT INTO `recvinsp_matnr_master`  (
+		  inspection_gcode, inspection_gnm, matnr, maktx, dept_cd,  updater, date_created,date_updated )
+		VALUES (
+		  #{inspection_gcode}, #{inspection_gnm}, #{matnr}, #{maktx}, #{dept_cd},  #{updater}, current_timestamp(), current_timestamp()
+		)
+	</insert>
+ 
+	<select id="searchInspectionMatnr_count" parameterType="SYHubRecvinspeVo" resultType="java.lang.Integer">
+		SELECT count(1)
+		  FROM material_recv_master a, recvinsp_matnr_master b
+		 WHERE  b.use_yn = 'Y'
+		   AND a.matnr = b.matnr
+		<if test="inspection_gcode != null and !''.equals(inspection_gcode) ">
+		   AND B.inspection_gcode = #{inspection_gcode}
+		</if>
+	</select>
+	<select id="searchInspectionMatnr" parameterType="SYHubRecvinspeVo" resultType="SYHubRecvinspeVo">
+		SELECT a.matnr, a.maktx, a.wrkst , b.date_created, b.date_updated
+		  FROM material_recv_master a, recvinsp_matnr_master b
+		 WHERE b.use_yn = 'Y'
+		   AND a.matnr = b.matnr
+		<if test="inspection_gcode != null and !''.equals(inspection_gcode) ">
+		   AND b.inspection_gcode = #{inspection_gcode}
+		</if>
+		<if test="sidx != null and !sidx.equals('')">
+			order by ${sidx} ${sord}      
+		</if>
+		<if test="page != null and !page.equals('')">
+			 limit #{page}, #{rows}
+		</if> 
+	</select>
+	<update id="rinspection_DetailItem_delete" parameterType="SYHubRecvinspeVo">
+		UPDATE recvinsp_detail_master SET USE_YN='N'
+		 WHERE inspection_gcode = #{inspection_gcode}
+		   AND inspection_code = #{inspection_code}
+	</update>
+ 
+	 <update id="rinspection_matnr_delete" parameterType="SYHubRecvinspeVo">
+		UPDATE recvinsp_matnr_master SET USE_YN='N'
+		 WHERE inspection_gcode = #{inspection_gcode}
+		    AND matnr = #{matnr}
+	</update>
+	
+	<select id="dmrMaster_select" parameterType="SYDmrMasterVo" resultType="SYDmrMasterVo">
+		SELECT A.*, CONCAT(GR_NO, '-', GR_SEQ) AS UKEY 
+		  FROM DMR_MASTER_TBL A
+		 WHERE APPLY_YN = 'Y'
+		 <if test="gr_no != null and !gr_no.equals('')">
+		   AND GR_NO = #{gr_no}
+		 </if>
+		 <if test="gr_seq != null and !gr_seq.equals('')">
+		   AND GR_SEQ = #{gr_seq}
+		 </if>
+		 <if test="gr_nm != null and !gr_nm.equals('')">
+		   AND GR_NM LIKE CONCAT('%', #{gr_nm},'%')
+		 </if>
+		 <if test="dept_cd != null and !dept_cd.equals('')">
+		   AND DEPT_CD = #{dept_cd}
+		 </if>
+	</select>
+
+	<select id="dmrMasterAllByKey_select" parameterType="SYDmrMasterVo" resultType="SYDmrMasterVo">
+		SELECT A.*, CONCAT(GR_NO, '-', GR_SEQ) AS UKEY 
+		  FROM DMR_MASTER_TBL A
+		 WHERE 1=1
+		 <if test="gr_no != null and !gr_no.equals('')">
+		   AND GR_NO = #{gr_no}
+		 </if>
+		 <if test="gr_seq != null and !gr_seq.equals('')">
+		   AND GR_SEQ = #{gr_seq}
+		 </if>
+		 <if test="gr_nm != null and !gr_nm.equals('')">
+		   AND GR_NM LIKE CONCAT('%', #{gr_nm},'%')
+		 </if>
+		 ORDER BY DMR_NO DESC
+	</select>
+	
+	<insert id="dmrMaster_insert" parameterType="SYDmrMasterVo">
+		INSERT INTO DMR_MASTER_TBL 
+		(GR_NO, GR_SEQ, GR_NM, DEPT_CD, CHANGE_DATE, CONFIRM_DATE, CHANGE_REMARK, CHANGE_MEMO, SPECIAL_NOTE, 
+		ECR_NO, RN_NO, DMR_NO, APPLY_YN, CREATOR, UPDATER, DATE_CREATED, DATE_UPDATED)
+		SELECT * 
+		FROM (
+			SELECT #{gr_no} as gr_no, #{gr_seq} as gr_seq,
+					#{gr_nm} as gr_nm, #{dept_cd} as dept_cd, #{change_date} as change_date, #{confirm_date} as confirm_date, 
+					#{change_remark} as change_remark, #{change_memo} as change_memo, #{special_note} as special_note,
+			 		#{ecr_no} as ecr_no, #{rn_no} as rn_no, #{dmr_no} as dmr_no, #{apply_yn} as apply_yn, #{creator} as creator,
+			 		#{updater} as updater, current_timestamp() as date_created, current_timestamp() as date_updated ) sp
+		ON DUPLICATE KEY
+		UPDATE gr_nm = sp.gr_nm
+			, dept_cd = sp.dept_cd
+			, change_date = sp.change_date
+			, confirm_date = sp.confirm_date
+			, change_remark = sp.change_remark
+			, change_memo = sp.change_memo
+			, special_note = sp.special_note
+			, ecr_no = sp.ecr_no
+			, rn_no = sp.rn_no
+			, dmr_no = sp.dmr_no
+			, apply_yn = sp.apply_yn
+			, creator = sp.creator
+			, updater = sp.updater
+			, date_created = sp.date_created
+			, date_updated = sp.date_updated
+	</insert>
+
+	<select id="getGrSeq" resultType="String">
+		SELECT CONCAT('DMS',CONCAT(date_format(curdate( ),'%Y%m'),fn_mes_seq('dmr_gseq'))) AS gr_seq FROM DUAL
+	</select>
+
+	<select id="getGrNo" resultType="String">
+		SELECT CONCAT('DMG',CONCAT(date_format(curdate( ),'%Y%m'),fn_mes_seq('dmr_gno'))) AS GR_NO FROM DUAL
+	</select>
+	
+	<update id="dmrMaster_update" parameterType="SYDmrMasterVo">
+		UPDATE DMR_MASTER_TBL SET 
+		<if test="gr_nm != null and !gr_nm.equals('')">
+			GR_NM = #{gr_nm}, 
+		</if>
+		<if test="dept_cd != null and !dept_cd.equals('')">
+			DEPT_CD = #{dept_cd}, 
+		</if>
+		<if test="change_date != null and !change_date.equals('')">
+			CHANGE_DATE = #{change_date},
+		</if>
+		<if test="confirm_date != null and !confirm_date.equals('')">
+			CONFIRM_DATE = #{confirm_date}, 
+		</if>
+		<if test="change_remark != null and !change_remark.equals('')">
+			CHANGE_REMARK = #{change_remark},
+		</if>
+		<if test="change_memo != null and !change_memo.equals('')">
+			CHANGE_MEMO = #{change_memo},
+		</if>
+		<if test="special_note != null and !special_note.equals('')">
+			SPECIAL_NOTE = #{special_note},
+		</if>
+		<if test="ecr_no != null and !ecr_no.equals('')">
+			ECR_NO = #{ecr_no}, 
+		</if>
+		<if test="rn_no != null and !rn_no.equals('')">
+			RN_NO = #{rn_no},
+		</if>
+		<if test="dmr_no != null and !dmr_no.equals('')">
+			DMR_NO = #{dmr_no},
+		</if>
+		<if test="apply_yn != null and !apply_yn.equals('')">
+			APPLY_YN = #{apply_yn},
+		</if>
+			UPDATER = #{updater},
+			DATE_UPDATED = current_timestamp() 
+		WHERE GR_NO = #{gr_no}
+		<if test="gr_seq != null and !gr_seq.equals('')">
+		  AND GR_SEQ = #{gr_seq}
+		</if>
+	</update>
+	
+	<update id="dmrMaster_applyInit_update" parameterType="SYDmrMasterVo">
+		UPDATE DMR_MASTER_TBL SET 
+			APPLY_YN = 'N',
+			UPDATER = #{updater},
+			DATE_UPDATED = current_timestamp()
+		WHERE GR_NO = #{gr_no} 
+	</update>
+
+	<delete id="dmrMaster_delete" parameterType="SYDmrMasterVo">
+		DELETE
+		  FROM DMR_MASTER_TBL
+		 WHERE GR_NO = #{gr_no}
+		   AND GR_SEQ = #{gr_seq}
+	</delete>
+	
+	<select id="dmrPba_select" parameterType="SYDmrPbaVo" resultType="SYDmrPbaVo">
+		SELECT *
+		  FROM DMR_PBA_TBL
+		 WHERE 1=1
+		 <if test="gr_no != null and !gr_no.equals('')">
+		   AND GR_NO = #{gr_no}
+		 </if>
+		 <if test="gr_seq != null and !gr_seq.equals('')">
+		   AND GR_SEQ = #{gr_seq}
+		 </if>
+		 <if test="pba_seq != null and !pba_seq.equals('')">
+		   AND PBA_SEQ = #{pba_seq}
+		 </if>
+	</select>
+	
+	<insert id="dmrPba_insert" parameterType="SYDmrPbaVo">
+		INSERT INTO DMR_PBA_TBL 
+		(GR_NO, GR_SEQ, GR_NM, PBA_GUBUN, PBA_MATNR, PBA_MAKTX, PBA_WRKST, CREATOR, UPDATER, DATE_CREATED, DATE_UPDATED)
+		VALUES
+		( #{gr_no}, #{gr_seq}, #{gr_nm}, #{pba_gubun}, #{pba_matnr}, #{pba_maktx}, #{pba_wrkst}, #{creator}, #{updater}, 
+		current_timestamp(), current_timestamp() )
+	</insert>
+	
+	<update id="dmrPba_update" parameterType="SYDmrPbaVo">
+		UPDATE DMR_PBA_TBL SET 
+		<if test="pba_gubun != null and !pba_gubun.equals('')">
+			PBA_GUBUN = #{pba_gubun}, 
+		</if>
+		<if test="pba_matnr != null and !pba_matnr.equals('')">
+			PBA_MATNR = #{pba_matnr}, 
+		</if>
+		<if test="pba_maktx != null and !pba_maktx.equals('')">
+			PBA_MAKTX = #{pba_maktx}, 
+		</if>
+		<if test="pba_wrkst != null and !pba_wrkst.equals('')">
+			PBA_WRKST = #{pba_wrkst},
+		</if>
+			UPDATER = #{updater},
+			DATE_UPDATED = current_timestamp() 
+		WHERE GR_NO = #{gr_no}
+		  AND GR_SEQ = #{gr_seq}
+		  AND PBA_SEQ = #{pba_seq} 
+	</update>
+
+	<delete id="dmrPba_delete" parameterType="SYDmrPbaVo">
+		DELETE
+		  FROM DMR_PBA_TBL
+		 WHERE GR_NO = #{gr_no}
+		   AND GR_SEQ = #{gr_seq}
+	</delete>
+	
+	<select id="dmrFw_select" parameterType="SYDmrFwVo" resultType="SYDmrFwVo">
+		SELECT *
+		  FROM DMR_FW_TBL
+		 WHERE 1=1
+		 <if test="gr_no != null and !gr_no.equals('')">
+		   AND GR_NO = #{gr_no}
+		 </if>
+		 <if test="gr_seq != null and !gr_seq.equals('')">
+		   AND GR_SEQ = #{gr_seq}
+		 </if>
+		 <if test="fw_seq != null and !fw_seq.equals('')">
+		   AND FW_SEQ = #{fw_seq}
+		 </if>
+	</select>
+	
+	<insert id="dmrFw_insert" parameterType="SYDmrFwVo">
+		INSERT INTO DMR_FW_TBL 
+		(GR_NO, GR_SEQ, GR_NM, FW_GUBUN, FW_TYPE, FW_INFO, CREATOR, UPDATER, DATE_CREATED, DATE_UPDATED)
+		values
+		( #{gr_no}, #{gr_seq}, #{gr_nm}, #{fw_gubun}, #{fw_type}, #{fw_info}, #{creator}, #{updater}, 
+		current_timestamp(), current_timestamp())
+	</insert>
+
+	<update id="dmrFw_update" parameterType="SYDmrFwVo">
+		UPDATE DMR_FW_TBL SET 
+		<if test="fw_gubun != null and !fw_gubun.equals('')">
+			FW_GUBUN = #{fw_gubun}, 
+		</if>
+		<if test="fw_type != null and !fw_type.equals('')">
+			FW_TYPE = #{fw_type}, 
+		</if>
+		<if test="fw_info != null and !fw_info.equals('')">
+			FW_INFO = #{fw_info}, 
+		</if>
+			UPDATER = #{updater},
+			DATE_UPDATED = current_timestamp() 
+		WHERE GR_NO = #{gr_no}
+		  AND GR_SEQ = #{gr_seq}
+		  AND FW_SEQ = #{fw_seq} 
+	</update>
+
+	<delete id="dmrFw_delete" parameterType="SYDmrFwVo">
+		DELETE
+		  FROM DMR_FW_TBL
+		 WHERE GR_NO = #{gr_no}
+		   AND GR_SEQ = #{gr_seq}
+		<if test="fw_seq != null and !fw_seq.equals('')">
+		   AND FW_SEQ = #{fw_seq}
+		</if>
+	</delete>
+ 
+	<insert id="ecrMaster_insert" parameterType="SYDmrMasterVo">
+		insert into ecr_manager_tbl 
+		(werks, aennr, aetxt, datuv,aegru,ltext,creator,updater,date_created,date_updated)
+		SELECT * 
+		FROM (
+			SELECT #{dept_cd} as werks, #{ecr_no} as aennr,
+					#{change_remark} as aetxt, #{confirm_date} as datuv, #{change_memo} as aegru, #{special_note} as ltext, 
+				    #{creator} as creator,#{updater} as updater, current_timestamp() as date_created, current_timestamp() as date_updated ) sp
+		ON DUPLICATE KEY
+		UPDATE werks = sp.werks
+			, aennr = sp.aennr
+			, aetxt = sp.aetxt
+			, datuv = sp.datuv
+			, aegru = sp.aegru
+			, ltext = sp.ltext
+			, creator = sp.creator
+			, updater = sp.updater
+			, date_created = sp.date_created
+			, date_updated = sp.date_updated
+	</insert>
+	
+	<select id="ecrMaster_select" parameterType="SYDmrMasterVo" resultType="SYDmrMasterVo">
+		SELECT A.* ,CASE werks WHEN '1110' THEN '의료영상' WHEN '1210' THEN '광영상' ELSE werks END AS werks_nm
+		  FROM ecr_manager_tbl A
+		 WHERE 1 = 1
+		 <if test="werks != null and !werks.equals('')">
+		   AND werks = #{werks}
+		 </if>
+		 <if test="aennr != null and !aennr.equals('')">
+		   AND aennr like concat('%', #{aennr}, '%') 
+		 </if>
+ 
+	</select>
+
+ 	<insert id="dmrMatnr_insert" parameterType="SYDmrPbaVo"> 
+ 		INSERT INTO dmr_matnr_tbl   
+ 		(gr_no, matnr, maktx, wrkst, use_yn) 
+ 		SELECT *
+		  FROM (
+ 		  	SELECT #{gr_no} as gr_no, #{matnr} as matnr, #{maktx} as maktx, #{wrkst} as wrkst, #{use_yn} as use_yn
+ 		  	 from dual) TMP 
+ 		ON DUPLICATE KEY 
+ 		UPDATE gr_no  = TMP.gr_no,  
+ 		       matnr = TMP.matnr,  
+ 		  	   maktx = TMP.maktx,  
+		  	   wrkst = TMP.wrkst,  
+ 		  	   use_yn = TMP.use_yn 
+ 	</insert> 
+	
+	<insert id="create_vmember" parameterType="SYVendorVo">
+	
+	INSERT INTO sy_member_master (
+		member_emp_no, member_id, member_email, member_pwd, member_nm, member_nm_en, phone_no, extension, company_cd
+  		, area_cd, use_yn, init_yn, pwd_chg_date, member_lang , date_created, date_updated, creator, updater 
+		) 
+		SELECT * 
+		FROM (
+			SELECT #{member_emp_no} as member_emp_no , #{member_id} as member_id , #{member_email} as member_email , password('v1234') as member_pwd, 
+			#{member_nm} as member_nm, #{member_nm_en} as member_nm_en, '' as phone_no, '' as extension, #{company_cd} as company_cd,
+			'' as area_cd, 'Y' as use_yn, #{init_yn} as init_yn, #{pwd_chg_date} as pwd_chg_date,
+		    #{member_lang} as member_lang, current_timestamp() as date_created, current_timestamp() as date_updated,
+		    #{creator} as creator,#{updater} as updater
+		) sp
+		ON DUPLICATE KEY
+		UPDATE member_emp_no = sp.member_emp_no
+			, member_id = sp.member_id
+			, member_email = sp.member_email
+			, member_pwd = sp.member_pwd
+			, member_nm = sp.member_nm
+			, member_nm_en = sp.member_nm_en
+			, phone_no = sp.phone_no
+			, extension = sp.extension
+			, company_cd = sp.company_cd
+			, member_lang = sp.member_lang
+	        , updater = sp.updater
+			, date_updated = sp.date_updated
+	</insert>
+	
+	<insert id="create_vmember_map" parameterType="SYVendorVo">
+	
+	INSERT INTO sy_organ_member_map (
+		 company_cd, dept_cd, member_emp_no, position_cd, map_ord
+ 		 , date_created, date_updated, creator, updater
+		) 
+		SELECT * 
+		FROM (
+			SELECT #{company_cd} as company_cd , #{dept_cd} as dept_cd , #{member_emp_no} as member_emp_no , '00' as position_cd, 
+			'1' as map_ord, current_timestamp() as date_created, current_timestamp() as date_updated,
+		    #{creator} as creator,#{updater} as updater
+		) sp
+		ON DUPLICATE KEY
+		UPDATE member_emp_no = sp.member_emp_no
+			, position_cd = sp.position_cd
+			, map_ord = sp.map_ord
+	        , updater = sp.updater
+			, date_updated = sp.date_updated
+	</insert>
+	
+	<insert id="create_vmember_role" parameterType="SYVendorVo">
+	
+	INSERT INTO sy_role_member (
+		 role_cd, member_emp_no ,date_created, date_updated, creator, updater
+		) 
+		SELECT * 
+		FROM (
+			SELECT 'G' as role_cd , #{member_emp_no} as member_emp_no,current_timestamp() as date_created, current_timestamp() as date_updated,
+		    #{creator} as creator,#{updater} as updater
+		) sp
+		ON DUPLICATE KEY
+		UPDATE  
+	          updater = sp.updater
+			, date_updated = sp.date_updated
+	</insert>
+	
+	<update id="update_vendor_id_yn" parameterType="SYVendorVo">
+		UPDATE vendor_tbl SET id_yn='Y'
+		 WHERE lifnr = #{member_emp_no}
+	</update>
+	<!-- 
+	<select id="mapping_list_selc" parameterType="SYFileVo" resultType="SYFileVo">
+		select 
+			a.*, b.*
+		from 
+			sy_file_work_std a, material_recv_master b 
+		where 
+			a.matnr = b.matnr
+			<if test="file_del_yn != null and !file_del_yn.equals('')">
+				and a.file_del_yn = #{file_del_yn}
+			</if>
+			<if test="file_name != null and !file_name.equals('')">
+				and SUBSTRING_INDEX(a.file_name, '.', 1) = SUBSTRING_INDEX(#{file_name}, '.', 1)
+				
+			</if>
+			<if test="matnrList != null and matnrList.size() > 0">
+				AND a.matnr IN
+			 	<foreach collection="matnrList" index="key" item="value"  separator="," open="(" close=")">
+	     		 	#{value}
+	  			</foreach>
+			</if>
+	</select>
+	 -->
+	<select id="insp_group_byItnbr_select" parameterType="SYHubRecvinspeVo" resultType="SYHubRecvinspeVo">
+		SELECT dept_cd, inspection_gcode, inspection_gnm, matnr, maktx
+		FROM recvinsp_matnr_master
+		where USE_YN = 'Y'
+		<if test="dept_cd!=null and !dept_cd.equals('')">
+		   AND DEPT_CD = #{dept_cd}
+		</if>
+		<if test="matnr!=null and !matnr.equals('')">
+		   AND matnr LIKE CONCAT('%', #{matnr} ,'%')
+		</if>
+		<if test="maktx!=null and !maktx.equals('')">
+		   AND maktx LIKE CONCAT('%', #{maktx} ,'%')
+		</if>
+		GROUP BY inspection_gcode
+	</select>
+</mapper>

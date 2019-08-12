@@ -1,0 +1,719 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.co.passcombine.mes.dao.SYProdDao">
+	<select id="prod_tbl_select" parameterType="SYProdTblVo" resultType="SYProdTblVo">
+		select *
+		  from prod_tbl
+		 where 1=1
+		<if test=" pordno!=null and !''.equals(pordno) ">
+			and pordno LIKE CONCAT('%', #{pordno}, '%')
+		</if>
+		<if test=" pdsts!=null and !''.equals(pdsts) ">
+			and pdsts = #{pdsts}
+		</if>
+		<if test=" f_jidat!=null and !''.equals(f_jidat) ">
+			and jidat between #{f_jidat} and #{t_jidat}
+		</if>
+		<if test=" sedat!=null and !''.equals(sedat) ">
+			and sedat = #{sedat}
+		</if>
+		<if test=" cmdat!=null and !''.equals(cmdat) ">
+			and cmdat = #{cmdat}
+		</if>
+		<if test=" itnbr!=null and !''.equals(itnbr) ">
+			and itnbr = #{itnbr}
+		</if>
+		<if test=" dept_cd!=null and !''.equals(dept_cd) ">
+			and dept_cd = #{dept_cd}
+		</if>
+		<if test=" project_no!=null and !''.equals(project_no) ">
+			and project_no = #{project_no}
+		</if>
+		<if test=" auart!=null and !''.equals(auart) ">
+			and auart = #{auart}
+		</if>
+		<if test=" lgort!=null and !''.equals(lgort) ">
+			and lgort = #{lgort}
+		</if>
+		order by pordno
+	</select>
+
+	<select id="sapProdCode_confirm" parameterType="SYProdVo" resultType="SYProdVo">
+			select pordno, pordno_cnt, pordno_child, pordno_status, customer_nm, jidat, sedat, itnbr, pspec,sernp, dmr_no,
+	          ( case CMDAT_SEQ when "" then null else  CMDAT_SEQ  end ) AS CMDAT_SEQA, ZZSWOPTION,  
+			   pdqty  , fedat, edatu, project_no, kdauf, kdpos, histno, dept_cd, jocod,  wkctr, fn_mes_code_nm('wkctr', wkctr) as wkctr_nm,
+			   worker_nm, kunnr_se, prod_memo,(select   date_format( prod_str_date, '%Y-%m-%d') from prod_ord_tbl where PORDNO =A.PORDNO order by    PORDNO_SEQ   limit 0,1)
+				as prod_str_date, prod_str_time,(select   date_format( prod_end_date, '%Y-%m-%d') from prod_ord_tbl where PORDNO =A.PORDNO  and a.pdsts in ('p8','p9','p10')   order by    PORDNO_SEQ desc limit 0,1)
+				as prod_end_date, prod_end_time,
+			   pdsts, fn_mes_code_nm('pdsts', pdsts) as pdsts_nm,routing_gno, routing_no, auart,
+			   sapdel_yn, create_date, change_date, if_status, if_msg, cmdat, cmdat_seq, lgort, fn_mes_code_nm('auart', auart) as auart_nm,
+		       (select mtart from material_recv_master where matnr = a.itnbr) mtart,
+		       (select routing_gno from routing_detail_master where use_yn = 'Y' and itnbr    
+		       in (CASE WHEN a.AUART = 'ZP01' THEN a.ITNBR WHEN a.AUART = 'ZP05' THEN a.ITNBR ELSE a.AUART END)) routing_yn,
+		       (select concat( line_nm, " - ",jo_nm) jo_nm from jomast where a.jocod = jocod) jo_nm,
+		       (select routing_gno_gubun 
+				from routing_detail_master 
+				where use_yn = 'Y' and itnbr = (CASE WHEN a.AUART = 'ZP01' THEN a.ITNBR ELSE a.AUART END) limit 0,1) routing_gno_gubun,  ifnull(insp_lgort, lgort) insp_lgort,
+				( SELECT DISTINCT CONFIRM_ID FROM SELF_INSP_HEADER_SAVE WHERE PORDNO=A.PORDNO) AS CONFIRM_ID
+		  FROM PROD_TBL a
+		<where>
+			<if test="jidat_from != null and !''.equals(jidat_from) ">
+				AND (sedat <![CDATA[ >= ]]> #{jidat_from} AND sedat <![CDATA[ <= ]]> #{jidat_to})
+			</if>
+			<if test="pordno != null and !''.equals(pordno) ">
+				AND PORDNO = #{pordno}
+			</if>
+			<if test="pordno_status != null and !''.equals(pordno_status) ">
+				AND PORDNO_STATUS LIKE CONCAT('%', #{pordno_status}, '%')
+			</if>
+			<if test="itnbr != null and !''.equals(itnbr) ">
+				AND itnbr LIKE CONCAT('%', #{itnbr}, '%')
+			</if>
+			<if test="pdsts != null and !''.equals(pdsts) ">
+				AND pdsts = #{pdsts}
+			</if>
+			<if test="dept_cd != null and !''.equals(dept_cd) ">
+				and dept_cd = #{dept_cd}
+			</if>
+			<if test="wkctr != null and !''.equals(wkctr) ">
+				and wkctr = #{wkctr}
+			</if>
+			<if test="auart != null and !''.equals(auart) ">
+				and auart = #{auart}
+			</if>
+			<if test="project_no != null and !''.equals(project_no) ">
+				AND project_no like CONCAT('%', #{project_no}, '%')
+			</if>
+			<if test="jocod != null and !''.equals(jocod) ">
+				and jocod = #{jocod}
+			</if>
+			<if test="cmdat != null and !''.equals(cmdat) ">
+				AND cmdat is not null
+			</if>
+			<if test="routing_gno_gubun!=null and !''.equals(routing_gno_gubun)">
+				AND routing_gno_gubun = #{routing_gno_gubun}
+			</if>
+			 <if test="list != null and list.size() > 0">
+		  			AND pordno IN
+				<foreach collection="list" item="item" index="index" separator="," open="(" close=")">
+		     		 #{item}
+		  		</foreach>
+			</if>
+			AND sapdel_yn != 'X'
+	       ORDER BY CMDAT_SEQA is NULL ASC, CMDAT_SEQ+0 ASC , CMDAT ASC
+		</where>
+	</select>
+	
+	<select id="select1" parameterType="SYProdVo" resultType="SYProdVo">
+		select distinct auart from prod_ord_tbl 
+		<where>
+			<if test="jidat != null and !''.equals(jidat) ">
+				AND SEDAT = #{jidat}
+			</if>
+		</where>
+	</select>
+
+	<select id="select2" parameterType="SYProdVo" resultType="SYProdVo">
+		select pordno, pordno_pop, jidat, pordno_status, prod_memo, auart from prod_ord_tbl
+		<where>
+			<if test="jidat != null and !''.equals(jidat) ">
+				AND SEDAT = #{jidat}
+			</if>
+			<if test="jidat != null and !''.equals(jidat) ">
+				AND auart = #{auart}
+			</if>
+		</where>
+	</select>
+
+	<select id="select3" parameterType="SYProdVo" resultType="SYProdVo">
+		SELECT PORDNO, PORDNO_POP, JIDAT, PORDNO_STATUS, PROD_MEMO 
+		  FROM PROD_ORD_TBL
+		<where>
+			<if test="jidat != null and !''.equals(jidat) ">
+				AND SEDAT = #{jidat}
+			</if>
+			<if test="pordno != null and !''.equals(pordno) ">
+				AND pordno = #{pordno}
+			</if>
+		</where>
+	</select>
+	
+	<select id="select4" parameterType="SYProdVo" resultType="SYProdVo">
+		SELECT PORDNO, PORDNO_POP, JIDAT, PORDNO_STATUS, PROD_MEMO 
+		  FROM PROD_ORD_TBL
+		<where>
+			<if test="jidat != null and !''.equals(jidat) ">
+				AND SEDAT = #{jidat}
+			</if>
+			<if test="pordno_pop != null and !''.equals(pordno_pop) ">
+				AND pordno_pop = #{pordno_pop}
+			</if>
+		</where>
+	</select>
+
+	<select id="popProdHisSelect_confrim" parameterType="SYProdVo" resultType="SYProdVo">
+			SELECT B.PORDNO, A.ROUTING_NO, A.PORDNO_POP, B.ROUTING_NM, C.ROUTING_CODE, C.ROUTING_DSCR , 
+				ifnull(CONCAT(A.PROD_STR_DATE, " ", A.PROD_STR_TIME),"") START_DT_TM , ifnull(CONCAT(A.PROD_END_DATE, " ", A.PROD_END_TIME),"") END_DT_TM , 
+				A.MEMBER_NM , CASE WHEN WORK_GUBUN=2 THEN CONCAT(A.NTCOD_STR_DATE, " ", A.NTCOD_STR_TIME) ELSE '' END AS PAUSE_START_DT_TM , 
+				CASE WHEN WORK_GUBUN=3 THEN CONCAT(A.NTCOD_STR_DATE, " ", A.NTCOD_STR_TIME) ELSE '' END AS PAUSE_END_DT_TM , A.PORDNO_SEQ,
+				(select member_cnt from prod_ord_tbl where B.pordno = pordno and B.routing_no = routing_no) member_cnt,
+				B.pdqty, B.pordno_child
+			FROM PROD_OPERATE_HIS A, PROD_ORD_TBL B, ROUTING_HEADER_MASTER C 
+			 WHERE A.PORDNO_POP = B.PORDNO_POP
+			   AND A.ROUTING_NO = B.ROUTING_NO
+			   AND B.ROUTING_NO = C.ROUTING_NO
+				AND B.ROUTING_GNO = C.ROUTING_GNO
+			<if test="pordno_pop != null and !''.equals(pordno_pop) ">
+				AND A.PORDNO_POP = #{pordno_pop}
+			</if>
+			<if test="routing_no != null and !''.equals(routing_no) ">
+				AND A.ROUTING_NO = #{routing_no}
+			</if>
+		ORDER BY A.PORDNO_SEQ
+	</select>
+ 
+	<select id="matr_select" parameterType="SYPoRequirementVo" resultType="SYPoRequirementVo">
+		SELECT 
+		a.aufnr, a.rspos, a.werks, a.matnr, TRUNCATE(SUM(a.bdmng),0) bdmng, a.meins, 
+		fn_serial_yn(a.matnr, a.werks) sernp,
+		(case when a.lgort is null || a.lgort = '' 
+		then (select aa.lgort from mes_wkctr_tbl aa, prod_tbl bb where a.aufnr = bb.pordno and aa.wkctr = bb.wkctr)  
+		else a.lgort
+		end) lgort, 
+		a.xloek, a.schgt, a.sortf, 
+		a.potx1, a.dumps, a.dispo, a.zdispo, a.aennr, a.use_yn, a.creator, a.updater, a.date_created, 
+		a.date_updated, b.maktx, b.kzumw
+		FROM PO_REQUIREMENT_TBL a, material_recv_master b 
+		WHERE  a.matnr = b.matnr and a.AUFNR = #{aufnr}
+ 		AND  a.xloek  <![CDATA[ <> ]]> 'X'  
+ 		group by a.matnr
+	    ORDER BY SERNP DESC
+	</select>
+	
+	<delete id="matr_delete" parameterType="String">
+		delete from po_requirement_tbl
+		where aufnr in 
+		    <foreach collection="list" item="item" index="index" separator="," open="(" close=")">
+					#{item}
+			</foreach>
+	</delete>
+	
+	<select id="popProdHisChk" parameterType="String" resultType="SYProdVo">
+		select pordno_pop
+		  from prod_operate_his 	
+		 where pordno in
+	    <foreach collection="list" item="item" index="index" separator="," open="(" close=")">
+				#{item}
+		</foreach>
+	</select>
+	
+	<select id="confirmOrdChk" parameterType="String" resultType="SYProdVo">
+		SELECT * FROM PROD_TBL WHERE CMDAT IS NOT NULL AND PORDNO IN
+	    <foreach collection="list" item="item" index="index" separator="," open="(" close=")">
+				#{item}
+		</foreach>
+	</select>
+	
+	
+	<select id="popProdRoutingChk" parameterType="List" resultType="SYProdVo">
+		SELECT ITNBR
+		  FROM ROUTING_DETAIL_MASTER
+		 WHERE USE_YN = 'Y'
+		   AND ITNBR IN ( SELECT CASE WHEN AUART = 'ZP01' THEN ITNBR WHEN AUART = 'ZP05' THEN ITNBR
+								 		ELSE AUART END AS ITNBR
+							   FROM PROD_TBL
+							  WHERE pordno IN
+							  <foreach collection="list" item="item" index="index" separator="," open="(" close=")">
+								#{item}
+							  </foreach>
+								)							
+	</select>
+		
+	<insert id="insertMasterCode" parameterType="SYProdVo">
+		INSERT INTO prod_ord_tbl
+		(pordno, pordno_pop)
+		VALUES
+		(#{pordno}, #{pordno_pop})
+	</insert>
+	
+	<insert id="po_requirement_tbl_insert" parameterType="SYPoRequirementVo">
+		INSERT INTO PO_REQUIREMENT_TBL
+		(AUFNR,	RSPOS, MATNR, BDMNG, MEINS,	SERNP, XLOEK, LGORT, SCHGT,	SORTF, POTX1, DUMPS,WERKS,DISPO,ZDISPO,AENNR)
+		VALUES
+		(#{aufnr}, #{rspos}, #{matnr}, #{bdmng}, #{meins}, #{sernp}, #{xloek}, #{lgort}, #{schgt}, #{sortf}, #{potx1}, #{dumps}, #{werks}, #{dispo}, #{zdispo}, #{aennr})
+	</insert>
+
+	<insert id="insert_ZIFFM_MES_PP003" parameterType="SYProdVo">
+		INSERT INTO PROD_TBL
+		( PORDNO, PORDNO_CNT, PORDNO_CHILD, WKCTR, DEPT_CD, STEUS, FRDLB, 
+		  PORDNO_STATUS, JIDAT, ITNBR, PDQTY, SEDAT, FEDAT, PROJECT_NO, 
+		  KDAUF, KDPOS, BEZEI, EDATU, KUNNR_SE, CUSTOMER_NM, 
+		  LGORT, DISPO, AUART, ZAUFNR, KTEXT, SAPDEL_YN, ZCSREQ,AD_NAME1,
+		  ZZAPPLICATION,ZZSWOPTION,ZZSWOPTIONT,ZTFTSERIAL,ZLONGTEXT,ZGRADE,
+		  CREATE_DATE, CHANGE_DATE, SERNP, ZAUART, ZBEZEI )
+		VALUES
+		( #{pordno}, #{pordno_cnt}, #{pordno_child}, #{wkctr}, #{dept_cd}, #{steus}, #{frdlb}, 
+		  #{pordno_status}, #{jidat}, #{itnbr}, #{pdqty}, #{sedat}, #{fedat}, #{project_no}, 
+		  #{kdauf}, #{kdpos}, #{bezei}, #{edatu}, #{kunnr_se}, #{customer_nm}, 
+		  #{lgort}, #{dispo}, #{auart}, #{zaufnr}, #{ktext}, #{sapdel_yn}, #{zcsreq},#{ad_name1},
+		  #{zzapplication},#{zzswoption},#{zzswoptiont},#{ztftserial},#{zlongtext},#{zgrade},
+		  #{create_date}, #{change_date}, #{sernp}, #{zauart}, #{zbezei} )	
+	</insert>
+	
+	<update id="update_ZIFFM_MES_PP003" parameterType="SYProdVo">
+		UPDATE PROD_TBL SET
+			PORDNO_CNT = #{pordno_cnt},
+			PORDNO_CHILD = #{pordno_child},
+			WKCTR = #{wkctr},
+			STEUS = #{steus},
+			FRDLB = #{frdlb},
+			PORDNO_STATUS = #{pordno_status},
+			JIDAT = #{jidat},
+			ITNBR = #{itnbr},
+			PDQTY = #{pdqty},
+			SEDAT = #{sedat},
+			FEDAT = #{fedat},
+			KDAUF = #{kdauf},
+			KDPOS = #{kdpos},
+			BEZEI = #{bezei},
+			EDATU = #{edatu},
+			KUNNR_SE = #{kunnr_se},
+			CUSTOMER_NM = #{customer_nm},
+			LGORT = #{lgort},
+			DISPO = #{dispo},
+			AUART = #{auart},
+			ZAUFNR = #{zaufnr},
+			KTEXT = #{ktext},
+			SAPDEL_YN = #{sapdel_yn},
+			ZCSREQ = #{zcsreq},
+			AD_NAME1 = #{ad_name1},
+		    ZZAPPLICATION = #{zzapplication},
+		    ZZSWOPTION = #{zzswoption},
+		    ZZSWOPTIONT = #{zzswoptiont},
+		    ZTFTSERIAL = #{ztftserial},
+		    ZLONGTEXT = #{zlongtext},
+		    ZGRADE = #{zgrade},
+		    SERNP = #{sernp},
+		    ZAUART = #{zauart}, 
+		    ZBEZEI = #{zbezei},
+			CREATE_DATE = #{create_date},
+			CHANGE_DATE = #{change_date}
+		WHERE PORDNO = #{pordno} 
+		  AND DEPT_CD = #{dept_cd}
+	</update>
+	
+	<insert id="insertSapProdOrd" parameterType="SYProdVo">
+		INSERT INTO PROD_TBL (
+			PORDNO, PORDNO_CNT, PORDNO_CHILD,
+			WKCTR, DEPT_CD, PROD_MEMO )
+		VALUES (
+			#{pordno}, #{pordno_cnt}, #{pordno_child},
+			#{wkctr}, #{dept_cd}, #{prod_memo} )
+	</insert>
+	
+	<update id="updateSapProdOrd" parameterType="SYProdVo">
+		UPDATE PROD_TBL SET
+			PORDNO = #{pordno},
+			PORDNO_STATUS = #{pordno_status},
+			JIDAT = #{jidat},
+			ITNBR = #{itnbr},
+			PDQTY = #{pdqty},
+			SEDAT = #{sedat},
+			FEDAT = #{fedat},
+			PROJECT_NO = #{project_no},
+			KDAUF = #{kdauf},
+			KDPOS = #{kdpos},
+			EDATU = #{edatu},
+			CUSTOMER_NM = #{customer_nm},
+			KUNNR_SE = #{kunnr_se},
+			SAPDEL_YN = #{sapdel_yn},
+			CREATE_DATE = #{create_date},
+			CHANGE_DATE = #{change_date}
+		WHERE PORDNO = #{pordno}
+	</update>
+
+	<select id="chkSerialNoDuplicate" parameterType="SYSernrManageVo" resultType="java.lang.Integer">
+		SELECT COUNT(*)
+		  FROM SERNR_MANAGE_TBL
+		 WHERE SERNR = #{sernr}
+	</select>
+	
+	<update id="updateProdOrdConfirm" parameterType="SYProdVo">
+		UPDATE PROD_TBL SET 
+				PDSTS = #{pdsts}, 
+				CMDAT = #{cmdat},
+				CMDAT_SEQ = #{cmdat_seq}
+				<if test="routing_gno_gubun != null and !''.equals(routing_gno_gubun) ">
+					, routing_gno_gubun = #{routing_gno_gubun}
+				</if>
+				<if test="project_no != null and !''.equals(project_no) ">
+					, project_no = #{project_no}
+				</if>
+		WHERE PORDNO = #{pordno}
+	</update>
+
+	<update id="updateProdOrdNonConfirm" parameterType="SYProdVo">
+		UPDATE 
+			PROD_TBL 
+		SET 
+			PDSTS ='p1',
+			project_no = '',
+			SUB_SERNR = '',
+			CMDAT = null,
+			CMDAT_SEQ = null,
+			jocod = null,
+			routing_gno_gubun = null,
+			gr_no = null,
+			ecr_no = null,
+			rn_no = null,
+			dmr_no =  null
+		WHERE  PORDNO = #{pordno}
+	</update>
+
+	<select id="selectProdOrdtbl" parameterType="SYProdVo" resultType="SYProdVo">
+		SELECT A.*, C.ROUTING_GNO, C.ROUTING_NO, C.ROUTING_GNM
+		  FROM (SELECT PORDNO, PORDNO_CHILD, PORDNO_STATUS, CUSTOMER_NM, JIDAT, SEDAT, AD_NAME1,
+					   CASE WHEN AUART = 'ZP01' THEN ITNBR WHEN a.AUART = 'ZP05' THEN a.ITNBR ELSE AUART END AS ITNBR,
+						PSPEC, PDQTY, FEDAT, EDATU, PROJECT_NO, AUART,
+						KDAUF, KDPOS, HISTNO, DEPT_CD, JOCOD, WKCTR, WORKER_NM, KUNNR_SE, PROD_MEMO, 
+						PROD_STR_DATE, PROD_STR_TIME, PROD_END_DATE, PROD_END_TIME, PDSTS, SAPDEL_YN, 
+						date_format(sysdate(), '%Y-%m-%d') AS CREATE_DATE, date_format(sysdate(), '%Y-%m-%d') AS CHANGE_DATE, 
+						IF_STATUS, IF_MSG, ZZSWOPTION, ZAUART, ZBEZEI, ZGRADE, 
+						(select routing_gno_gubun 
+						from routing_detail_master 
+						where use_yn = 'Y' and itnbr = (CASE WHEN a.AUART = 'ZP01' THEN a.ITNBR WHEN a.AUART = 'ZP05' THEN a.ITNBR ELSE a.AUART END) limit 0,1) routing_gno_gubun
+				  FROM PROD_TBL a) A, ROUTING_DETAIL_MASTER B,  ROUTING_HEADER_MASTER C
+		 WHERE A.ITNBR = B.ITNBR
+		   AND B.ROUTING_GNO = C.ROUTING_GNO
+		   AND A.PORDNO = #{pordno}
+		   AND C.USE_YN = 'Y'
+		   AND B.USE_YN = 'Y'
+		   order by substring(C.ROUTING_NO,3,3)*1 asc
+	</select>
+	
+	<insert id="insertProdOrdTbl" parameterType="SYProdVo">
+		INSERT INTO PROD_ORD_TBL(
+			PORDNO_POP, PORDNO, PORDNO_CHILD, PORDNO_STATUS, CUSTOMER_NM, JIDAT, SEDAT, CMDAT, CMDAT_SEQ,
+			ITNBR, PSPEC, PDQTY, FEDAT, EDATU, PROJECT_NO, AUART, ZGRADE,
+			KDAUF, KDPOS, HISTNO, DEPT_CD, JOCOD, WKCTR, WORKER_NM, KUNNR_SE, PROD_MEMO, 
+			PROD_STR_DATE, PROD_STR_TIME, PROD_END_DATE, PROD_END_TIME, PDSTS, SAPDEL_YN, AD_NAME1, ZZSWOPTION, ZZSWOPTIONT,
+			CREATE_DATE, CHANGE_DATE, IF_STATUS, IF_MSG, ROUTING_GNO, ROUTING_NO, ROUTING_NM, ROUTING_GNO_GUBUN,
+			ZAUART, ZBEZEI)
+		VALUES(
+			#{pordno_pop}, #{pordno}, #{pordno_child}, #{pordno_status}, #{customer_nm}, #{jidat}, #{sedat}, #{cmdat}, #{cmdat_seq},
+			#{itnbr}, #{pspec}, #{pdqty}, #{fedat}, #{edatu}, #{project_no}, #{auart}, #{zgrade},
+			#{kdauf}, #{kdpos}, #{histno}, #{dept_cd}, #{jocod}, #{wkctr}, #{worker_nm}, #{kunnr_se}, #{prod_memo},
+			#{prod_str_date}, #{prod_str_time}, #{prod_end_date}, #{prod_end_time}, 'p2', #{sapdel_yn}, #{ad_name1}, #{zzswoption},#{zzswoptiont},
+			#{create_date}, #{change_date}, #{if_status}, #{if_msg}, #{routing_gno}, #{routing_no}, #{routing_gnm}, #{routing_gno_gubun},
+			#{zauart}, #{zbezei})
+	</insert>
+	
+	<delete id="deletetProdOrdTbl" parameterType="SYProdVo">
+		DELETE FROM PROD_ORD_TBL
+		WHERE PORDNO_POP = #{pordno_pop}
+		<if test="routing_gno != null and !''.equals(routing_gno) ">
+		 AND ROUTING_GNO = #{routing_gno}
+		</if>		
+		<if test="routing_no != null and !''.equals(routing_no) ">
+		 AND ROUTING_NO = #{routing_no}
+		</if>		
+		<if test="pordno_seq != null and !''.equals(pordno_seq) ">
+		 AND PORDNO_SEQ = #{pordno_seq}
+		</if>		
+	</delete>
+			
+	<select id="chkProdExist" parameterType="SYProdVo" resultType="SYProdVo">
+		SELECT *
+		  FROM PROD_TBL
+		 WHERE PORDNO = #{pordno}
+	</select>
+	
+	<select id="prod_end_chk" parameterType="String" resultType="String">
+		select routing_plast_gubun 
+		from routing_header_master
+		where routing_no =#{routing_no}
+	</select>
+	
+	<!-- <insert id="insertSernrManageTbl" parameterType="SYSernrManageVo">
+		INSERT INTO SERNR_MANAGE_TBL (
+			PORDNO_POP, PORDNO, ROUTING_GNO, ROUTING_NO, MATNR, LGORT, MENGE, MEINS, BUDAT,
+			SERNR, SERNP, USE_YN, USE_MEMO, IF_STATUS, IF_MSG, CREATOR, UPDATER, DATE_CREATED, DATE_UPDATED )
+		VALUES(
+			#{pordno_pop}, #{pordno}, #{routing_gno}, #{routing_no}, #{matnr}, #{lgort}, #{menge}, #{meins}, #{budat},
+			#{sernr}, #{sernp}, 'Y', 'Y', #{if_status}, #{if_msg}, #{creator}, #{updater}, 
+			date_format(sysdate(), '%y-%m-%d'), date_format(sysdate(), '%y-%m-%d') )
+	</insert> -->
+	
+	<!-- <delete id="deleteSernrManageTbl" parameterType="SYSernrManageVo">
+		DELETE FROM SERNR_MANAGE_TBL
+		WHERE PORDNO_POP = #{pordno_pop}
+			<if test="sernr_seq != null and !''.equals(sernr_seq) ">
+				AND sernr_seq = #{sernr_seq}
+			</if>
+			<if test="sernr != null and !''.equals(sernr) ">
+				AND sernr = #{sernr}
+			</if>
+		  AND MATNR = #{matnr}
+	</delete> -->
+	
+	<!-- <select id="selectSernrManageTbl" parameterType="SYSernrManageVo" resultType="SYSernrManageVo">
+		SELECT CONCAT(PORDNO_POP, '-', SERNR_SEQ) uni_key, PORDNO_POP, SERNR_SEQ, PORDNO, ROUTING_GNO, ROUTING_NO, MATNR, TRUNCATE(MENGE,0) AS BDMNG, MEINS, BUDAT, SERNR, USE_YN, 
+				USE_MEMO, IF_STATUS, IF_MSG, CREATOR, UPDATER, DATE_CREATED, DATE_UPDATED, LGORT, SERNP,
+				(select maktx from material_recv_master where a.matnr = matnr) maktx
+		  FROM SERNR_MANAGE_TBL a
+		 WHERE PORDNO_POP = #{pordno_pop}
+		 <if test="sernr_seq != null and !''.equals(sernr_seq) ">
+				AND sernr_seq = #{sernr_seq}
+		</if>
+		 ORDER BY SERNP DESC 
+		   AND ROUTING_NO = #{routing_no}  
+	</select> -->
+	<!-- 
+	<select id="wkctr_code_select" parameterType="String" resultType="SYProdVo">
+		select * from workcenter_master where werks= #{werks} 
+	</select> -->
+	
+	<select id="fault_grid_select" parameterType="SYSernrManageVo" resultType="SYSernrManageVo">
+	 
+	</select>
+
+	<update id="updatePissueInspectionTbl" parameterType="SYPissueInspectionVo">
+		update 
+			pissue_inspection_tbl 
+		set 
+			insts = #{insts},
+			cmdat = #{cmdat},
+			issue_code = #{issue_code},
+			issue_memo = #{issue_memo},
+			insp_yn = #{insp_yn},
+			updater = #{updater},
+			date_updated = current_timestamp()
+		 where inspec_lot = #{inspec_lot} 
+	</update>	
+	
+	<select id="prodRfcConf_yn" parameterType="String" resultType="SYProdVo">
+		select * from last_inspection_tbl where pordno = #{pordno} 
+	</select>
+	
+	<select id="jo_select" parameterType="SYProdVo"  resultType="SYProdVo">
+		select * from
+		jomast
+		where
+		use_yn = 'Y'
+	</select>
+	
+	<update id="jocod_update" parameterType="SYProdVo">
+		UPDATE PROD_TBL SET
+			jocod = #{jocod}
+		WHERE pordno = #{pordno}
+	</update>
+	
+	<select id="line_header_select" parameterType="SYLineVo" resultType="SYLineVo">
+		SELECT   jocod AS jocod, line_nm, jo_nm,dept_cd, 
+				CASE dept_cd
+					WHEN '1110' THEN '의료영상'
+					WHEN '1210' THEN '광영상'
+					ELSE dept_cd END AS dept_nm 
+					<!-- , UPDATER, DATE_CREATED, DATE_UPDATED -->
+		  FROM jomast
+		 WHERE use_yn = 'Y' 
+		<if test="dept_cd != null and !''.equals(dept_cd) ">
+			AND dept_cd = #{dept_cd}
+		</if>
+		<if test="line_nm != null and !''.equals(line_nm) ">
+			AND line_nm LIKE CONCAT('%', #{line_nm}, '%')
+		</if>
+		<if test="jo_nm != null and !''.equals(jo_nm) ">
+			AND jo_nm LIKE CONCAT('%', #{jo_nm}, '%')
+		</if>
+		order by jocod
+	</select>
+	
+	<insert id="line_header_insert" parameterType="SYLineVo">
+		INSERT INTO jomast 
+		(jocod, dept_cd, line_nm, jo_nm, creator,updater,date_created,date_updated)
+		SELECT * 
+		FROM (
+			SELECT #{jocod} as jocod, #{dept_cd} as dept_cd,
+					#{line_nm} as line_nm, #{jo_nm} as jo_nm, #{creator} as creator,
+			 		#{updater} as updater, current_timestamp() as date_created, current_timestamp() as date_updated ) sp
+		ON DUPLICATE KEY
+		UPDATE jocod = sp.jocod
+			, dept_cd = sp.dept_cd
+			, line_nm = sp.line_nm
+			, jo_nm = sp.jo_nm
+			, creator = sp.creator
+			, updater = sp.updater
+			, date_created = sp.date_created
+			, date_updated = sp.date_updated
+	</insert>
+	
+	<delete id="line_header_delete" parameterType="SYLineVo">
+		DELETE
+		  FROM jomast
+	 
+	</delete>
+	
+	<select id="line_member_select_count" parameterType="SYLineVo" resultType="java.lang.Integer">
+		SELECT count(1)
+		  FROM  jomast a, jodetl b 
+		 WHERE b.use_yn = 'Y'
+		  AND a.jocod = b.jocod 
+		<if test="jocod != null and !''.equals(jocod) ">
+		   AND b.jocod = #{jocod}
+		</if>
+	</select>
+ 
+	<select id="line_member_select" parameterType="SYLineVo" resultType="SYLineVo">
+		SELECT a.jocod,a.dept_cd,a.line_nm,a.jo_nm,b.member_id,b.member_nm
+		  FROM jomast a, jodetl b 
+		 WHERE b.use_yn = 'Y'
+		  AND a.jocod = b.jocod 
+		<if test="jocod != null and !''.equals(jocod) ">
+		   AND b.jocod = #{jocod}
+		</if>
+	</select>
+	
+	<delete id="line_member_delete" parameterType="SYLineVo">
+		DELETE
+		  FROM jodetl
+		  where 1=1
+		 <if test="jocod != null and !''.equals(jocod) ">
+		   AND jocod = #{jocod}
+		 </if>
+		 <if test="member_id != null and !''.equals(member_id) ">
+		   AND member_id = #{member_id}
+		 </if>
+	 
+	</delete>
+	
+ 
+	<select id="loadmemberinfo_count" parameterType="SYLineVo" resultType="java.lang.Integer">
+	 SELECT COUNT(1)
+		  FROM  sy_member_master a,sy_organ_member_map b						
+		 where a.member_emp_no = b.member_emp_no
+				AND  b.dept_cd =  'R1023' 
+				AND  a.member_id NOT IN (
+				SELECT member_id
+		  FROM   jodetl b 
+		 WHERE  use_yn = 'Y')
+	</select>
+ 
+	<select id="loadmemberinfo" parameterType="SYLineVo" resultType="SYLineVo">
+		 SELECT a.member_emp_no member_emp_no,  a.member_id member_id, a.member_nm member_nm, b.dept_cd dept_cd ,CASE b.dept_cd
+					<!-- WHEN 'R1110' THEN '의료영상'
+					WHEN 'R1210' THEN '광영상' -->
+					WHEN 'R1015' THEN '의료영상'
+					WHEN 'R1023' THEN '광영상'
+					WHEN 'R1031' THEN '기술지원팀'
+					ELSE b.dept_cd END AS dept_nm 
+		  FROM  sy_member_master a,sy_organ_member_map b						
+		 where a.member_emp_no = b.member_emp_no
+				AND  (b.dept_cd =  'R1023' || b.dept_cd = 'R1031')
+				AND  a.member_id NOT IN (
+				SELECT member_id
+		  FROM   jodetl b 
+		 WHERE  use_yn = 'Y')
+		 ORDER BY DEPT_NM
+	</select>
+	
+	<insert id="fnWorkerAdd" parameterType="SYLineVo">			
+		INSERT INTO jodetl
+			(member_id, member_nm, jocod, dept_cd) 
+		VALUES 
+			( #{member_id}, #{member_nm}, #{jocod}, #{dept_cd} );
+
+	</insert>
+	
+	<!-- <select id="getReworkSubjectData" parameterType="SYprodVo" resultType="SYprodVo">
+		SELECT A.*, fn_mes_code_nm('pdsts', A.PDSTS) AS PDSTS_NM,
+				 CONCAT(PROD_STR_DATE, '', PROD_STR_TIME) AS START_DT_TM,
+				 CONCAT(PROD_END_DATE, '', PROD_END_TIME) AS END_DT_TM,
+				 B.ROUTING_PLAST_GUBUN, B.ROUTING_DSCR, B.ROUTING_CODE
+		  FROM PROD_ORD_TBL A, ROUTING_HEADER_MASTER B
+		 WHERE A.ROUTING_NO = B.ROUTING_NO
+		   AND A.ROUTING_GNO = B.ROUTING_GNO
+        AND pordno_pop = #{pordno_pop}
+        and pordno_seq <![CDATA[ >= ]]>  (select pordno_seq from prod_ord_tbl where pordno_pop = #{pordno_pop} and routing_no = #{routing_no})
+        and pdsts not in ('p2')
+       order by pordno_seq*1
+	</select> -->
+	
+	<!-- <select id="projectNoDupChk" parameterType="SYprodVo" resultType="int">
+		select count(*) from prod_tbl where project_no = #{project_no}
+	</select> -->
+	
+	
+	<select id="sernrCntChk" parameterType="SYSernrManageVo" resultType="SYSernrManageVo">
+		SELECT 
+			PORDNO_POP, SERNR_SEQ, PORDNO, ROUTING_GNO, ROUTING_NO, MATNR, 
+			MENGE AS BDMNG, MEINS, BUDAT, SERNR, USE_YN, USE_MEMO, IF_STATUS, IF_MSG, CREATOR, 
+			UPDATER, DATE_CREATED, DATE_UPDATED, LGORT, SERNP 
+		FROM 
+			SERNR_MANAGE_TBL 
+		WHERE 
+			PORDNO_POP = #{pordno_pop}
+			AND MATNR = #{matnr}
+	</select>
+	
+	<!-- <select id="mes_wkctr_tbl_select" parameterType="SYMesWkctrVo" resultType="SYMesWkctrVo">
+		SELECT *
+		FROM mes_wkctr_tbl
+		<where>
+			<if test="dept_cd != null and !''.equals(dept_cd) ">
+				AND dept_cd = #{dept_cd}
+			</if>
+			<if test="wkctr != null and !''.equals(wkctr) ">
+				AND wkctr = #{wkctr}
+			</if>
+			<if test="use_yn != null and !''.equals(use_yn) ">
+				AND use_yn = #{use_yn}
+			</if>
+		</where>
+	</select> -->
+	
+	<select id="jo_worker_select" parameterType="SYMemberVo" resultType="SYMemberVo">
+		select b.member_emp_no, a.member_id, a.member_nm, a.dept_cd, a.jocod
+		from jodetl a, sy_member_master b
+		where 
+		a.member_id = b.member_id
+		and a.use_yn = 'Y'
+		and b.use_yn = 'Y'
+		and a.jocod = #{jocod}
+		and a.member_id <![CDATA[ <> ]]> #{member_id}
+	</select>
+	
+	<update id="updateLastInspSerial" parameterType="SYProdVo">
+		update last_inspection_tbl set project_no = #{project_no} where pordno = #{pordno} and sap_send_yn = 'N'
+	</update>
+	
+	
+	<!-- <insert id="faultHisInsert" parameterType="SYSernrManageVo">
+		INSERT INTO fault_his_tbl 
+		(fault_no, matnr, maktx, sernr, meins, bdmng, f_lgort, t_lgort, issue_code, issue_memo, issue_remark
+		, pordno, werks, routing_no, in_gubun, creator, date_created) 
+		VALUES 
+		(#{fault_no}, #{matnr}, #{maktx}, #{sernr}, #{meins}, #{menge}, #{f_lgort}, #{t_lgort}, #{org_issue_code}, #{org_issue_memo}, #{org_remark}
+		, #{pordno}, #{werks}, #{routing_no}, #{in_gubun}, #{creator}, date_format(sysdate(),'%y-%m-%d %T'));
+	</insert> -->
+	
+	<!-- <select id="faultKeySelect"  resultType="String">
+		select fn_fault_key() from dual;
+	</select> -->
+	
+	<select id="selectfault_his_tbl" parameterType="SYProdVo" resultType="SYProdVo">
+ 	
+		  select pordno,matnr,maktx,sernr,routing_no,(SELECT ROUTING_DSCR 
+					FROM ROUTING_HEADER_MASTER 
+				   WHERE ROUTING_NO =a.routing_no) as routing_nm,creator,issue_code,
+				   (select level3_name from issue_detail_tbl where level3_code = a.issue_code) issue_code_nm,issue_remark from fault_his_tbl a
+				<where>
+			<if test="pordno != null and !''.equals(pordno) ">
+				AND a.PORDNO = #{pordno}
+			</if>
+				</where>
+	</select>
+	
+</mapper>

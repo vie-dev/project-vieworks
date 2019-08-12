@@ -1,0 +1,992 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.co.passcombine.mes.dao.SYMesDAO">
+
+	<select id="selectListCount" parameterType="SYMesVo" resultType="SYMesVo">
+		select count(*)
+		from resb_matnr_tbl
+		WHERE 1=1
+		<if test="jidat_from != null and !''.equals(jidat_from) ">
+			AND (creator_date <![CDATA[ >= ]]>
+			#{jidat_from} and creator_date <![CDATA[ <= ]]>
+			#{jidat_to})
+		</if>
+		<if test="requester_status != null and !''.equals(requester_status) ">
+			AND requester_status = #{requester_status}
+		</if>
+	</select>
+
+	<select id="selectList" parameterType="SYMesVo" resultType="SYMesVo">
+		select pordno, dept_cd, fn_code_filter_nm('MC1009','1',dept_cd) as
+		dept_nm, requester_status, requester_if_status,
+		request_if_msg,
+		creator, substring(creator_date,1,10) as creator_date,
+		substring(date_created,1,10) as date_created, substring(date_updated,
+		1, 10) as date_updated
+		from resb_matnr_tbl
+		WHERE 1=1
+		<if test="jidat_from != null and !''.equals(jidat_from) ">
+			AND (creator_date <![CDATA[ >= ]]> #{jidat_from} and creator_date <![CDATA[ <= ]]> #{jidat_to})
+		</if>
+		<if test="requester_status != null and !''.equals(requester_status) ">
+			AND requester_status = #{requester_status}
+		</if>
+	</select>
+
+	<!-- <select id="selectProdOrderGroup" parameterType="SYProdVo" resultType="SYProdVo">
+		select aa.*, 
+		(select min(routing_no) from prod_ord_tbl where pordno = aa.pordno) first_routing_no,
+		C.GR_NM, C.MATNR, C.MAKTX, C.ECR_NO, C.RN_NO, C.DMR_NO, C.CHANGE_REMARK 
+		from ( SELECT A.PORDNO, B.PORDNO_POP, A.PORDNO_STATUS, B.PDSTS, fn_mes_code_nm('pdsts', B.PDSTS) AS PDSTS_NM,fn_last_routingnm(#{pordno}) AS pdsts_before, A.CMDAT, A.ITNBR,
+		 fn_itnbr_nm(A.ITNBR) AS ITNBR_NM,
+		  A.PROJECT_NO, A.WORKER_NM, A.LGORT, A.AUART, A.GR_NO, A.WKCTR, A.PROD_MEMO,
+		B.ROUTING_GNO, B.ROUTING_NM, A.JIDAT, A.FEDAT, A.SEDAT, A.PDQTY FROM PROD_TBL A, 
+		(
+			select * from prod_ord_tbl where 
+			pordno =#{pordno}
+			and pordno_seq in
+			(select min(pordno_seq) from prod_ord_tbl where pordno =#{pordno} and PDSTS <![CDATA[ <> ]]> 'p6')
+		) B	  
+		 WHERE A.PORDNO = B.PORDNO
+		   AND A.DEPT_CD = B.DEPT_CD
+		   AND A.PDSTS = A.PDSTS
+		   AND A.CMDAT = B.CMDAT
+		   AND A.DEPT_CD = '1110'
+		<if test="pordno != null and !pordno.equals('')">
+		   AND A.PORDNO = #{pordno}
+		</if>
+		<if test="cmdat_from != null and !cmdat_from.equals('')">
+		   AND ( A.CMDAT <![CDATA[ >= ]]> #{cmdat_from} AND A.CMDAT <![CDATA[ <= ]]> #{cmdat_to} )
+		</if>
+		<if test="pordno_status != null and !pordno_status.equals('')">
+		   AND A.PORDNO_STATUS LIKE CONCAT('%', #{pordno_status}, '%')
+		</if>
+		ORDER BY A.PORDNO 
+		) aa
+		LEFT OUTER JOIN ( SELECT AA.GR_NO, AA.GR_NM, BB.MATNR, BB.MAKTX, AA.ECR_NO, AA.RN_NO, AA.DMR_NO, AA.CHANGE_REMARK
+		FROM DMR_MASTER_TBL AA, dmr_matnr_tbl BB WHERE AA.GR_NO = BB.GR_NO AND AA.APPLY_YN = 'Y' AND BB.USE_YN = 'Y') C 
+		ON aa.ITNBR = C.MATNR 
+		AND aa.GR_NO = C.GR_NO
+		<if test="gr_nm != null and !gr_nm.equals('')">
+		   AND C.GR_NM LIKE CONCAT('%', #{gr_nm}, '%')
+		</if>
+	</select> -->
+
+	<select id="selectProdOrdUserIng" parameterType="SYProdVo" resultType="SYProdVo">
+ 		 SELECT concat(PORDNO_POP, PORDNO_SEQ) as UNIQKEY, PORDNO, PORDNO_POP,
+				PORDNO_SEQ, A.CUSTOMER_NM, ITNBR, fn_itnbr_nm(ITNBR) AS ITNBR_NM,
+				A.ROUTING_GNO, A.ROUTING_NM, A.ROUTING_NO, B.ROUTING_DSCR, B.ROUTING_CODE, PDSTS, A.PDQTY,
+				fn_mes_code_nm('pdsts', PDSTS) AS PDSTS_NM, A.JIDAT, A.PROJECT_NO, A.AUART, A.CMDAT,
+        		(select lgort from prod_tbl where A.PORDNO = PORDNO) AS LGORT,
+            A.wkctr
+		  FROM PROD_ORD_TBL A, ROUTING_HEADER_MASTER B
+		 WHERE A.ROUTING_NO = B.ROUTING_NO
+		   AND A.DEPT_CD = B.DEPT_CD
+		   AND A.ROUTING_GNO = #{routing_gno}
+		<if test="cmdat != null and !''.equals(cmdat) ">
+			AND A.CMDAT = #{cmdat}
+		</if>
+		<if test="routing_no != null and !''.equals(routing_no) ">
+		   AND A.ROUTING_NO = #{routing_no}
+		</if>
+		<choose>
+		    <when test="pdsts != null and !''.equals(pdsts) ">
+		      AND A.PDSTS = #{pdsts}
+		    </when>
+		    <otherwise>
+		      AND A.PDSTS <![CDATA[ <> ]]> 'p6'
+		    </otherwise>
+		</choose>
+		AND A.DEPT_CD = #{dept_cd}
+		ORDER BY CMDAT_SEQ,PORDNO_POP, PORDNO_SEQ, A.CMDAT
+
+	</select>
+
+	<select id="selectProdOrdUserIng_opt" parameterType="SYProdVo" resultType="SYProdVo">
+ 	 select 
+ 	 	 aa.*, (select min(routing_no) from prod_ord_tbl where pordno = aa.pordno) first_routing_no, 
+	     concat(tmp_routing_code, ' - ', tmp_routing_dscr) routing_code, 
+	     concat(ifnull(tmp_next_routing_code, ''), ' - ', ifnull(tmp_next_routing_dscr, '')) next_routing_code 
+     from 
+ 		 (
+ 		 select 
+	 		 a.*, fn_mes_code_nm('pdsts', a.pdsts) pdsts_nm, b.routing_code tmp_routing_code, b.routing_dscr tmp_routing_dscr,
+	 		(select zgrade from prod_tbl where a.pordno = pordno) zgrade, 
+	 		(select cmdat_seq from prod_tbl where a.pordno = pordno) cmdat_seq, 
+			(select routing_code from routing_header_master where a.next_routing = routing_no) tmp_next_routing_code,
+			(select routing_dscr from routing_header_master where a.next_routing = routing_no) tmp_next_routing_dscr
+		 from 
+		 (
+			SELECT
+				PORDNO_POP,
+				min(a.PORDNO_SEQ) PORDNO_SEQ, PORDNO, PORDNO_CHILD,
+				JIDAT, SEDAT, CMDAT, 
+				(select itnbr from prod_tbl where max(a.pordno) = pordno) ITNBR, 
+				PDQTY, FEDAT, EDATU, 
+				PROJECT_NO, dept_cd, 
+				WKCTR, AUART,
+				customer_nm,
+				(select max(lgort) from prod_tbl where max(a.PORDNO) = PORDNO) lgort, 
+				(select max(sernp) from prod_tbl where max(a.PORDNO) = PORDNO) sernp,
+				pordno_status,
+				routing_gno, 
+				routing_nm,
+				(select routing_no from prod_ord_Tbl where min(a.PORDNO_SEQ) = PORDNO_SEQ and max(a.PORDNO_POP) = pordno_pop) routing_no,
+				(select pdsts from prod_ord_Tbl where min(a.PORDNO_SEQ) = PORDNO_SEQ and max(a.PORDNO_POP) = pordno_pop) pdsts,
+<!-- 				(select routing_no from prod_ord_Tbl where min(a.PORDNO_SEQ)+1 = PORDNO_SEQ and max(a.PORDNO_POP) = pordno_pop) next_routing, -->
+				(fn_next_routing(a.pordno, min(a.PORDNO_SEQ))) next_routing,
+				(select concat(line_nm , " - ", jo_nm) from prod_Tbl pot, jomast jo where pot.jocod = jo.jocod and pot.pordno = a.pordno) jocod,
+ 				(select member_nm from prod_ord_Tbl where min(a.PORDNO_SEQ) = PORDNO_SEQ and max(a.PORDNO_POP) = pordno_pop) member_nm
+			FROM 
+				prod_ord_Tbl a 
+			WHERE  
+				a.pordno in (
+					select 
+						distinct pordno 
+					from 
+						prod_ord_tbl 
+					<where> 
+						<if test="jocod != null and !''.equals(jocod) ">
+							pordno in (select pordno from prod_tbl where jocod = #{jocod} and dept_cd = #{dept_cd})
+						</if>						 
+						and pdsts in ('p2','p3','p4','p5') 
+						and dept_cd = #{dept_cd}
+						and routing_gno_gubun = 'P'
+					</where>
+				) and a.pdsts in ('p2','p3','p4','p5')
+				group by a.PORDNO
+		    ) a, routing_header_master b
+	        where 
+				a.routing_no = b.routing_no
+				and  b.routing_code  <![CDATA[ <> ]]> 'T1'
+		) aa 
+		order by aa.cmdat, aa.cmdat_seq is null ASC, aa.cmdat_seq = '' ASC, aa.cmdat_seq, aa.pordno 
+			
+	</select>
+	
+	<select id="reqm_matnr_tbl_key_select" resultType="String">
+		select
+		req_matnr_seq() reqm_matnr_key from dual
+	</select>
+
+	<select id="grade_master_select" resultType="SYReqmMatnrTblVo">
+		SELECT grade_nm,
+		from_loc, to_loc
+		FROM grade_master
+	</select>
+
+	<select id="grade_exist_chk" parameterType="SYReqmMatnrTblVo"	resultType="SYReqmMatnrTblVo">
+<!-- 		select lgobe_LGFSB, lgobe_LGPRO, lgfsb, lgpro, grade_yn -->
+<!-- 		from material_recv_detail -->
+<!-- 		where matnr = #{matnr} -->
+<!-- 		and werks = #{werks} -->
+			select
+			a.matnr, b.werks, 
+			b.lgobe_LGFSB, b.lgobe_LGPRO, b.lgfsb, b.lgpro,
+			(case b.werks when '1110' then '' when '1210' then a.kzumw end) grade_yn,
+			(case b.werks when '1110' then a.mess_medical_yn when '1210' then a.mess_optical_yn end) serial_yn
+			from material_recv_master a, material_recv_detail b
+			where a.matnr = b.matnr
+			and b.matnr = #{matnr}
+			and b.werks = #{werks}
+	</select>
+
+	<insert id="reqm_matnr_tbl_insert" parameterType="SYReqmMatnrTblVo">
+		INSERT INTO
+		reqm_matnr_tbl
+		(reqm_matnr_key, matnr, werks, bdter, lgort, bdmng, requester_status,
+		meins, request_bdmng, grade_yn,creator, creator_date, date_created,
+		date_updated, pgm_nm)
+		VALUES
+		(#{reqm_matnr_key}, #{matnr}, #{werks}, #{bdter},
+		#{lgort}, #{bdmng}, #{requester_status},#{meins}, #{request_bdmng}, #{grade_yn},
+		#{creator}, current_timestamp(), current_timestamp(),
+		current_timestamp(), #{pgm_nm})
+	</insert>
+
+	<insert id="reqd_matnr_tbl_insert" parameterType="SYReqmMatnrTblVo">
+		INSERT INTO
+		reqd_matnr_tbl
+		(reqm_matnr_key, reqm_sub_key, matnr, grade_nm, plant, stge_loc, move_plant, move_stloc,
+		request_bdmng, creator_date)
+		VALUES
+		(#{reqm_matnr_key}, #{reqm_sub_key},
+		#{matnr}, #{grade_nm}, #{plant}, #{stge_loc}, #{move_plant}, #{move_stloc}, 
+		#{request_bdmng}, current_timestamp())
+	</insert>
+
+	<select id="reqd_matnr_key_select" parameterType="String" resultType="SYReqmMatnrTblVo">
+		select * from reqm_matnr_tbl
+		where reqm_matnr_key =
+		#{reqm_matnr_key}
+	</select>
+
+	<select id="inInsp_select" parameterType="SyInInspVo" resultType="SyInInspVo" >
+	 SELECT * FROM (
+		SELECT    ebeln, ebelp, partial_seq, matnr, maktx, wrkst,meins, rorder_status,insp_gubun,fn_mes_code_nm('insp_gubun',insp_gubun) as insp_gubun_nm,
+	       		  insp_check_gubun,fn_mes_code_nm('insp_check',insp_check_gubun) as  insp_check_gubun_nm,rvendor_status, insp_status, fn_mes_code_nm('insp_status',insp_status) as insp_status_nm,
+				  confirm_date, in_delivery_date,in_confirm_date, in_fail_date, order_delivery_date, 
+   		  		  vendor_delivery_date, menge,zdeli_menge, werks, bukrs,lgort, diff_date, mblnr, mjahr, s_mblnr, s_mjahr,  
+  				  mblnr_cancel, mjahr_cancel,sap_doc_no,labnr,in_labnr,lifnr,remark,success_yn,fail_yn,ref_doc_no,
+  				  (select name1 from raw_proc_tbl where a.ebeln = ebeln and a.ebelp = ebelp LIMIT 1 ) name1,
+				  (select txz01 from raw_proc_tbl where a.ebeln = ebeln and a.ebelp = ebelp LIMIT 1  ) txz01,
+				  (case when a.insp_status ='i1' then  a.insp_model else (select insp_model from in_insp_header_tbl where a.ebeln = ebeln and a.ebelp = ebelp and a.partial_seq = partial_seq LIMIT 1) end) insp_model,
+				  (case when a.insp_status ='i1' then  a.insp_maql  else (select insp_maql  from in_insp_header_tbl where a.ebeln = ebeln and a.ebelp = ebelp and a.partial_seq = partial_seq LIMIT 1) end) insp_maql,
+				  (case when a.insp_status ='i1' then  a.insp_vaql  else (select insp_vaql  from in_insp_header_tbl where a.ebeln = ebeln and a.ebelp = ebelp and a.partial_seq = partial_seq LIMIT 1) end) insp_vaql,
+				  (case when a.insp_status ='i1' then  a.insp_doc   else (select insp_doc   from in_insp_header_tbl where a.ebeln = ebeln and a.ebelp = ebelp and a.partial_seq = partial_seq LIMIT 1) end) insp_doc,
+				  (case when a.insp_status ='i1' then  a.insp_ecr   else (select insp_ecr   from in_insp_header_tbl where a.ebeln = ebeln and a.ebelp = ebelp and a.partial_seq = partial_seq LIMIT 1) end) insp_ecr,
+				  (case when a.insp_status ='i1' then  a.insp_remark else  (select insp_remark from in_insp_header_tbl where a.ebeln = ebeln and a.ebelp = ebelp and a.partial_seq = partial_seq LIMIT 1) end) insp_remark
+		  FROM IN_INSP_TBL a
+		 WHERE 1=1
+		 <if test=" ebeln != null and !''.equals(ebeln) ">
+		   AND EBELN LIKE CONCAT('%', #{ebeln}, '%')
+		 </if>
+		 <if test=" werks != null and !''.equals(werks) ">
+		   AND WERKS = #{werks}
+		 </if>
+		 <if test=" insp_gubun != null and !''.equals(insp_gubun) ">
+		   AND INSP_GUBUN = #{insp_gubun}
+		 </if>
+		 <if test=" insp_status != null and !''.equals(insp_status) ">
+		   AND INSP_STATUS = #{insp_status}
+		 </if>
+		 <if test=" not_insp_status != null and !''.equals(not_insp_status) ">
+		   AND INSP_STATUS <![CDATA[ <> ]]> #{not_insp_status}
+		 </if>
+		 <if test=" matnr != null and !''.equals(matnr) ">
+		   AND MATNR LIKE CONCAT('%', #{matnr}, '%')
+		 </if>
+		 <if test=" maktx != null and !''.equals(maktx) ">
+		   AND MAKTX LIKE CONCAT('%', #{maktx}, '%')
+		 </if>
+		 <if test=" wrkst != null and !''.equals(wrkst) ">
+		   AND WRKST LIKE CONCAT('%', #{wrkst}, '%')
+		 </if>	 
+		<if test="confirm_date_from != null and !''.equals(confirm_date_from) ">
+			AND (CONFIRM_DATE <![CDATA[ >= ]]> #{confirm_date_from} AND CONFIRM_DATE <![CDATA[ <= ]]> #{confirm_date_to})
+		 </if>
+		 <if test="in_confirm_date_from != null and !''.equals(in_confirm_date_from) ">
+			AND (IN_CONFIRM_DATE <![CDATA[ >= ]]> #{in_confirm_date_from} AND IN_CONFIRM_DATE <![CDATA[ <= ]]> #{in_confirm_date_to})
+		 </if>
+		 <if test="in_delivery_date_from != null and !''.equals(in_delivery_date_from) ">
+			AND (IN_DELIVERY_DATE <![CDATA[ >= ]]> #{in_delivery_date_from} AND IN_DELIVERY_DATE <![CDATA[ <= ]]> #{in_delivery_date_to})
+		 </if>
+		 <if test="in_fail_date_from != null and !''.equals(in_fail_date_from) ">
+			AND (IN_FAIL_DATE <![CDATA[ >= ]]> #{in_fail_date_from} AND IN_FAIL_DATE <![CDATA[ <= ]]> #{in_fail_date_to})
+		 </if>
+		 ) A <if test=" name1 != null and !''.equals(name1) ">
+		   WHERE A.name1 LIKE CONCAT('%', #{name1}, '%')
+		 </if>
+	</select>
+			 
+ 	<select id="inInsp_selectKey" parameterType="SyInInspVo" resultType="SyInInspVo" >
+		SELECT *
+		  FROM IN_INSP_TBL
+		 WHERE EBELN = #{ebeln}
+		   AND MBLNR = #{mblnr}
+		   AND MJAHR = #{mjahr}
+	</select>
+	
+	<insert id="insert_sloc_master" parameterType="SYSlocMasterVo">
+		insert into sloc_master 
+		(werks, lgort, lgobe,date_created,date_updated)
+		SELECT * 
+		FROM (
+			SELECT #{werks} as werks, #{lgort} as lgort,
+					#{lgobe} as lgobe, current_timestamp() as date_created, current_timestamp() as date_updated ) sp
+		ON DUPLICATE KEY
+		UPDATE werks = sp.werks
+			, lgort = sp.lgort
+			, lgobe = sp.lgobe
+			, date_created = sp.date_created
+			, date_updated = sp.date_updated
+	</insert>
+	
+	<insert id="insert_cost_type_tbl" parameterType="SYCostTypeVo">
+		insert into cost_type_tbl 
+		(kokrs, kostl, datbi,ktext,date_created,date_updated)
+		SELECT * 
+		FROM (
+			SELECT #{kokrs} as kokrs, #{kostl} as kostl,
+					#{datbi} as datbi, #{ktext} as ktext, current_timestamp() as date_created, current_timestamp() as date_updated ) sp
+		ON DUPLICATE KEY
+		UPDATE kokrs = sp.kokrs
+			, kostl = sp.kostl
+			, datbi = sp.datbi
+			, ktext = sp.ktext
+			, date_created = sp.date_created
+			, date_updated = sp.date_updated
+	</insert>
+	 	
+	<insert id="insert_io_type_tbl" parameterType="SYIoTypeVo">
+		insert into io_type_tbl 
+		(aufnr, auart, ktext,bukrs,werks,loekz,date_created,date_updated)
+		SELECT * 
+		FROM (
+			SELECT #{aufnr} as aufnr, #{auart} as auart,
+					#{ktext} as ktext, #{bukrs} as bukrs, #{werks} as werks, #{loekz} as loekz, 
+					current_timestamp() as date_created, current_timestamp() as date_updated ) sp
+		ON DUPLICATE KEY
+		UPDATE aufnr = sp.aufnr
+			, auart = sp.auart
+			, ktext = sp.ktext
+			, bukrs = sp.bukrs
+			, werks = sp.werks
+			, loekz = sp.loekz
+			, date_created = sp.date_created
+			, date_updated = sp.date_updated
+	</insert>
+
+	<insert id="insert_move_type_tbl" parameterType="SYMoveTypeVo">
+		insert into move_type_tbl 
+		(bwart, btext, kostl,aufnr,date_created,date_updated)
+		SELECT * 
+		FROM (
+			SELECT #{bwart} as bwart, #{btext} as btext,
+					#{kostl} as kostl, #{aufnr} as aufnr,
+					current_timestamp() as date_created, current_timestamp() as date_updated ) sp
+		ON DUPLICATE KEY
+		UPDATE bwart = sp.bwart
+			, btext = sp.btext
+			, kostl = sp.kostl
+			, aufnr = sp.aufnr
+			, date_created = sp.date_created
+			, date_updated = sp.date_updated
+	</insert>
+	
+	<!-- <select id="select_medi_item" parameterType="SYProdVo" resultType="SYProdVo">
+	select k.* from 
+	(
+		SELECT AA.*, D.GR_NM,  D.DMR_NO, D.RN_NO, D.CHANGE_REMARK  fn_mes_code_nm('pdsts', B.PDSTS)  AS PDSTS_NOW  12.14 공정상태 추가 mr eric
+  		  FROM (SELECT A.CUSTOMER_NM, A.PORDNO, A.SERNP, A.PROJECT_NO, A.PDSTS,fn_mes_code_nm('pdsts', B.PDSTS)  AS PDSTS_NOW, A.ITNBR, A.WKCTR, A.GR_NO, A.GR_SEQ,
+  		  				B.PORDNO_POP, B.PORDNO_SEQ, B.ROUTING_NO, C.ROUTING_CODE, C.ROUTING_DSCR, C.ROUTING_GUBUN,
+						CASE C.ROUTING_GUBUN WHEN 'P' THEN '생산' WHEN 'Q' THEN '품질' WHEN 'C' THEN '출하' ELSE C.ROUTING_GUBUN END AS ROUTING_GUBUN_NM,
+						CASE C.ROUTING_GNO_GUBUN WHEN 'Y' THEN '포장라우팅' WHEN 'N' THEN '생산라우팅' ELSE C.ROUTING_GNO_GUBUN END AS ROUTING_GNO_GUBUN_NM,
+						C.ROUTING_GNO_GUBUN, A.PORDNO_STATUS, C.UPDATER, C.DATE_UPDATED, C.DATE_CREATED, A.CMDAT, A.PDQTY
+				  FROM PROD_TBL A, PROD_ORD_TBL B, ROUTING_HEADER_MASTER C
+				 WHERE A.PORDNO = B.PORDNO
+				   AND A.DEPT_CD = B.DEPT_CD
+				   AND A.PDSTS = A.PDSTS
+				   AND A.CMDAT = B.CMDAT
+				   AND B.ROUTING_GNO = C.ROUTING_GNO
+				   AND B.ROUTING_NO = C.ROUTING_NO
+			  	   AND B.PDSTS IN ('p2', 'p3', 'p4', 'p5', 'p7')
+				<if test="dept_cd!=null and !dept_cd.equals('')">
+				   AND A.DEPT_CD = #{dept_cd}
+				</if>
+				<if test="itnbr!=null and !itnbr.equals('')">
+				   AND A.ITNBR LIKE CONCAT('%', #{itnbr}, '%')
+				</if>
+				<if test="project_no!=null and !project_no.equals('')">
+				   AND A.PROJECT_NO LIKE CONCAT('%', #{project_no}, '%')
+				</if>
+				<if test="cmdat_from!=null and !cmdat_from.equals('')">
+				   AND ( A.CMDAT <![CDATA[ >= ]]> #{cmdat_from} AND A.CMDAT <![CDATA[ <= ]]> #{cmdat_to} )
+				</if>
+				<if test="pordno_status != null and !pordno_status.equals('')">
+				   AND A.PORDNO_STATUS LIKE CONCAT('%', #{pordno_status}, '%')
+				</if>
+				<if test="routing_code!=null and !routing_code.equals('')">
+				   AND C.ROUTING_CODE = #{routing_code}
+				</if>
+		 ) AA LEFT OUTER JOIN 
+			  			( SELECT AA.GR_NO, AA.GR_NM, BB.MATNR, BB.MAKTX, AA.ECR_NO, AA.RN_NO, AA.DMR_NO, AA.CHANGE_REMARK, AA.GR_SEQ
+							FROM DMR_MASTER_TBL AA, dmr_matnr_tbl BB
+						   WHERE AA.GR_NO = BB.GR_NO
+						) D
+				ON AA.ITNBR = D.MATNR 
+					AND AA.GR_NO = D.GR_NO
+					AND AA.GR_SEQ = D.GR_SEQ
+	) k
+	<where>
+		<if test="gr_nm!=null and !gr_nm.equals('')">
+			AND k.GR_NM LIKE CONCAT('%', #{gr_nm}, '%')
+		</if>
+	</where>
+	ORDER BY PORDNO, PORDNO_SEQ -->
+<!-- 		SELECT A.PORDNO, A.PROJECT_NO, B.PORDNO_POP, B.PORDNO_SEQ, B.ROUTING_NO, C.ROUTING_CODE, C.ROUTING_DSCR, C.ROUTING_GUBUN, -->
+<!-- 				CASE C.ROUTING_GUBUN WHEN 'P' THEN '생산' WHEN 'Q' THEN '품질' WHEN 'C' THEN '출하' ELSE C.ROUTING_GUBUN END AS ROUTING_GUBUN_NM, -->
+<!-- 				CASE C.ROUTING_GNO_GUBUN WHEN 'Y' THEN '포장라우팅' WHEN 'N' THEN '생산라우팅' ELSE C.ROUTING_GNO_GUBUN END AS ROUTING_GNO_GUBUN_NM, -->
+<!-- 				C.ROUTING_GNO_GUBUN, D.GR_NM, A.PORDNO_STATUS, C.UPDATER, C.DATE_UPDATED, C.DATE_CREATED, A.CMDAT -->
+<!-- 		  FROM PROD_TBL A, PROD_ORD_TBL B, ROUTING_HEADER_MASTER C,  -->
+<!-- 			  ( SELECT AA.GR_NO, AA.GR_NM, BB.MATNR, BB.MAKTX, AA.ECR_NO, AA.RN_NO, AA.DMR_NO, AA.CHANGE_REMARK -->
+<!-- 						  FROM DMR_MASTER_TBL AA, dmr_matnr_tbl BB -->
+<!-- 						  WHERE AA.GR_NO = BB.GR_NO -->
+<!-- 						  AND AA.APPLY_YN = 'Y' -->
+<!-- 						  AND BB.USE_YN = 'Y') D -->
+<!-- 		 WHERE A.PORDNO = B.PORDNO -->
+<!-- 		   AND A.DEPT_CD = B.DEPT_CD -->
+<!-- 		   AND A.PDSTS = A.PDSTS -->
+<!-- 		   AND A.CMDAT = B.CMDAT -->
+<!-- 		   AND B.ROUTING_GNO = C.ROUTING_GNO -->
+<!-- 		   AND B.ROUTING_NO = C.ROUTING_NO -->
+<!-- 		   AND A.ITNBR = D.MATNR -->
+<!-- 		   AND A.GR_NO = D.GR_NO -->
+<!-- 		   AND A.PDSTS <![CDATA[ <> ]]> 'p8' -->
+<!-- 		<if test="dept_cd!=null and !dept_cd.equals('')"> -->
+<!-- 		   AND A.DEPT_CD = #{dept_cd} -->
+<!-- 		</if> -->
+<!-- 		<if test="project_no!=null and !project_no.equals('')"> -->
+<!-- 		   AND A.PROJECT_NO LIKE CONCAT('%', #{project_no}, '%') -->
+<!-- 		</if> -->
+<!-- 		<if test="cmdat_from!=null and !cmdat_from.equals('')"> -->
+<!-- 		   AND ( A.CMDAT <![CDATA[ >= ]]> #{cmdat_from} AND A.CMDAT <![CDATA[ <= ]]> #{cmdat_to} ) -->
+<!-- 		</if> -->
+<!-- 		<if test="gr_nm!=null and !gr_nm.equals('')"> -->
+<!-- 		   AND D.GR_NM LIKE CONCAT('%', #{gr_nm}, '%') -->
+<!-- 		</if> -->
+<!-- 		<if test="pordno_status != null and !pordno_status.equals('')"> -->
+<!-- 		   AND A.PORDNO_STATUS LIKE CONCAT('%', #{pordno_status}, '%') -->
+<!-- 		</if> -->
+<!-- 		<if test="routing_no!=null and !routing_no.equals('')"> -->
+<!-- 		   AND C.ROUTING_NO LIKE CONCAT('%', #{routing_no}, '%') -->
+<!-- 		</if> -->
+<!-- 	</select>	 -->
+
+	<!-- <select id="select_beforeJob_pdsts" parameterType="SYProdVo" resultType="SYProdVo">
+		SELECT *
+		  FROM PROD_ORD_TBL
+		 WHERE PORDNO = #{pordno}
+		 ORDER BY PORDNO_SEQ
+		   AND PORDNO_SEQ = #{pordno_seq}
+	</select> -->
+	
+	<select id="select_selfinsp_master" parameterType="SYSelfInspMasterVo" resultType="SYSelfInspMasterVo">
+		SELECT *
+		  FROM SELF_INSP_MASTER
+		 WHERE 1 = 1
+		 <if test="simaster_gr_no!=null and !''.equals(simaster_gr_no)">
+		   AND SIMASTER_GR_NO LIKE CONCAT('%', #{simaster_gr_no}, '%')
+		 </if>
+		 <if test="simaster_gr_nm!=null and !''.equals(simaster_gr_nm)">
+		   AND SIMASTER_GR_NM LIKE CONCAT('%', #{simaster_gr_nm}, '%')
+		 </if>
+		 <if test="matnr!=null and !''.equals(matnr)">
+		   AND MATNR LIKE CONCAT('%', #{matnr}, '%')
+		 </if>
+		 <if test="use_yn!=null and !''.equals(use_yn)">
+		   AND USE_YN = #{use_yn}
+		 </if>
+		ORDER BY SIMASTER_GR_NO, SIMASTER_SEQ
+	</select>
+	
+	<!-- <select id="select_selfinsp_header" parameterType="SYSelfInspHeaderVo" resultType="SYSelfInspHeaderVo">
+		SELECT A.SIMASTER_GR_NO, A.SIMASTER_GR_NM, B.SIHEADER_SEQ, B.SIHEADER_CODE, DISPLAY_SEQ, MAIN_NAME, SUB_NAME, ITEM_VALUE,
+				B.UPDATER, B.DATE_UPDATED, B.USE_YN, B.DEPT_CD
+		  FROM SELF_INSP_MASTER A, SELF_INSP_HEADER B
+		 WHERE A.SIMASTER_GR_NO = B.SIMASTER_GR_NO
+		   AND A.USE_YN = 'Y'
+		   AND B.USE_YN = 'Y'
+		<if test="dept_cd!=null and !''.equals(dept_cd)">
+		   AND B.DEPT_CD = #{dept_cd}
+		</if>
+		<if test="matnr!=null and !''.equals(matnr)">
+		   AND A.MATNR = #{matnr}
+		</if>
+		<if test="simaster_gr_no!=null and !''.equals(simaster_gr_no)">
+		   AND A.SIMASTER_GR_NO = #{simaster_gr_no}
+		</if>
+		ORDER BY CAST(B.DISPLAY_SEQ AS INT)
+	</select> -->
+
+	<!-- <select id="select_dmrRnInfo" parameterType="String" resultType="SYProdVo">
+		SELECT PORDNO, GR_NO, GR_SEQ, ECR_NO, RN_NO, DMR_NO
+		  FROM PROD_TBL
+		 WHERE PORDNO = #{pordno}
+	</select> -->
+
+	<!-- <select id="select_selfinsp_header_exist" parameterType="SYSelfInspHeaderVo" resultType="SYSelfInspHeaderVo">
+		SELECT A.SIMASTER_GR_NO, A.SIMASTER_GR_NM, B.SIHEADER_SEQ, B.SIHEADER_CODE, B.DISPLAY_SEQ, B.MAIN_NAME, B.SUB_NAME, C.ITEM_VALUE,
+				B.UPDATER, B.DATE_UPDATED
+		  FROM SELF_INSP_MASTER A, SELF_INSP_HEADER B, SELF_INSP_HEADER_SAVE C
+		 WHERE A.SIMASTER_GR_NO = B.SIMASTER_GR_NO
+		   AND B.SIMASTER_GR_NO = C.SIMASTER_GR_NO
+		   AND B.SIHEADER_CODE = C.SIHEADER_CODE
+		   AND B.DEPT_CD = C.DEPT_CD
+		   AND A.USE_YN = 'Y'
+		   AND B.USE_YN = 'Y'
+		   AND C.USE_YN = 'Y'
+		<if test="dept_cd!=null and !''.equals(dept_cd)">
+		   AND B.DEPT_CD = #{dept_cd}
+		</if>
+		<if test="matnr!=null and !''.equals(matnr)">
+		   AND A.MATNR = #{matnr}
+		</if>
+		   AND C.PORDNO = #{pordno}
+		ORDER BY CAST(B.DISPLAY_SEQ AS INT)
+	</select> -->
+	
+	<select id="select_selfInspCode_1210" parameterType="SYMesCodeVo" resultType="SYMesCodeVo">
+		SELECT CODE, CODE_NM
+		  FROM MES_CODE_TBL
+		 WHERE CODE_CAT ='selfinsp' 
+		   AND USE_YN = 'Y'
+		<if test="ref1!=null and !''.equals(ref1)">
+		   AND REF1 = #{ref1}
+		</if>
+	</select>
+	
+	<!-- <select id="select_selfInspCode_1110" parameterType="SYMesCodeVo" resultType="SYMesCodeVo">
+		SELECT CODE, CODE_NM
+		  FROM MES_CODE_TBL
+		 WHERE USE_YN = 'Y'
+		   AND CODE_CAT = 'selfinsp'
+		   AND REF1 = '1110'
+		   AND CODE IN (SELECT DISTINCT ROUTING_CODE_SUB
+						  FROM SELF_INSP_DETAIL
+						 WHERE SIMASTER_GR_NO = #{ref1})
+		ORDER BY DIS_SEQ
+	</select> -->
+
+	<!-- <select id="select_selfinsp_detail" parameterType="SYSelfInspDetailVo" resultType="SYSelfInspDetailVo">
+		SELECT SIMASTER_GR_NO, SIDETAIL_SEQ, SIDETAIL_CODE, DEPT_CD, DISPLAY_SEQ, ROUTING_CODE,
+				ROUTING_CODE_SUB, MINSP_NAME, SINSP_NAME, INSP_STANDARD, INSP_VALUE, INSP_STATE,
+				MEMBER_EMP_NO, MEMBER_NM, WORK_DATE, USE_YN, REMARK, CREATOR, UPDATER,
+				DATE_CREATED, DATE_UPDATED
+		  FROM SELF_INSP_DETAIL
+		 WHERE 1=1   AND USE_YN = 'Y'
+		 <if test="use_yn!=null and !''.equals(use_yn)">
+		   AND USE_YN = 'Y'
+		 </if>
+		 <if test="dept_cd!=null and !''.equals(dept_cd)">
+		   AND DEPT_CD = #{dept_cd}
+		 </if>
+		 <if test="simaster_gr_no!=null and !''.equals(simaster_gr_no)">
+		   AND SIMASTER_GR_NO = #{simaster_gr_no}
+		 </if>
+		ORDER BY CAST(DISPLAY_SEQ AS INT)
+	</select> -->
+
+	<!-- <select id="select_selfinsp_detail_exist" parameterType="SYSelfInspDetailVo" resultType="SYSelfInspDetailVo">
+		SELECT A.SIMASTER_GR_NO, A.SIDETAIL_SEQ, A.SIDETAIL_CODE, A.DEPT_CD, A.DISPLAY_SEQ, A.ROUTING_CODE,
+		       A.ROUTING_CODE_SUB, A.MINSP_NAME, A.SINSP_NAME, A.INSP_STANDARD,
+		       B.INSP_VALUE, B.INSP_STATE, B.MEMBER_EMP_NO, B.MEMBER_NM, B.WORK_DATE, B.REMARK
+		  FROM SELF_INSP_DETAIL A, SELF_INSP_DETAIL_SAVE B
+		 WHERE A.SIMASTER_GR_NO = B.SIMASTER_GR_NO
+		   AND A.SIDETAIL_CODE = B.SIDETAIL_CODE
+		   AND A.ROUTING_CODE = B.ROUTING_CODE
+		   AND A.DEPT_CD = B.DEPT_CD
+		   AND A.USE_YN = 'Y'
+		   AND B.USE_YN = 'Y'
+		<if test="dept_cd!=null and !''.equals(dept_cd)">
+		   AND A.DEPT_CD = #{dept_cd}
+		</if>
+		<if test="simaster_gr_no!=null and !''.equals(simaster_gr_no)">
+		   AND B.SIMASTER_GR_NO = #{simaster_gr_no}
+		</if>
+		<if test="pordno!=null and !''.equals(pordno)">
+		   AND B.PORDNO = #{pordno}
+		</if>
+		ORDER BY CAST(A.DISPLAY_SEQ AS INT)
+	</select> -->
+	
+	<!-- <select id="checkExistSelfInsp" parameterType="SYSelfInspHeaderVo" resultType="int">
+		SELECT COUNT(*)
+		  FROM SELF_INSP_HEADER_SAVE
+		<if test="pordno!=null and !''.equals(pordno)">
+		 WHERE PORDNO = #{pordno}
+		</if>
+	</select> -->
+	
+	<insert id="insert_selfInspMaster" parameterType="SYSelfInspMasterVo">
+		INSERT INTO SELF_INSP_MASTER (
+			SIMASTER_GR_NO, SIMASTER_GR_NM, MATNR, USE_YN, CREATOR, DATE_CREATED
+		) VALUES (
+			CONCAT('SM',LPAD(fn_common_seq('self_insp_header'),4,'0')), #{simaster_gr_nm}, #{matnr}, 'Y', 
+			#{creator}, current_timestamp() )
+	</insert>
+	
+	<update id="update_selfInspMaster" parameterType="SYSelfInspMasterVo">
+		UPDATE SELF_INSP_MASTER SET
+		<if test="simaster_gr_nm!=null and !''.equals(simaster_gr_nm)">
+			SIMASTER_GR_NM = #{simaster_gr_nm}
+		</if>
+		WHERE SIMASTER_GR_NO = #{simaster_gr_no}
+	</update>
+	
+	<!-- <insert id="insert_selfInspHeaderMng" parameterType="SYSelfInspHeaderVo">
+		INSERT INTO SELF_INSP_HEADER ( SIMASTER_GR_NO, SIHEADER_CODE, DEPT_CD, DISPLAY_SEQ, MAIN_NAME, 
+				SUB_NAME, ITEM_NAME, USE_YN, CREATOR, DATE_CREATED ) VALUES 
+		( #{simaster_gr_no}, CONCAT('SH',LPAD(fn_common_seq('self_insp_header'),4,'0')), #{dept_cd}, #{display_seq},
+		#{main_name}, #{sub_name}, #{item_name}, #{creator}, current_timestamp() )
+	</insert> -->
+	
+	<insert id="insert_selfInspHeader" parameterType="SYSelfInspHeaderVo">
+		INSERT INTO SELF_INSP_HEADER_SAVE (
+		PORDNO, SIMASTER_GR_NO, SIHEADER_CODE, DEPT_CD, DISPLAY_SEQ, ITEM_VALUE, RN_NO, DMR_NO, SERNP,
+		USE_YN, CREATOR, DATE_CREATED ) VALUES (
+		#{pordno}, #{simaster_gr_no}, #{siheader_code}, #{dept_cd}, #{display_seq}, #{item_value}, #{rn_no}, #{dmr_no}, #{sernp},
+		'Y', #{creator}, current_timestamp() )
+	</insert>
+	
+	<!-- <update id="update_selfInspHeader" parameterType="SYSelfInspHeaderVo">
+		UPDATE SELF_INSP_HEADER_SAVE SET
+		<if test="item_value!=null and !''.equals(item_value)">
+			ITEM_VALUE = #{item_value},
+		</if>
+		<if test="rn_no!=null and !''.equals(rn_no)">
+			RN_NO = #{rn_no},
+		</if>
+		<if test="dmr_no!=null and !''.equals(dmr_no)">
+			DMR_NO = #{dmr_no},
+		</if>
+		<if test="sernp!=null and !''.equals(sernp)">
+			SERNP = #{sernp},
+		</if>
+		<if test="use_yn!=null and !''.equals(use_yn)">
+			USE_YN = #{use_yn},
+		</if>
+		<if test="confirm_id!=null and !''.equals(confirm_id)">
+			CONFIRM_ID = #{confirm_id},
+		</if>
+			UPDATER = #{updater},
+			DATE_UPDATED = current_timestamp()
+		 WHERE PORDNO = #{pordno}
+		   AND SIMASTER_GR_NO = #{simaster_gr_no}
+		   AND SIHEADER_CODE = #{siheader_code}
+		   AND DEPT_CD = #{dept_cd} 
+		   AND DISPLAY_SEQ = #{display_seq}
+	</update> -->
+	
+	<!-- <insert id="insert_selfInspDetail" parameterType="SYSelfInspDetailVo">
+		INSERT INTO SELF_INSP_DETAIL_SAVE (
+		PORDNO, SIMASTER_GR_NO, SIDETAIL_CODE, DEPT_CD, DISPLAY_SEQ, ROUTING_CODE, 
+		INSP_VALUE, INSP_STATE, MEMBER_EMP_NO, MEMBER_NM,
+		WORK_DATE, USE_YN, REMARK, CREATOR, DATE_CREATED ) VALUES (
+		#{pordno}, #{simaster_gr_no}, #{sidetail_code}, #{dept_cd}, #{display_seq}, #{routing_code}, 
+		#{insp_value}, #{insp_state}, #{member_emp_no}, #{member_nm},
+		#{work_date}, 'Y', #{remark}, #{creator}, current_timestamp() )
+	</insert> -->
+	 
+	<!-- <update id="update_selfInspDetail" parameterType="SYSelfInspDetailVo">
+		UPDATE SELF_INSP_DETAIL_SAVE SET
+		<if test="insp_value!=null and !''.equals(insp_value)">
+			INSP_VALUE = #{insp_value},
+		</if>
+		<if test="insp_state!=null and !''.equals(insp_state)">
+			INSP_STATE = #{insp_state},
+		</if>
+		<if test="member_emp_no!=null and !''.equals(member_emp_no)"> 
+			MEMBER_EMP_NO = #{member_emp_no},
+		</if>
+		<if test="member_nm!=null and !''.equals(member_nm)"> 
+			MEMBER_NM = #{member_nm},
+		</if>
+		<if test="work_date!=null and !''.equals(work_date)">
+			WORK_DATE = #{work_date},
+		</if>
+		<if test="use_yn!=null and !''.equals(use_yn)"> 
+			USE_YN = #{use_yn},
+		</if>
+		<if test="remark!=null and !''.equals(remark)"> 
+			REMARK = #{remark},
+		</if>
+			UPDATER = #{updater},
+			DATE_UPDATED = current_timestamp()
+		WHERE PORDNO = #{pordno}
+		  AND SIMASTER_GR_NO = #{simaster_gr_no}
+		  AND SIDETAIL_CODE = #{sidetail_code}
+		  AND DEPT_CD = #{dept_cd}
+		  AND DISPLAY_SEQ = #{display_seq}
+		  AND ROUTING_CODE  = #{routing_code}
+	</update> -->
+	
+	<select id="grade_matnr_chk" parameterType="List" resultType="SYProdVo">
+	
+	select a.pordno, a.project_no, a.dept_cd, b.matnr, b.maktx, b.wrkst, 
+		(case when a.itnbr = '' <![CDATA[ && ]]> a.dept_cd = '1210' then 'Y' else b.kzumw end) kzumw,
+		(case when b.kzumw = 'Y' <![CDATA[ && ]]> a.dept_cd = '1210' then '' when a.itnbr = '' <![CDATA[ && ]]> a.dept_cd = '1210' then '' else a.lgort end) lgort
+		from prod_tbl a
+		left outer join material_recv_master b on a.itnbr = b.matnr
+		where a.pordno IN
+				<foreach collection="list" item="item" index="index" separator="," open="(" close=")">
+			    		 #{item}
+			  	</foreach>
+	
+	
+<!-- 		select a.pordno, a.project_no, b.matnr, b.maktx, b.wrkst, b.kzumw, -->
+<!-- 		(case when b.kzumw = 'Y' then '' else a.lgort end) lgort -->
+<!-- 		from prod_tbl a, material_recv_master b -->
+<!-- 		<where> -->
+<!-- 			<if test="true"> -->
+<!-- 				and a.itnbr = b.matnr -->
+<!-- 			</if> -->
+<!-- 			<if test="list != null and list.size() > 0"> -->
+<!-- 			  	AND pordno IN -->
+<!-- 				<foreach collection="list" item="item" index="index" separator="," open="(" close=")"> -->
+<!-- 			    		 #{item} -->
+<!-- 			  	</foreach> -->
+<!-- 			</if> -->
+<!-- 		</where> -->
+	</select>
+	
+	
+	<update id="grade_loc_update" parameterType="SYProdVo">
+		UPDATE 
+			prod_tbl 
+		SET
+			insp_lgort = #{lgort}
+		WHERE PORDNO = #{pordno}
+	</update>
+	
+	<update id="ininsp_update" parameterType="SYInInspVo">
+		UPDATE IN_INSP_TBL SET
+			C_MBLNR = #{mblnr_cancel},
+			C_MJAHR = #{mjahr_cancel},
+			S_MBLNR = '',
+			S_MJAHR = '',
+			IN_CONFIRM_DATE = '', 
+			MBLNR_CANCEL = '',
+			MJAHR_CANCEL = '',
+			IN_FAIL_DATE = '', 
+			INSP_STATUS = 'i1'
+		WHERE EBELN = #{ebeln}
+		AND EBELP = #{ebelp}
+		AND PARTIAL_SEQ = #{partial_seq}
+		
+	</update>
+	
+	<delete id="ininsp_delete" parameterType="SYScmRawProcVo">
+		DELETE FROM IN_INSP_TBL
+		WHERE EBELN = #{ebeln}
+		AND EBELP = #{ebelp}
+		AND PARTIAL_SEQ = #{partial_seq}
+	</delete>
+
+	<delete id="ininsp_detail_delete" parameterType="SYInInspVo">
+		DELETE FROM IN_INSP_DETAIL_TBL
+		WHERE EBELN = #{ebeln}
+		AND EBELP = #{ebelp}
+		AND PARTIAL_SEQ = #{partial_seq}
+	</delete>
+	
+	<delete id="ininsp_header_delete" parameterType="SYInInspVo">
+		DELETE FROM IN_INSP_HEADER_TBL
+		WHERE EBELN = #{ebeln}
+		AND EBELP = #{ebelp}
+		AND PARTIAL_SEQ = #{partial_seq}
+	</delete>
+	
+	<select id="maktx_select" parameterType="String" resultType="String">
+		select maktx from material_recv_master where matnr =  #{matnr}
+	</select>
+	
+	<update id="selfInspMaster_update" parameterType="SYSelfInspMasterVo">
+		UPDATE SELF_INSP_MASTER SET
+		<if test="simaster_gr_nm!=null and !''.equals(simaster_gr_nm)">
+			SIMASTER_GR_NM = #{simaster_gr_nm},
+		</if>
+		<if test="use_yn!=null and !''.equals(use_yn)">
+			USE_YN = #{use_yn},
+		</if>
+		<if test="matnr!=null and !''.equals(matnr)">
+			MATNR = #{matnr},
+		</if>
+			UPDATER = #{updater},
+			DATE_UPDATED = current_timestamp()
+		WHERE SIMASTER_GR_NO = #{simaster_gr_no}
+		  AND SIMASTER_SEQ = #{simaster_seq} 
+	</update>
+	
+	<insert id="selfInspMaster_new_insert" parameterType="SYSelfInspMasterVo">
+		INSERT INTO SELF_INSP_MASTER (SIMASTER_GR_NO, SIMASTER_GR_NM, MATNR, CREATOR, DATE_CREATED) VALUES
+		( CONCAT('SM',LPAD(fn_common_seq('self_insp_header'),4,'0')), #{simaster_gr_nm}, #{matnr}, #{creator}, current_timestamp() )	
+	</insert>
+	
+	<insert id="selfInspMaster_matnr_insert" parameterType="SYSelfInspMasterVo">
+		INSERT INTO SELF_INSP_MASTER (SIMASTER_GR_NO, SIMASTER_GR_NM, MATNR, CREATOR, DATE_CREATED) VALUES
+		( #{simaster_gr_no}, #{simaster_gr_nm}, #{matnr}, #{creator}, current_timestamp() )
+	</insert>
+
+	<update id="selfInspHeader_update" parameterType="SYSelfInspHeaderVo">
+		UPDATE SELF_INSP_HEADER SET
+			MAIN_NAME = #{main_name},
+			SUB_NAME = #{sub_name},
+			ITEM_VALUE = #{item_value},
+			USE_YN = #{use_yn},
+			UPDATER = #{updater},
+			DATE_UPDATED = current_timestamp()
+		WHERE SIMASTER_GR_NO = #{simaster_gr_no}
+		  AND SIHEADER_SEQ = #{siheader_seq}
+		  AND SIHEADER_CODE = #{siheader_code}
+	</update>
+	
+	<insert id="selfInspHeader_insert" parameterType="SYSelfInspHeaderVo">
+		INSERT INTO SELF_INSP_HEADER ( SIMASTER_GR_NO, SIHEADER_CODE, DEPT_CD, DISPLAY_SEQ, MAIN_NAME, SUB_NAME, 
+		ITEM_VALUE, USE_YN, CREATOR, DATE_CREATED) VALUES 
+		( #{simaster_gr_no}, CONCAT('SH',LPAD(fn_common_seq('self_insp_header'),4,'0')), #{dept_cd}, #{display_seq}, 
+		#{main_name}, #{sub_name}, #{item_value}, #{use_yn}, #{creator}, current_timestamp() )
+	</insert>
+	
+	<update id="selfInspDetail_update" parameterType="SYSelfInspDetailVo">
+		UPDATE SELF_INSP_DETAIL SET
+			DEPT_CD = #{dept_cd}, 
+			ROUTING_CODE = #{routing_code},
+			ROUTING_CODE_SUB = #{routing_code_sub}, 
+			MINSP_NAME = #{minsp_name},
+			SINSP_NAME = #{sinsp_name}, 
+			INSP_STANDARD = #{insp_standard},
+			INSP_VALUE = #{insp_value},
+			MEMBER_EMP_NO = #{member_emp_no},
+			MEMBER_NM = #{member_nm},
+			USE_YN = #{use_yn},
+			REMARK = #{remark},
+			UPDATER = #{updater},
+			DATE_UPDATED = current_timestamp()
+		WHERE SIMASTER_GR_NO = #{simaster_gr_no}
+		AND SIDETAIL_SEQ = #{sidetail_seq}
+		AND SIDETAIL_CODE = #{sidetail_code}
+	</update>
+	
+	<insert id="selfInspDetail_insert" parameterType="SYSelfInspDetailVo">
+		INSERT INTO SELF_INSP_DETAIL (SIMASTER_GR_NO, SIDETAIL_SEQ, SIDETAIL_CODE, DEPT_CD, DISPLAY_SEQ, ROUTING_CODE, ROUTING_CODE_SUB,
+			MINSP_NAME, SINSP_NAME, INSP_STANDARD, INSP_VALUE, MEMBER_EMP_NO, MEMBER_NM, USE_YN, REMARK, CREATOR, DATE_CREATED) VALUES 
+			( #{simaster_gr_no}, #{sidetail_seq}, CONCAT('SD',LPAD(fn_common_seq('self_insp_detail'),4,'0')), #{dept_cd}, #{display_seq},
+			#{routing_code}, #{routing_code_sub}, #{minsp_name}, #{sinsp_name}, #{insp_standard}, #{insp_value}, #{member_emp_no}, 
+			#{member_nm}, #{use_yn}, #{remark}, #{creator}, current_timestamp() )
+	</insert>
+	
+	<select id="checkDuplicateMatnr" parameterType="SYSelfInspMasterVo" resultType="SYSelfInspMasterVo">
+		SELECT *
+		  FROM SELF_INSP_MASTER
+		 WHERE MATNR = #{matnr} and USE_YN = 'Y'
+	</select>
+	
+	<select id="select_v_selfinsp_master" parameterType="SYSelfInspMasterVo" resultType="SYSelfInspMasterVo">
+		SELECT *
+		  FROM V_SELF_INSP_MASTER
+		 WHERE 1 = 1
+		 <if test="simaster_gr_no!=null and !''.equals(simaster_gr_no)">
+		   AND SIMASTER_GR_NO LIKE CONCAT('%', #{simaster_gr_no}, '%')
+		 </if>
+		 <if test="simaster_gr_nm!=null and !''.equals(simaster_gr_nm)">
+		   AND SIMASTER_GR_NM LIKE CONCAT('%', #{simaster_gr_nm}, '%')
+		 </if>
+		 <if test="matnr!=null and !''.equals(matnr)">
+		   AND MATNR LIKE CONCAT('%', #{matnr}, '%')
+		 </if>
+		 <if test="use_yn!=null and !''.equals(use_yn)">
+		   AND USE_YN = #{use_yn}
+		 </if>
+		ORDER BY SIMASTER_GR_NO, SIMASTER_SEQ
+	</select>
+	
+	<insert id="v_selfInspMaster_new_insert" parameterType="SYSelfInspMasterVo">
+		INSERT INTO V_SELF_INSP_MASTER (SIMASTER_GR_NO, SIMASTER_GR_NM, MATNR, CREATOR, DATE_CREATED) VALUES
+		( CONCAT('VM',LPAD(fn_common_seq('v_self_insp_header'),4,'0')), #{simaster_gr_nm}, #{matnr}, #{creator}, current_timestamp() )	
+	</insert>
+	
+	<insert id="v_selfInspMaster_matnr_insert" parameterType="SYSelfInspMasterVo">
+		INSERT INTO V_SELF_INSP_MASTER (SIMASTER_GR_NO, SIMASTER_GR_NM, MATNR, CREATOR, DATE_CREATED) VALUES
+		( #{simaster_gr_no}, #{simaster_gr_nm}, #{matnr}, #{creator}, current_timestamp() )
+	</insert>
+	
+	<insert id="v_selfInspHeader_insert" parameterType="SYSelfInspHeaderVo">
+		INSERT INTO V_SELF_INSP_HEADER ( SIMASTER_GR_NO, SIHEADER_CODE, DEPT_CD, DISPLAY_SEQ, MAIN_NAME, SUB_NAME, 
+		ITEM_VALUE, USE_YN, CREATOR, DATE_CREATED) VALUES 
+		( #{simaster_gr_no}, CONCAT('VH',LPAD(fn_common_seq('v_self_insp_header'),4,'0')), #{dept_cd}, #{display_seq}, 
+		#{main_name}, #{sub_name}, #{item_value}, #{use_yn}, #{creator}, current_timestamp() )
+	</insert>
+	
+	<update id="v_selfInspHeader_update" parameterType="SYSelfInspHeaderVo">
+		UPDATE V_SELF_INSP_HEADER SET
+			MAIN_NAME = #{main_name},
+			SUB_NAME = #{sub_name},
+			ITEM_VALUE = #{item_value},
+			USE_YN = #{use_yn},
+			UPDATER = #{updater},
+			DATE_UPDATED = current_timestamp()
+		WHERE SIMASTER_GR_NO = #{simaster_gr_no}
+		  AND SIHEADER_SEQ = #{siheader_seq}
+		  AND SIHEADER_CODE = #{siheader_code}
+	</update>
+	
+	<select id="select_v_selfinsp_header" parameterType="SYSelfInspHeaderVo" resultType="SYSelfInspHeaderVo">
+		SELECT A.SIMASTER_GR_NO, A.SIMASTER_GR_NM, B.SIHEADER_SEQ, B.SIHEADER_CODE, DISPLAY_SEQ, MAIN_NAME, SUB_NAME, ITEM_VALUE,
+				B.UPDATER, B.DATE_UPDATED, B.USE_YN, B.DEPT_CD
+		  FROM V_SELF_INSP_MASTER A, V_SELF_INSP_HEADER B
+		 WHERE A.SIMASTER_GR_NO = B.SIMASTER_GR_NO
+		   AND A.USE_YN = 'Y'
+<!-- 		   AND B.USE_YN = 'Y' -->
+		<if test="dept_cd!=null and !''.equals(dept_cd)">
+		   AND B.DEPT_CD = #{dept_cd}
+		</if>
+		<if test="matnr!=null and !''.equals(matnr)">
+		   AND A.MATNR = #{matnr}
+		</if>
+		<if test="simaster_gr_no!=null and !''.equals(simaster_gr_no)">
+		   AND A.SIMASTER_GR_NO = #{simaster_gr_no}
+		</if>
+		ORDER BY CAST(B.DISPLAY_SEQ AS INT)
+	</select>
+	
+	<select id="select_v_selfinsp_detail" parameterType="SYSelfInspDetailVo" resultType="SYSelfInspDetailVo">
+		SELECT SIMASTER_GR_NO, SIDETAIL_SEQ, SIDETAIL_CODE, DEPT_CD, DISPLAY_SEQ, ROUTING_CODE,
+				ROUTING_CODE_SUB, MINSP_NAME, SINSP_NAME, INSP_STANDARD, INSP_VALUE, INSP_STATE,
+				MEMBER_EMP_NO, MEMBER_NM, WORK_DATE, USE_YN, REMARK, CREATOR, UPDATER,
+				DATE_CREATED, DATE_UPDATED
+		  FROM V_SELF_INSP_DETAIL
+		 WHERE 1=1
+<!-- 		   AND USE_YN = 'Y' -->
+		 <if test="dept_cd!=null and !''.equals(dept_cd)">
+		   AND DEPT_CD = #{dept_cd}
+		 </if>
+		 <if test="simaster_gr_no!=null and !''.equals(simaster_gr_no)">
+		   AND SIMASTER_GR_NO = #{simaster_gr_no}
+		 </if>
+		ORDER BY CAST(DISPLAY_SEQ AS INT)
+	</select>
+	
+	<select id="v_checkDuplicateMatnr" parameterType="SYSelfInspMasterVo" resultType="SYSelfInspMasterVo">
+		SELECT *
+		  FROM V_SELF_INSP_MASTER
+		 WHERE MATNR = #{matnr}
+	</select>
+	
+	<update id="v_selfInspMaster_update" parameterType="SYSelfInspMasterVo">
+		UPDATE V_SELF_INSP_MASTER SET
+		<if test="simaster_gr_nm!=null and !''.equals(simaster_gr_nm)">
+			SIMASTER_GR_NM = #{simaster_gr_nm},
+		</if>
+		<if test="use_yn!=null and !''.equals(use_yn)">
+			USE_YN = #{use_yn},
+		</if>
+		<if test="matnr!=null and !''.equals(matnr)">
+			MATNR = #{matnr},
+		</if>
+			UPDATER = #{updater},
+			DATE_UPDATED = current_timestamp()
+		WHERE SIMASTER_GR_NO = #{simaster_gr_no}
+		  AND SIMASTER_SEQ = #{simaster_seq} 
+	</update>
+	
+	<insert id="v_selfInspDetail_insert" parameterType="SYSelfInspDetailVo">
+		INSERT INTO V_SELF_INSP_DETAIL (SIMASTER_GR_NO, SIDETAIL_SEQ, SIDETAIL_CODE, DEPT_CD, DISPLAY_SEQ, ROUTING_CODE, ROUTING_CODE_SUB,
+			MINSP_NAME, SINSP_NAME, INSP_STANDARD, INSP_VALUE, MEMBER_EMP_NO, MEMBER_NM, USE_YN, REMARK, CREATOR, DATE_CREATED) VALUES 
+			( #{simaster_gr_no}, #{sidetail_seq}, CONCAT('VD',LPAD(fn_common_seq('v_self_insp_detail'),4,'0')), #{dept_cd}, #{display_seq},
+			#{routing_code}, #{routing_code_sub}, #{minsp_name}, #{sinsp_name}, #{insp_standard}, #{insp_value}, #{member_emp_no}, 
+			#{member_nm}, #{use_yn}, #{remark}, #{creator}, current_timestamp() )
+	</insert>
+	
+	<update id="v_selfInspDetail_update" parameterType="SYSelfInspDetailVo">
+		UPDATE V_SELF_INSP_DETAIL SET
+			DEPT_CD = #{dept_cd}, 
+			ROUTING_CODE = #{routing_code},
+			ROUTING_CODE_SUB = #{routing_code_sub}, 
+			MINSP_NAME = #{minsp_name},
+			SINSP_NAME = #{sinsp_name}, 
+			INSP_STANDARD = #{insp_standard},
+			INSP_VALUE = #{insp_value},
+			MEMBER_EMP_NO = #{member_emp_no},
+			MEMBER_NM = #{member_nm},
+			USE_YN = #{use_yn},
+			REMARK = #{remark},
+			UPDATER = #{updater},
+			DATE_UPDATED = current_timestamp()
+		WHERE SIMASTER_GR_NO = #{simaster_gr_no}
+		AND SIDETAIL_SEQ = #{sidetail_seq}
+		AND SIDETAIL_CODE = #{sidetail_code}
+	</update>
+</mapper>

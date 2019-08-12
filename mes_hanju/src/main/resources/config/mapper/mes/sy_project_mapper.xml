@@ -1,0 +1,441 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.co.passcombine.mes.dao.SYProjectDAO">
+	<select id="project_select_count" parameterType="SYProjectMngVo" resultType="int">
+		select COUNT(*) as cnt
+		from project_manager
+		where 1=1
+		<if test="project_division != null and !project_division.equals('')">
+			and project_division = #{project_division}
+		</if>
+		<if test="project_no != null and !project_no.equals('')">
+			and project_no = #{project_no}
+		</if>
+		<if test="project_nm != null and !project_nm.equals('')">
+			and project_nm = #{project_nm}
+		</if>
+		<if test="lifnr != null and !lifnr.equals('')">
+			and lifnr like concat('%',#{lifnr},'%')
+		</if>
+	</select>
+	
+	<select id="project_select" parameterType="SYProjectMngVo" resultType="SYProjectMngVo">
+		select *
+		from project_manager
+		where 1=1
+		<if test="project_division != null and !project_division.equals('')">
+			and project_division = #{project_division}
+		</if>
+		<if test="project_no != null and !project_no.equals('')">
+			and project_no = #{project_no}
+		</if>
+		<if test="project_nm != null and !project_nm.equals('')">
+			and project_nm = #{project_nm}
+		</if>
+		<if test="page != null and !page.equals('')">
+			 limit #{page}, #{rows}
+		</if>
+	</select>
+	
+	<!-- soobin_vendor -->
+	
+	<select id="soobin_vendor_count" parameterType="SYProjectMngVo" resultType="int">
+		select COUNT(*) as cnt
+		from project_manager
+		where 1=1
+		<if test="project_division != null and !project_division.equals('')">
+			and project_division = #{project_division}
+		</if>
+		<if test="project_no != null and !project_no.equals('')">
+			and project_no = #{project_no}
+		</if>
+		<if test="project_nm != null and !project_nm.equals('')">
+			and project_nm = #{project_nm}
+		</if>
+		<if test="lifnr != null and !lifnr.equals('')">
+			and lifnr like concat('%',#{lifnr},'%')
+		</if>
+	</select>
+	
+	<select id="soobin_vendor" parameterType="SYProjectMngVo" resultType="SYProjectMngVo">
+		select *
+		from project_manager
+		where 1=1
+		<if test="project_division != null and !project_division.equals('')">
+			and project_division = #{project_division}
+		</if>
+		<if test="project_no != null and !project_no.equals('')">
+			and project_no = #{project_no}
+		</if>
+		<if test="project_nm != null and !project_nm.equals('')">
+			and project_nm = #{project_nm}
+		</if>
+		<if test="page != null and !page.equals('')">
+			 limit #{page}, #{rows}
+		</if>
+	</select>
+	
+	<!-- test 조회 -->
+	<select id="test" parameterType="SYMemberVo" resultType="SYMemberVo">
+		select * from sy_member_master
+	</select>
+		
+	<select id="test_count" parameterType="SYMemberVo" resultType="int">
+		select COUNT(*) as cnt
+		from sy_member_master
+		where 1=1
+		<!-- <if test="project_division != null and !project_division.equals('')">
+			and project_division = #{project_division}
+		</if>
+		<if test="project_no != null and !project_no.equals('')">
+			and project_no = #{project_no}
+		</if>
+		<if test="project_nm != null and !project_nm.equals('')">
+			and project_nm = #{project_nm}
+		</if>
+		<if test="lifnr != null and !lifnr.equals('')">
+			and lifnr like concat('%',#{lifnr},'%')
+		</if> -->
+	</select>	
+	
+
+	<insert id="test_insert" parameterType="SYMemberVo">
+		INSERT INTO sy_member_master
+				(
+					member_emp_no,
+					member_id,
+					member_nm,
+					member_pwd,
+					creator,
+					updater,
+					date_created,
+					date_updated
+				)
+ 		VALUES(
+ 					#{member_emp_no}, #{member_id}, #{member_nm}, 
+ 					#{member_pwd}, #{creator},#{updater},current_timestamp(), current_timestamp()
+ 				)
+	</insert>
+	<!-- jsoob End -->
+	
+	
+	<!-- searchText member_nm -->
+	
+		<select id="searchText" parameterType="SYMemberVo" resultType="SYMemberVo">
+			<!--  SELECT member_emp_no, member_nm FROM sy_member_master WHERE member_emp_no like concat('%',#{member_emp_no},'%') -->
+			<!-- SELECT member_emp_no, member_nm FROM sy_member_master WHERE member_nm LIKE concat('%',#{member_nm},'%') -->
+			SELECT member_emp_no, member_nm FROM sy_member_master WHERE 1=1
+		<if test="member_nm != null and !member_nm.equals('')">
+			<!-- and member_nm = #{member_nm} -->
+			AND member_nm LIKE CONCAT('%', #{member_nm}, '%')
+		</if>
+
+		</select>
+	
+	<!--  end  -->
+	
+	<!-- tTab -->
+		<!-- tTab_select -->
+		<select id="tTab_select" parameterType="SYProjectMngVo" resultType="SYProjectMngVo">
+			select * from project_manager
+		</select>
+		
+		<select id="tTab_count" parameterType="SYProjectMngVo" resultType="int">
+			select COUNT(*) as cnt
+			from project_manager
+			where 1=1
+			<if test="project_division != null and !project_division.equals('')">
+				and project_division = #{project_division}
+			</if>
+			<if test="project_no != null and !project_no.equals('')">
+				and project_no = #{project_no}
+			</if>
+			<if test="project_nm != null and !project_nm.equals('')">
+				and project_nm = #{project_nm}
+			</if>
+			<if test="lifnr != null and !lifnr.equals('')">
+				and lifnr like concat('%',#{lifnr},'%')
+			</if>
+	</select>
+	
+	
+	
+	<insert id="tTab_insert" parameterType="SYProjectMngVo">
+		insert into project_manager (
+			lifnr, lifnr_nm, project_no, project_division, project_nm, netwr, menge, success_yn, eindt, 
+			creator, updater, date_created, date_updated )
+		values (
+			#{lifnr}, #{lifnr_nm}, #{project_no}, #{project_division}, #{project_nm}, #{netwr}, #{menge}, 
+			#{success_yn}, #{eindt}, #{creator}, #{updater}, #{date_created}, #{date_updated} )
+	</insert>	
+	
+	
+	
+	<!-- tTab_update -->
+	<update id="tTab_update" parameterType="SYProjectMngVo">
+		update project_manager
+		<trim prefix="SET" suffixOverrides=",">
+			<if test="project_nm!=null and !''.equals(project_nm)">
+				project_nm = #{project_nm},
+			</if>
+			<if test="netwr!=null and !''.equals(netwr)">
+				netwr = #{netwr},
+			</if>
+			<if test="menge!=null and !''.equals(menge)">
+				menge = #{menge},
+			</if>
+			<if test="success_yn!=null and !''.equals(success_yn)">
+				success_yn = #{success_yn},
+			</if>
+			<if test="eindt!=null and !''.equals(eindt)">
+				eindt = #{eindt},
+			</if>
+			
+			
+			
+			<if test="updater!=null and !''.equals(updater)">
+				updater = #{updater},
+			</if>
+			<if test="date_updated!=null and !''.equals(date_updated)">
+				date_updated = #{date_updated}
+			</if>
+			
+			
+		</trim>
+		<!-- 
+			
+			You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 
+			'updater = 'cc3282',
+			date_updated = '2019-08-07 00:00:00.0'
+			
+			SQL 구문에 오류가 있음, MariaDB 서버 버전에 해당하는 설명서에서 근처에서 사용할 올바른 구문을 확인하십시오.
+			'updater = 'cc3282',
+			date_updated = '2019-08-07 00:00:00.0'
+			
+		 -->
+			<!-- updater = #{updater},
+			date_updated = #{date_updated} -->
+
+		  	where project_no = #{project_no}
+
+	</update>
+	
+	
+	<!-- tTab_delete -->
+	<delete id="tTab_delete" parameterType="SYProjectMngVo">
+		delete from project_manager
+		where project_no = #{project_no};
+	</delete>
+	
+	
+		
+	<!-- End -->
+	<select id="project_select_popup" parameterType="SYProjectMngVo" resultType="SYProjectMngVo">
+		select *
+		from project_manager
+		where 1=1
+		and success_yn = 'N'
+		and CAST(zdue_menge AS UNSIGNED INTEGER)>0
+	</select>
+	
+	<select id="get_project_key" resultType="String">
+	    	select concat('PRO',DATE_FORMAT(NOW(),'%Y%m%d'),LPAD(count(*)+1,4,'0')) as project_no
+		from project_manager
+	</select>
+	
+	<insert id="project_insert" parameterType="SYProjectMngVo">
+		insert into project_manager (
+			lifnr, lifnr_nm, project_no, project_division, project_nm, netwr, menge, zdue_menge, meins, remark, success_yn, eindt, 
+			creator, updater, date_created, date_updated )
+		values (
+			#{lifnr}, #{lifnr_nm}, #{project_no}, #{project_division}, #{project_nm}, #{netwr}, #{menge}, #{zdue_menge}, #{meins}, #{remark}, 
+			#{success_yn}, #{eindt}, #{creator}, #{updater}, current_timestamp(), current_timestamp() )
+	</insert>
+	
+	<update id="project_update" parameterType="SYProjectMngVo">
+		update project_manager
+		<trim prefix="SET" suffixOverrides=",">
+			<if test="project_nm!=null and !''.equals(project_nm)">
+				project_nm = #{project_nm},
+			</if>
+			<if test="netwr!=null and !''.equals(netwr)">
+				netwr = #{netwr},
+			</if>
+			<if test="menge!=null and !''.equals(menge)">
+				menge = #{menge},
+			</if>
+			<if test="zdue_menge!=null and !''.equals(zdue_menge)">
+				zdue_menge = #{zdue_menge},
+			</if>
+			<if test="meins!=null and !''.equals(meins)">
+				meins = #{meins},
+			</if>
+			<if test="remark!=null and !''.equals(remark)">
+				remark = #{remark},
+			</if>
+			<if test="success_yn!=null and !''.equals(success_yn)">
+				success_yn = #{success_yn},
+			</if>
+			<if test="eindt!=null and !''.equals(eindt)">
+				eindt = #{eindt},
+			</if>
+			<if test="plan_dt!=null and !''.equals(plan_dt)">
+				plan_dt = #{plan_dt},
+			</if>
+			<if test="purdt!=null and !''.equals(purdt)">
+				purdt = #{purdt},
+			</if>
+			<if test="file_group!=null and !''.equals(file_group)">
+				file_group = #{file_group},
+			</if>
+		</trim>
+			updater = #{updater},
+			date_updated = current_timestamp()
+<!-- 		<where> -->
+<!-- 			<if test=" project_no!=null and !''.equals(project_no) "> -->
+		  	where project_no = #{project_no}
+<!-- 		   </if> -->
+<!-- 		</where> -->
+	</update>
+	
+	<delete id="project_delete" parameterType="SYProjectMngVo">
+		delete from project_manager
+		where project_no = #{project_no};
+	</delete>
+	
+	<!-- 
+	<select id="material_master_select_count" parameterType="SYMaterialMasVo" resultType="int">				
+		SELECT  COUNT(*) as cnt 
+		FROM material_master 
+		WHERE 1=1
+			<if test="matnr != null and !matnr.equals('')">
+				AND matnr LIKE concat('%', #{matnr}, '%')  
+			</if>
+			<if test="maktx != null and !maktx.equals('')">
+				AND maktx LIKE concat('%', #{maktx}, '%')
+			</if>
+			<if test="wrkst != null and !wrkst.equals('')">
+				AND wrkst LIKE concat('%', #{wrkst}, '%')
+			</if>
+			<if test="lvorm != null and !lvorm.equals('')">
+				AND lvorm = #{lvorm}
+			</if>
+			<if test="kzumw != null and !kzumw.equals('')">
+				AND kzumw = #{kzumw}
+			</if>
+			<if test="iloos != null and !iloos.equals('')">
+				AND iloos  = #{iloos}
+			</if>
+			<if test="ihivi != null and !ihivi.equals('')">
+				AND ihivi  = #{ihivi}
+			</if>
+			<if test="mtartList != null  and mtartList.size() > 0">
+		     AND a.mtart IN
+			 <foreach collection="mtartList" index="key" item="value"  separator="," open="(" close=")">
+	     		 #{mtart}
+	  		</foreach>
+			</if>
+	</select>
+	
+	<select id="material_master_select" parameterType="SYMaterialMasVo" resultType="SYMaterialMasVo">
+		SELECT  matnr, mtart, meins, maktx, wrkst, lvorm, brgew, ntgew, price, ihivi, iloos, kzumw, 
+				gewei, wgbez, updater, creator, date_created, date_updated 
+		FROM material_master 
+		WHERE 1=1
+		<if test="matnr != null and !matnr.equals('')">
+			AND matnr LIKE concat('%', #{matnr}, '%')  
+		</if>
+		<if test="maktx != null and !maktx.equals('')">
+			AND maktx LIKE concat('%', #{maktx}, '%')
+		</if>
+		<if test="wrkst != null and !wrkst.equals('')">
+			AND wrkst LIKE concat('%', #{wrkst}, '%')
+		</if>
+		<if test="lvorm != null and !lvorm.equals('')">
+			AND lvorm = #{lvorm}
+		</if>
+		<if test="kzumw != null and !kzumw.equals('')">
+			AND kzumw = #{kzumw}
+		</if>
+		<if test="iloos != null and !iloos.equals('')">
+			AND iloos  = #{iloos}
+		</if>
+		<if test="ihivi != null and !ihivi.equals('')">
+			AND ihivi  = #{ihivi}
+		</if>
+		<if test="page != null and !page.equals('')">
+			 limit #{page}, #{rows}
+		</if>
+	</select>
+	
+	<select id="material_master_dup_check" parameterType="SYMaterialMasVo" resultType="int">
+		select count(*) as cnt
+		  from material_master
+		 where 1=1
+		   and matnr = #{matnr}
+	</select>
+	
+	<insert id="material_master_insert" parameterType="SYMaterialMasVo">
+		INSERT INTO material_master (
+			matnr, mtart, meins, maktx, wrkst, lvorm, brgew, kzumw, iloos, ihivi, ntgew, gewei, wgbez, price, 
+			updater, creator, date_created, date_updated)
+		values
+		( #{matnr}, #{mtart}, #{meins}, #{maktx}, #{wrkst}, #{lvorm}, #{brgew}, #{kzumw}, #{iloos}, #{ihivi}, #{ntgew}, #{gewei}, #{wgbez}, #{price}, 
+			#{updater}, #{creator}, current_timestamp(), current_timestamp() ) 
+	</insert>
+	
+	<update id="material_master_update" parameterType="SYMaterialMasVo">
+		update material_master set
+		<if test="mtart != null and !mtart.equals('')">
+			mtart = #{mtart},
+		</if> 
+		<if test="meins != null and !meins.equals('')">
+			meins = #{meins},
+		</if> 
+		<if test="maktx != null and !maktx.equals('')"> 
+			maktx = #{maktx},
+		</if> 
+		<if test="wrkst != null and !wrkst.equals('')"> 
+			wrkst = #{wrkst},
+		</if> 
+		<if test="kzumw != null and !kzumw.equals('')">
+			kzumw = #{kzumw},
+		</if> 
+		<if test="iloos != null and !iloos.equals('')"> 
+			iloos = #{iloos},
+		</if> 
+		<if test="ihivi != null and !ihivi.equals('')"> 
+			ihivi = #{ihivi},
+		</if> 
+		<if test="lvorm != null and !lvorm.equals('')"> 
+			lvorm = #{lvorm},
+		</if> 
+		<if test="brgew != null and !brgew.equals('')"> 
+			brgew = #{brgew}, 
+		</if> 
+		<if test="ntgew != null and !ntgew.equals('')">
+			ntgew = #{ntgew},
+		</if> 
+		<if test="gewei != null and !gewei.equals('')"> 
+			gewei = #{gewei},
+		</if> 
+		<if test="wgbez != null and !wgbez.equals('')"> 
+			wgbez = #{wgbez},
+		</if> 
+		<if test="price != null and !price.equals('')"> 
+			price = #{price},
+		</if> 
+			updater = #{updater}, 
+			date_updated = current_timestamp()
+		where matnr = #{matnr}
+	</update>
+	
+	<delete id="material_master_delete" parameterType="SYMaterialMasVo">
+		delete 
+		  from material_master
+		where matnr = #{matnr}
+	</delete> -->
+	
+</mapper>

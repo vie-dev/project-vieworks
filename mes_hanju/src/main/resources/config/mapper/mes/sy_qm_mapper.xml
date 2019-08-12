@@ -1,0 +1,2062 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.co.passcombine.mes.dao.SYQmDAO">
+
+	<select id="last_inspection_select" parameterType="SYQmVo" resultType="SYQmVo">
+		select concat(pordno, '-',pordno_seq) uni_key, pordno, pordno_seq, pdsts, sudat, cmdat, itnbr, pordno_status, mtart, 
+			(select level3_name from issue_detail_tbl where level3_code = c.issue_code) issue_code_nm,
+			auart,fn_mes_code_nm('auart', auart) as auart_nm, project_no, dept_cd, wkctr, issue_code, issue_memo, ref_doc_no, mblnr, mjahr, mblnr_cancel, 
+			mjahr_cancel, pdqty, creator, updater, date_created, date_updated,sap_send_yn,
+			fn_mes_code_nm('pdsts', pdsts) as pdsts_nm, fn_mes_code_nm('auart', auart) as auart_nm, 
+			fn_mes_code_nm('wkctr', wkctr) as wkctr_nm, fn_mes_code_nm('dept_cd', dept_cd) as dept_cd_nm, 
+			last_sts, fn_mes_code_nm('last_sts', last_sts) as last_sts_nm,
+			ifnull((select insp_lgort from prod_tbl where c.pordno = pordno), (select lgort from prod_tbl where c.pordno = pordno)) lgort,
+			(select member_nm from sy_member_master where member_emp_no = c.worker_emp_no) member_nm,
+			(select zgrade from prod_tbl where c.pordno = pordno) zgrade,
+			ifnull(routing_no, (select B.routing_no from PROD_ORD_TBL A, ROUTING_HEADER_MASTER B where A.ROUTING_NO = B.ROUTING_NO AND A.ROUTING_GNO = B.ROUTING_GNO 
+			AND pordno = c.pordno and B.ROUTING_CODE = 'T1')) routing_no,
+      		(select routing_dscr from ROUTING_HEADER_MASTER where c.routing_no = routing_no) routing_dscr,  
+    		(select maktx from material_recv_master where c.itnbr = matnr) maktx,
+   			(select meins from material_recv_master where c.itnbr = matnr) meins,
+   			(select max(b.routing_no) from prod_ord_tbl b where c.pordno = b.pordno and (select routing_code from routing_header_master where b.routing_no = routing_no) = 'T1') transfer_routing,
+   			(select kzumw from material_recv_master where c.itnbr = matnr) kzumw
+      from last_inspection_tbl c
+		<where>
+			<if test="dept_cd != null and !''.equals(dept_cd) ">
+				and dept_cd = #{dept_cd}
+			</if>
+			<if test="itnbr != null and !''.equals(itnbr) ">
+				AND itnbr LIKE CONCAT('%', #{itnbr}, '%')
+			</if>
+			<if test="pordno_status != null and !''.equals(pordno_status) ">
+				AND pordno_status LIKE CONCAT('%', #{pordno_status}, '%')
+			</if>
+			 <if test="pordno != null and !''.equals(pordno) ">
+<!-- 				and c.pordno = #{pordno} -->
+				and c.pordno LIKE CONCAT('%', #{pordno}, '%')
+			</if>
+			<if test="pdsts != null and !''.equals(pdsts) ">
+				and c.pdsts = #{pdsts}
+			</if>
+			<if test="project_no != null and !''.equals(project_no) ">
+				AND c.project_no LIKE CONCAT('%', #{project_no}, '%')
+			</if>
+			<if test="from_cmdate != null and !''.equals(from_cmdate) ">
+				AND (DATE_FORMAT(c.cmdat, '%Y%m%d')) <![CDATA[ >= ]]> #{from_cmdate} AND (DATE_FORMAT(c.cmdat, '%Y%m%d') <![CDATA[ <= ]]> #{to_cmdate})
+			</if>
+			<if test="from_sudate != null and !''.equals(from_sudate) ">
+				AND (DATE_FORMAT(c.sudat, '%Y%m%d')) <![CDATA[ >= ]]> #{from_sudate} AND (DATE_FORMAT(c.sudat, '%Y%m%d') <![CDATA[ <= ]]> #{to_sudate})
+			</if>
+			<if test="sidx != null and !sidx.equals('')">
+				order by ${sidx} ${sord}      
+			</if>
+			<if test="page != null and !page.equals('')">
+				limit #{page}, #{rows}
+			</if> 
+		</where>
+	</select>		
+	
+	<select id="ship_inspection_select" parameterType="SYQmVo" resultType="SYQmVo">
+		select *, fn_mes_code_nm('pdsts', pdsts) as pdsts_nm, fn_mes_code_nm('auart', auart) as auart_nm,
+		fn_mes_code_nm('wkctr', wkctr) as wkctr_nm, fn_mes_code_nm('dept_cd', dept_cd) as dept_cd_nm
+		from ship_inspection_tbl
+		<where>
+			 <if test="pordno != null and !''.equals(pordno) ">
+				and pordno = #{pordno}
+			</if>
+			<if test="pdsts != null and !''.equals(pdsts) ">
+				and pdsts = #{pdsts}
+			</if>
+			<if test="project_no != null and !''.equals(project_no) ">
+				and project_no = #{project_no}
+			</if>
+			<if test="from_cmdate != null and !''.equals(from_cmdate) ">
+				AND (DATE_FORMAT(cmdat, '%Y%m%d')) <![CDATA[ >= ]]> #{from_cmdate} AND (DATE_FORMAT(cmdat, '%Y%m%d') <![CDATA[ <= ]]> #{to_cmdate})
+			</if>
+			<if test="from_sudate != null and !''.equals(from_sudate) ">
+				AND (DATE_FORMAT(sudat, '%Y%m%d')) <![CDATA[ >= ]]> #{from_sudate} AND (DATE_FORMAT(sudat, '%Y%m%d') <![CDATA[ <= ]]> #{to_sudate})
+			</if>
+			<if test="sidx != null and !sidx.equals('')">
+				order by ${sidx} ${sord}      
+			</if>
+			<if test="page != null and !page.equals('')">
+				limit #{page}, #{rows}
+			</if> 
+		</where>
+	</select>		
+	
+	<select id="reqm_matnr_tbl_key_select_2" resultType="String">
+		select
+		fn_lastinsp_seq()  reqm_matnr_key from dual
+	</select>
+	
+	<select id="last_inspection_select_count" parameterType="SYQmVo" resultType="int">
+		select count(*) 
+		from last_inspection_tbl
+		<where>
+			<if test="dept_cd != null and !''.equals(dept_cd) ">
+				and dept_cd = #{dept_cd}
+			</if>
+			<if test="itnbr != null and !''.equals(itnbr) ">
+				AND itnbr LIKE CONCAT('%', #{itnbr}, '%')
+			</if>
+			<if test="pordno_status != null and !''.equals(pordno_status) ">
+				AND pordno_status LIKE CONCAT('%', #{pordno_status}, '%')
+			</if>
+			 <if test="pordno != null and !''.equals(pordno) ">
+<!-- 				and pordno = #{pordno} -->
+				 and pordno LIKE CONCAT('%', #{pordno}, '%')
+			</if>
+			<if test="pdsts != null and !''.equals(pdsts) ">
+				and pdsts = #{pdsts}
+			</if>
+			<if test="project_no != null and !''.equals(project_no) ">
+				and project_no = #{project_no}
+			</if>
+			<if test="from_cmdate != null and !''.equals(from_cmdate) ">
+				AND (DATE_FORMAT(cmdat, '%Y%m%d')) <![CDATA[ >= ]]> #{from_cmdate} AND (DATE_FORMAT(cmdat, '%Y%m%d') <![CDATA[ <= ]]> #{to_cmdate})
+			</if>
+			<if test="from_sudate != null and !''.equals(from_sudate) ">
+				AND (DATE_FORMAT(sudat, '%Y%m%d')) <![CDATA[ >= ]]> #{from_sudate} AND (DATE_FORMAT(sudat, '%Y%m%d') <![CDATA[ <= ]]> #{to_sudate})
+			</if>
+		</where>
+	</select>	
+	
+		<select id="ship_inspection_select_count" parameterType="SYQmVo" resultType="int">
+		select count(*) 
+		from ship_inspection_tbl
+		<where>
+			 <if test="pordno != null and !''.equals(pordno) ">
+				and pordno = #{pordno}
+			</if>
+			<if test="pdsts != null and !''.equals(pdsts) ">
+				and pdsts = #{pdsts}
+			</if>
+			<if test="project_no != null and !''.equals(project_no) ">
+				and project_no = #{project_no}
+			</if>
+			<if test="from_cmdate != null and !''.equals(from_cmdate) ">
+				AND (DATE_FORMAT(cmdat, '%Y%m%d')) <![CDATA[ >= ]]> #{from_cmdate} AND (DATE_FORMAT(cmdat, '%Y%m%d') <![CDATA[ <= ]]> #{to_cmdate})
+			</if>
+			<if test="from_sudate != null and !''.equals(from_sudate) ">
+				AND (DATE_FORMAT(sudat, '%Y%m%d')) <![CDATA[ >= ]]> #{from_sudate} AND (DATE_FORMAT(sudat, '%Y%m%d') <![CDATA[ <= ]]> #{to_sudate})
+			</if>
+		</where>
+	</select>	
+ 
+					
+	<!-- <update id="inspection_process" parameterType="SYQmVo">
+		update 
+			last_inspection_tbl 
+		set
+			pdsts =  #{pdsts},
+			sudat = #{sudat},
+			updater = #{updater},
+			ref_doc_no = #{ref_doc_no},
+			mblnr = #{mblnr},
+			mjahr = #{mjahr},
+			issue_code = #{issue_code},
+			issue_memo = #{issue_memo},
+			plant = #{plant},
+			stge_loc = #{stge_loc},
+			move_plant = #{move_plant},
+			move_stloc = #{move_stloc},
+			conf_date = #{conf_date},
+			date_updated = current_timestamp()
+		where pordno = #{pordno}
+		and pordno_seq = #{pordno_seq}
+	</update> -->
+	
+	<!-- <update id="prodTbl_pdsts_update" parameterType="SYQmVo">
+		UPDATE prod_tbl SET
+			pdsts =  #{pdsts}	
+			WHERE pordno = #{pordno}
+	</update> -->
+	
+	<!-- <update id="ship_inspection_process" parameterType="SYQmVo">
+		UPDATE 
+			ship_inspection_tbl 
+		SET
+			pdsts =  #{pdsts},
+			sudat = #{sudat},
+			ref_doc_no = #{ref_doc_no},
+			mblnr = #{mblnr},
+			mjahr = #{mjahr},
+			UPDATER = #{updater},
+			issue_memo = #{issue_memo},
+			DATE_UPDATED = current_timestamp()
+		WHERE pordno = #{pordno}
+	</update> -->
+	
+	<insert id="ship_insp_insert" parameterType="SYQmVo">
+		INSERT INTO ship_inspection_tbl
+(pordno, pdsts, itnbr, pordno_status, mtart, auart, project_no, dept_cd, wkctr, date_created, date_updated, cmdat) 
+VALUES (#{pordno}, #{pdsts}, #{itnbr}, #{pordno_status}, #{mtart}, #{auart}, #{project_no}, #{dept_cd}, 
+#{wkctr},  current_timestamp(),  current_timestamp(), #{cmdat});
+	</insert>
+	
+	<select id="last_inspection_select_nopaging" parameterType="SYQmVo" resultType="SYQmVo">
+		select * 
+		from last_inspection_tbl
+		<where>
+			 <if test="pordno != null and !''.equals(pordno) ">
+				and pordno = #{pordno}
+			</if>
+			<if test="pdsts != null and !''.equals(pdsts) ">
+				and pdsts = #{pdsts}
+			</if>
+			<if test="project_no != null and !''.equals(project_no) ">
+				and project_no = #{project_no}
+			</if>
+			<if test="from_cmdate != null and !''.equals(from_cmdate) ">
+				AND (DATE_FORMAT(cmdat, '%Y%m%d')) <![CDATA[ >= ]]> #{from_cmdate} AND (DATE_FORMAT(cmdat, '%Y%m%d') <![CDATA[ <= ]]> #{to_cmdate})
+			</if>
+			<if test="from_sudate != null and !''.equals(from_sudate) ">
+				AND (DATE_FORMAT(sudat, '%Y%m%d')) <![CDATA[ >= ]]> #{from_sudate} AND (DATE_FORMAT(sudat, '%Y%m%d') <![CDATA[ <= ]]> #{to_sudate})
+			</if>
+		</where>
+	</select>		
+	
+	<!-- <update id="last_insp_cancel_update" parameterType="SYQmVo">
+		update 
+			last_inspection_tbl
+		set
+			mblnr = null,
+			mjahr = null,
+			sudat = null,
+			issue_code = null,
+			pdsts = 'p8',
+			mblnr_cancel = #{mblnr_cancel},
+			mjahr_cancel = #{mjahr_cancel},
+			mblnr = null,
+			mjahr = null,
+			issue_memo =null
+		where
+			pordno = #{pordno}
+			and pordno_seq = #{pordno_seq}
+	</update> -->
+	
+	<update id="ship_insp_cancel_update" parameterType="SYQmVo">
+		update 
+			ship_inspection_tbl
+		set
+			mblnr = null,
+			mjahr = null,
+			sudat = null,
+			pdsts = 'p9',
+			mblnr_cancel = #{mblnr_cancel},
+			mjahr_cancel = #{mjahr_cancel},
+			mblnr = null,
+			mjahr = null,
+			issue_memo =null,
+			plant = null,
+			stge_loc =  null,
+			move_plant =  null,
+			move_stloc =  null,
+			conf_date =  null,
+			sap_send_yn ='N'
+		where
+			pordno = #{pordno}
+	</update>
+	
+	<delete id="ship_insp_delete" parameterType="SYQmVo">
+		delete from ship_inspection_tbl
+		where pordno = #{pordno}
+	</delete>
+	
+	<select id="inInspDetail_select" parameterType="SYInInspDetailVo" resultType="SYInInspDetailVo">
+		SELECT * FROM IN_INSP_LIST_VIEW WHERE MATNR = #{matnr}
+	</select>
+	
+	<insert id="inInspHeader_insert" parameterType="SYInInspHeaderVo">
+		INSERT INTO IN_INSP_HEADER_TBL 
+			( EBELN, EBELP, PARTIAL_SEQ, INSP_STATUS, MATNR, IN_COFIRM_DATE, IN_FAIL_DATE, USE_YN,
+			insp_model,insp_maql,insp_vaql,insp_doc,insp_remark,	insp_ecr,		
+			CREATOR, UPDATER, DATE_CREATED, DATE_UPDATED )
+		VALUES
+			( #{ebeln}, #{ebelp}, #{partial_seq}, #{insp_status}, #{matnr}, #{in_cofirm_date}, #{in_fail_date}, 'Y',
+			#{insp_model},#{insp_maql},#{insp_vaql},#{insp_doc},#{insp_remark},#{insp_ecr},
+			 #{creator}, #{updater}, current_timestamp(), current_timestamp())
+			 
+			 
+
+	</insert>
+
+	<select id="inInspHeader_select" parameterType="SYInInspHeaderVo" resultType="SYInInspHeaderVo" >
+		SELECT *
+		  FROM IN_INSP_HEADER_TBL
+		 WHERE EBELN = #{ebeln}
+		   AND EBELP = #{ebelp}
+		   AND PARTIAL_SEQ = #{partial_seq}
+	</select>
+	
+	<insert id="inInspDetail_insert" parameterType="SYInInspDetailVo">
+<!-- 		INSERT INTO IN_INSP_DETAIL_TBL -->
+<!-- 			( EBELN, EBELP, PARTIAL_SEQ, INSP_HEADER_SEQ, INSPECTION_CODE, INSPECTION_GCODE, INSPECTION_GNM, INSPECTION_LIST,  -->
+<!-- 			INSPECTION_STANDARD, INSPECTION_REMARK_CODE, INSPECTION_REMARK, INSPECTION_VALUE, INSPECTION_DECISION,INSPECTION_CN, -->
+<!-- 			CREATOR, UPDATER, DATE_CREATED, DATE_UPDATED ) -->
+<!-- 		VALUES -->
+<!-- 			( #{ebeln}, #{ebelp}, #{partial_seq}, #{insp_header_seq}, #{inspection_code}, #{inspection_gcode}, #{inspection_gnm}, #{inspection_list},  -->
+<!-- 			#{inspection_standard}, #{inspection_remark_code}, #{inspection_remark}, #{inspection_value}, #{inspection_decision}, #{inspection_cn}, -->
+<!-- 			#{creator}, #{updater}, current_timestamp(), current_timestamp()) -->
+		INSERT INTO IN_INSP_DETAIL_TBL
+			( EBELN, EBELP, PARTIAL_SEQ, INSP_HEADER_SEQ, INSPECTION_CODE, INSPECTION_GCODE, INSPECTION_GNM, INSPECTION_LIST, 
+			INSPECTION_STANDARD, INSPECTION_REMARK_CODE, INSPECTION_REMARK, 
+			INSPECTION_VALUE1, INSPECTION_VALUE2, INSPECTION_VALUE3, INSPECTION_VALUE4, INSPECTION_VALUE5, 
+			INSPECTION_VALUE6, INSPECTION_VALUE7, INSPECTION_VALUE8, INSPECTION_VALUE9, INSPECTION_VALUE10, 			
+			INSPECTION_VALUE11, INSPECTION_VALUE12, INSPECTION_VALUE13, INSPECTION_VALUE14, INSPECTION_VALUE15, 
+			INSPECTION_VALUE16, INSPECTION_VALUE17, INSPECTION_VALUE18, INSPECTION_VALUE19, INSPECTION_VALUE20, 			
+			INSPECTION_VALUE21, INSPECTION_VALUE22, INSPECTION_VALUE23, INSPECTION_VALUE24, INSPECTION_VALUE25, 
+			INSPECTION_VALUE26, INSPECTION_VALUE27, INSPECTION_VALUE28, INSPECTION_VALUE29, INSPECTION_VALUE30, 			
+			INSPECTION_VALUE31, INSPECTION_VALUE32, 			
+			INSPECTION_DECISION,INSPECTION_CN, INSPECTION_TYPE,
+			CREATOR, UPDATER, DATE_CREATED, DATE_UPDATED )
+		VALUES
+			( #{ebeln}, #{ebelp}, #{partial_seq}, #{insp_header_seq}, #{inspection_code}, #{inspection_gcode}, #{inspection_gnm}, #{inspection_list}, 
+			#{inspection_standard}, #{inspection_remark_code}, #{inspection_remark}, 
+			#{inspection_value1}, #{inspection_value2},	#{inspection_value3},#{inspection_value4},#{inspection_value5},
+			#{inspection_value6},#{inspection_value7},#{inspection_value8},#{inspection_value9},#{inspection_value10},			
+			#{inspection_value11}, #{inspection_value12},#{inspection_value13},#{inspection_value14},#{inspection_value15},
+			#{inspection_value16},#{inspection_value17},#{inspection_value18},#{inspection_value19},#{inspection_value20},			
+			#{inspection_value21}, #{inspection_value22},#{inspection_value23},#{inspection_value24},#{inspection_value25},
+			#{inspection_value26},#{inspection_value27},#{inspection_value28},#{inspection_value29},#{inspection_value30},			
+			#{inspection_value31}, #{inspection_value32},			
+			#{inspection_decision}, #{inspection_cn}, #{inspection_type},
+			#{creator}, #{updater}, current_timestamp(), current_timestamp())
+	</insert>
+	
+	<update id="inInsp_update" parameterType="SYInInspVo">
+		UPDATE IN_INSP_TBL
+		<set>
+			<if test="insp_status != null and !''.equals(insp_status) ">
+				INSP_STATUS = #{insp_status},
+			</if>
+			<if test="in_confirm_date != null and !''.equals(in_confirm_date) ">
+				IN_CONFIRM_DATE = #{in_confirm_date},
+			</if>
+			<if test="in_fail_date != null and !''.equals(in_fail_date) ">
+				IN_FAIL_DATE = #{in_fail_date},
+			</if>
+			<if test="success_yn != null and !''.equals(success_yn) ">
+				SUCCESS_YN = #{success_yn},
+			</if>
+			<if test="fail_yn != null and !''.equals(fail_yn) ">
+				FAIL_YN = #{fail_yn},
+			</if>
+			<if test="ref_doc_no != null and !''.equals(ref_doc_no) ">
+				REF_DOC_NO = #{ref_doc_no}
+			</if>
+			</set>
+		 WHERE EBELN = #{ebeln}
+		   AND EBELP = #{ebelp}
+		   AND PARTIAL_SEQ = #{partial_seq}
+	</update>
+	
+	<select id="inInsp_seq_select" resultType="String">
+		select
+		max(insp_header_seq) as  insp_header_seq  from  in_insp_header_tbl 
+		 WHERE EBELN = #{ebeln}
+		   AND EBELP = #{ebelp}
+		   AND PARTIAL_SEQ = #{partial_seq}
+	</select>
+	
+	<update id="inInspResultSta_update" parameterType="SYInInspVo">
+		UPDATE in_insp_tbl
+			<set>
+			<if test="s_mblnr != null and !''.equals(s_mblnr) ">
+				s_mblnr = #{s_mblnr},
+			</if>
+			<if test="s_mjahr != null and !''.equals(s_mjahr) ">
+				s_mjahr = #{s_mjahr},
+			</if>
+			<if test="mblnr_cancel != null and !''.equals(mblnr_cancel) ">
+				mblnr_cancel = #{mblnr_cancel},
+			</if>
+			<if test="mjahr_cancel != null and !''.equals(mjahr_cancel) ">
+				mjahr_cancel = #{mjahr_cancel},
+			</if>
+			<if test="remark != null and !''.equals(remark) ">
+				REMARK = #{remark}
+			</if>
+			</set>
+		 WHERE EBELN = #{ebeln}
+		   AND EBELP = #{ebelp}
+		   <if test="partial_seq != null and !''.equals(partial_seq) ">
+		   AND PARTIAL_SEQ = #{partial_seq}
+		   </if>
+	</update>
+	
+	<select id="inInspResult_select" parameterType="SYInInspDetailVo" resultType="SYInInspDetailVo">
+		SELECT
+		ebeln,
+		ebelp,
+		partial_seq,
+		insp_header_seq,
+		inspection_code,
+		inspection_gcode,
+		inspection_gnm,
+		inspection_list,
+		inspection_standard,
+		inspection_remark_code,
+		inspection_remark,
+		case when (inspection_value1 is null || inspection_value1 = '') then '' else inspection_value1 end as inspection_value1,
+		case when (inspection_value2 is null || inspection_value2 = '') then '' else inspection_value2 end as inspection_value2,
+		case when (inspection_value3 is null || inspection_value3 = '') then '' else inspection_value3 end as inspection_value3,
+		case when (inspection_value4 is null || inspection_value4 = '') then '' else inspection_value4 end as inspection_value4,
+		case when (inspection_value5 is null || inspection_value5 = '') then '' else inspection_value5 end as inspection_value5,
+		case when (inspection_value6 is null || inspection_value6 = '') then '' else inspection_value6 end as inspection_value6,
+		case when (inspection_value7 is null || inspection_value7 = '') then '' else inspection_value7 end as inspection_value7,
+		case when (inspection_value8 is null || inspection_value8 = '') then '' else inspection_value8 end as inspection_value8,
+		case when (inspection_value9 is null || inspection_value9 = '') then '' else inspection_value9 end as inspection_value9,
+		case when (inspection_value10 is null || inspection_value10 = '') then '' else inspection_value10 end as inspection_value10,
+		case when (inspection_value11 is null || inspection_value11 = '') then '' else inspection_value11 end as inspection_value11,
+		case when (inspection_value12 is null || inspection_value12 = '') then '' else inspection_value12 end as inspection_value12,
+		case when (inspection_value13 is null || inspection_value13 = '') then '' else inspection_value13 end as inspection_value13,
+		case when (inspection_value14 is null || inspection_value14 = '') then '' else inspection_value14 end as inspection_value14,
+		case when (inspection_value15 is null || inspection_value15 = '') then '' else inspection_value15 end as inspection_value15,
+		case when (inspection_value16 is null || inspection_value16 = '') then '' else inspection_value16 end as inspection_value16,
+		case when (inspection_value17 is null || inspection_value17 = '') then '' else inspection_value17 end as inspection_value17,
+		case when (inspection_value18 is null || inspection_value18 = '') then '' else inspection_value18 end as inspection_value18,
+		case when (inspection_value19 is null || inspection_value19 = '') then '' else inspection_value19 end as inspection_value19,
+		case when (inspection_value20 is null || inspection_value20 = '') then '' else inspection_value20 end as inspection_value20,
+		case when (inspection_value21 is null || inspection_value21 = '') then '' else inspection_value21 end as inspection_value21,
+		case when (inspection_value22 is null || inspection_value22 = '') then '' else inspection_value22 end as inspection_value22,
+		case when (inspection_value23 is null || inspection_value23 = '') then '' else inspection_value23 end as inspection_value23,
+		case when (inspection_value24 is null || inspection_value24 = '') then '' else inspection_value24 end as inspection_value24,
+		case when (inspection_value25 is null || inspection_value25 = '') then '' else inspection_value25 end as inspection_value25,
+		case when (inspection_value26 is null || inspection_value26 = '') then '' else inspection_value26 end as inspection_value26,
+		case when (inspection_value27 is null || inspection_value27 = '') then '' else inspection_value27 end as inspection_value27,
+		case when (inspection_value28 is null || inspection_value28 = '') then '' else inspection_value28 end as inspection_value28,
+		case when (inspection_value29 is null || inspection_value29 = '') then '' else inspection_value29 end as inspection_value29,
+		case when (inspection_value30 is null || inspection_value30 = '') then '' else inspection_value30 end as inspection_value30,
+		case when (inspection_value31 is null || inspection_value31 = '') then '' else inspection_value31 end as inspection_value31,
+		case when (inspection_value32 is null || inspection_value32 = '') then '' else inspection_value32 end as inspection_value32,
+		case when (inspection_value33 is null || inspection_value33 = '') then '' else inspection_value33 end as inspection_value33,
+		case when (inspection_value34 is null || inspection_value34 = '') then '' else inspection_value34 end as inspection_value34,
+		case when (inspection_value35 is null || inspection_value35 = '') then '' else inspection_value35 end as inspection_value35,
+		case when (inspection_value36 is null || inspection_value36 = '') then '' else inspection_value36 end as inspection_value36,
+		case when (inspection_value37 is null || inspection_value37 = '') then '' else inspection_value37 end as inspection_value37,
+		case when (inspection_value38 is null || inspection_value38 = '') then '' else inspection_value38 end as inspection_value38,
+		inspection_decision,
+		inspection_memo,
+		inspection_doc,
+		inspection_cn,
+		inspection_type,
+		creator,
+		updater,
+		date_created,
+		date_updated 
+		FROM in_insp_detail_tbl where ebeln = #{ebeln}  and ebelp =#{ebelp} and partial_seq=#{partial_seq}  
+	</select>
+	
+	<select id="standby_inspection_select" parameterType="SYQmInspectionVo" resultType="SYQmInspectionVo">
+		select k.* from
+		(
+		select inspec_lot,insts,routing_no,org_no,werks,lgort,budat,cmdat,t_gubun, (select routing_dscr from routing_header_master where routing_no = a.routing_no) as routing_nm ,
+			 org_remark,issue_code,issue_memo,matnr, maktx,meins,Floor(bdmng) bdmng,sernp_no,
+			 insp_yn,mblnr,mjahr,s_mblnr,s_mjahr,n_mblnr,n_mjahr,c_mblnr,c_mjahr,cancel_yn, use_yn,creator,
+			 updater,date_created,date_updated, fn_mes_code_nm('insts', insts) as insts_nm , 
+			 fn_mes_code_nm('dept_cd', werks) as werks_nm, fn_serial_yn(matnr, werks) sernp 
+			 ,org_issue_code,	
+			(case when issue_code is null || issue_code = '' then org_gr_nm else gr_nm end) org_gr_nm,
+			(case when issue_code is null || issue_code = '' then org_level1_name else level1_name end) org_level1_name,
+			(case when issue_code is null || issue_code = '' then org_level2_name else level2_name end) org_level2_name,
+			(case when issue_code is null || issue_code = '' then org_leve3_name else level3_name end) org_issue_memo
+
+			
+			 from pissue_inspection_tbl a
+			 LEFT OUTER JOIN  
+						(select gr_nm org_gr_nm, gr_code org_gr_code, level1_code org_level1_code, level2_code org_level2_code, 
+						level3_code org_level3_code, level1_name org_level1_name, level2_name org_level2_name, level3_name org_leve3_name from ISSUE_DETAIL_TBL) b
+						on a.org_issue_code = b.org_level3_code
+			 LEFT OUTER JOIN  
+			(select gr_nm, gr_code, level1_code, level2_code, 
+			level3_code, level1_name, level2_name, level3_name from ISSUE_DETAIL_TBL) c
+			on a.issue_code = c.level3_code
+		) k 
+		<where> 
+			<if test="dept_cd != null and !''.equals(dept_cd) ">
+				and werks = #{dept_cd}
+			</if>
+			<if test="insts != null and !''.equals(insts) ">
+				and insts = #{insts}
+			</if>
+			<if test="matnr != null and !''.equals(matnr) ">
+				AND matnr LIKE CONCAT('%', #{matnr}, '%')
+			</if>
+			<if test="from_cmdate != null and !''.equals(from_cmdate) ">
+				AND (DATE_FORMAT(cmdat, '%Y%m%d')) <![CDATA[ >= ]]> #{from_cmdate} AND (DATE_FORMAT(cmdat, '%Y%m%d') <![CDATA[ <= ]]> #{to_cmdate})
+			</if>
+			<if test="from_budat != null and !''.equals(from_budat) ">
+				AND (DATE_FORMAT(budat, '%Y%m%d')) <![CDATA[ >= ]]> #{from_budat} AND (DATE_FORMAT(budat, '%Y%m%d') <![CDATA[ <= ]]> #{to_budat})
+			</if>
+			<if test="gubun != null and !gubun.equals('')">
+				and t_gubun = #{gubun}      
+			</if>
+			<if test="insts != null and !insts.equals('')">
+				and insts = #{insts}      
+			</if>
+			<if test="maktx != null and !''.equals(maktx) ">
+				AND maktx LIKE CONCAT('%', #{maktx}, '%')
+			</if>
+			<if test="org_no != null and !''.equals(org_no) ">
+				AND org_no LIKE CONCAT('%', #{org_no}, '%')
+			</if>
+			<if test="sernp_no != null and !''.equals(sernp_no) ">
+				AND sernp_no LIKE CONCAT('%', #{sernp_no}, '%')
+			</if>
+			<if test="org_gr_code != null and !org_gr_code.equals('')">
+				and org_gr_code = #{org_gr_code}      
+			</if>
+			<if test="org_level1_code != null and !org_level1_code.equals('')">
+				and org_level1_code = #{org_level1_code}      
+			</if>
+			<if test="org_level2_code != null and !org_level2_code.equals('')">
+				and org_level2_code = #{org_level2_code}      
+			</if>
+			<if test="org_issue_code != null and !org_issue_code.equals('')">
+				and org_issue_code = #{org_issue_code}      
+			</if>
+			<if test="gr_code != null and !gr_code.equals('')">
+				and gr_code = #{gr_code}      
+			</if>
+			<if test="level1_code != null and !level1_code.equals('')">
+				and level1_code = #{level1_code}      
+			</if>
+			<if test="level2_code != null and !level2_code.equals('')">
+				and level2_code = #{level2_code}      
+			</if>
+			<if test="issue_code != null and !issue_code.equals('')">
+				and issue_code = #{issue_code}      
+			</if>
+			<if test="sidx != null and !sidx.equals('')">
+				order by ${sidx} ${sord}      
+			</if>
+			<if test="page != null and !page.equals('')">
+				limit #{page}, #{rows}
+			</if> 
+		</where>
+	</select>	
+	
+	<select id="standby_inspection_select_count" parameterType="SYQmInspectionVo" resultType="int">
+		select count(*) from
+		(
+		select inspec_lot,insts,routing_no,org_no,werks,lgort,budat,cmdat,t_gubun, (select routing_dscr from routing_header_master where routing_no = a.routing_no) as routing_nm ,
+			 org_remark,issue_code,issue_memo,matnr, maktx,meins,Floor(bdmng) bdmng,sernp_no,
+			 insp_yn,mblnr,mjahr,s_mblnr,s_mjahr,n_mblnr,n_mjahr,c_mblnr,c_mjahr,cancel_yn, use_yn,creator,
+			 updater,date_created,date_updated, fn_mes_code_nm('insts', insts) as insts_nm , 
+			 fn_mes_code_nm('dept_cd', werks) as werks_nm, fn_serial_yn(matnr, werks) sernp 
+			 ,org_issue_code,	
+			(case when issue_code is null || issue_code = '' then org_gr_nm else gr_nm end) org_gr_nm,
+			(case when issue_code is null || issue_code = '' then org_level1_name else level1_name end) org_level1_name,
+			(case when issue_code is null || issue_code = '' then org_level2_name else level2_name end) org_level2_name,
+			(case when issue_code is null || issue_code = '' then org_leve3_name else level3_name end) org_issue_memo
+
+			
+			 from pissue_inspection_tbl a
+			 LEFT OUTER JOIN  
+						(select gr_nm org_gr_nm, gr_code org_gr_code, level1_code org_level1_code, level2_code org_level2_code, 
+						level3_code org_level3_code, level1_name org_level1_name, level2_name org_level2_name, level3_name org_leve3_name from ISSUE_DETAIL_TBL) b
+						on a.org_issue_code = b.org_level3_code
+			 LEFT OUTER JOIN  
+			(select gr_nm, gr_code, level1_code, level2_code, 
+			level3_code, level1_name, level2_name, level3_name from ISSUE_DETAIL_TBL) c
+			on a.issue_code = c.level3_code
+		) k 
+		<where>
+			<if test="dept_cd != null and !''.equals(dept_cd) ">
+				and werks = #{dept_cd}
+			</if>
+			<if test="insts != null and !''.equals(insts) ">
+				and insts = #{insts}
+			</if>
+			<if test="matnr != null and !''.equals(matnr) ">
+				AND matnr LIKE CONCAT('%', #{matnr}, '%')
+			</if>
+			<if test="from_cmdate != null and !''.equals(from_cmdate) ">
+				AND (DATE_FORMAT(cmdat, '%Y%m%d')) <![CDATA[ >= ]]> #{from_cmdate} AND (DATE_FORMAT(cmdat, '%Y%m%d') <![CDATA[ <= ]]> #{to_cmdate})
+			</if>
+			<if test="from_budat != null and !''.equals(from_budat) ">
+				AND (DATE_FORMAT(budat, '%Y%m%d')) <![CDATA[ >= ]]> #{from_budat} AND (DATE_FORMAT(budat, '%Y%m%d') <![CDATA[ <= ]]> #{to_budat})
+			</if>
+			<if test="gubun != null and !gubun.equals('')">
+				and t_gubun = #{gubun}      
+			</if>
+			<if test="insts != null and !insts.equals('')">
+				and insts = #{insts}      
+			</if>
+			<if test="maktx != null and !''.equals(maktx) ">
+				AND maktx LIKE CONCAT('%', #{maktx}, '%')
+			</if>
+			<if test="org_no != null and !''.equals(org_no) ">
+				AND org_no LIKE CONCAT('%', #{org_no}, '%')
+			</if>
+			<if test="sernp_no != null and !''.equals(sernp_no) ">
+				AND sernp_no LIKE CONCAT('%', #{sernp_no}, '%')
+			</if>
+			<if test="org_gr_code != null and !org_gr_code.equals('')">
+				and org_gr_code = #{org_gr_code}      
+			</if>
+			<if test="org_level1_code != null and !org_level1_code.equals('')">
+				and org_level1_code = #{org_level1_code}      
+			</if>
+			<if test="org_level2_code != null and !org_level2_code.equals('')">
+				and org_level2_code = #{org_level2_code}      
+			</if>
+			<if test="org_issue_code != null and !org_issue_code.equals('')">
+				and org_issue_code = #{org_issue_code}      
+			</if>
+			<if test="gr_code != null and !gr_code.equals('')">
+				and gr_code = #{gr_code}      
+			</if>
+			<if test="level1_code != null and !level1_code.equals('')">
+				and level1_code = #{level1_code}      
+			</if>
+			<if test="level2_code != null and !level2_code.equals('')">
+				and level2_code = #{level2_code}      
+			</if>
+			<if test="issue_code != null and !issue_code.equals('')">
+				and issue_code = #{issue_code}      
+			</if>
+		</where>
+	</select>		
+	
+	<select id="insp_select" parameterType="SYStockVo" resultType="SYStockVo">
+		select a.werks, a.lgort, a.matnr, Floor(a.labst) labst, b.maktx, b.wrkst, Floor(a.labst) as inspn , b.meins,
+		fn_mes_code_nm('dept_cd', a.werks) as werks_nm,
+   		(select lgobe from sloc_master where a.werks = werks and a.lgort = lgort) lgort_nm
+	    from stock_header_tbl a, material_recv_master b
+		<where>
+			<if test="true">
+				and a.matnr = b.matnr
+			</if>
+			<if test="werks != null and !werks.equals('')">
+				and a.werks = #{werks}      
+			</if>
+			<if test="lgort != null and !lgort.equals('')">
+				and a.lgort = #{lgort}      
+			</if>
+			<if test="matnr != null and !''.equals(matnr) ">
+				AND a.matnr LIKE CONCAT('%', #{matnr}, '%')
+			</if>
+			<if test="maktx != null and !''.equals(maktx) ">
+				AND b.maktx LIKE CONCAT('%', #{maktx}, '%')
+			</if>
+			<if test="sidx != null and !sidx.equals('')">
+				order by ${sidx} ${sord}      
+			</if>
+			<if test="page != null and !page.equals('')">
+				limit #{page}, #{rows}
+			</if>
+		</where>
+	</select>		
+	
+	<select id="insp_select_count" parameterType="SYStockVo" resultType="int">
+		select count(*) 
+	    from stock_header_tbl a, material_recv_master b
+		<where>
+			<if test="true">
+				and a.matnr = b.matnr
+			</if>
+			<if test="werks != null and !werks.equals('')">
+				and a.werks = #{werks}      
+			</if>
+			<if test="lgort != null and !lgort.equals('')">
+				and a.lgort = #{lgort}      
+			</if>
+			<if test="matnr != null and !''.equals(matnr) ">
+				AND a.matnr LIKE CONCAT('%', #{matnr}, '%')
+			</if>
+			<if test="maktx != null and !''.equals(maktx) ">
+				AND b.maktx LIKE CONCAT('%', #{maktx}, '%')
+			</if>
+			
+		</where>
+	</select>	
+	
+	<select id="lot_gen"  resultType="String">
+		SELECT (CONCAT('PI',  `fn_lastinsp_seq`()))
+	</select>	
+	
+	<insert id="fnSaveInspLot" parameterType="SYStockVo">
+		INSERT INTO pissue_inspection_tbl
+			(inspec_lot, t_gubun, insts,
+			matnr, maktx, meins, bdmng, 
+			werks, budat, lgort,
+			creator, updater, date_created, date_updated) 
+		VALUES 
+			(#{inspec_lot}, #{t_gubun}, #{insts},
+			#{matnr}, #{maktx}, #{meins}, #{bdmng},
+			#{werks},  (select curdate() + 0), #{lgort},
+			#{creator}, #{updater}, current_timestamp(), current_timestamp());
+	</insert>	
+	
+	
+	
+	<select id="maxPordnoSeq" parameterType="SYqmVo" resultType="String">
+		select max(a.pordno_seq) from last_inspection_tbl a where a.pordno = #{pordno} group by a.pordno
+	</select>	
+	
+	<update id="fnLastInspWorkerAdd" parameterType="SYqmVo">
+		update
+			last_inspection_tbl
+		set
+			worker_emp_no = #{worker_emp_no},
+			zgrade = #{zgrade},
+			last_sts = 'L2'
+		where
+			pordno = #{pordno}
+			and pordno_seq = #{pordno_seq} 
+	</update>	
+	
+	<update id="lastStsUpdate" parameterType="SYqmVo">
+		update
+			last_inspection_tbl
+		set
+			last_sts = #{last_sts}
+		where
+			pordno = #{pordno}
+			and pordno_seq = #{pordno_seq} 
+	</update>	
+	
+	<select id="batch_lastInsp_select" parameterType="SYQmVo" resultType="SYQmVo">
+<!-- 		SELECT * -->
+<!-- 		  FROM LAST_INSPECTION_TBL -->
+<!-- 		 WHERE SAP_SEND_YN = 'N' -->
+<!-- 		   AND LAST_STS = 'L5' -->
+<!-- 		   AND (  AUART = 'ZP01' OR  AUART = 'ZP02' OR (DEPT_CD ='1210' AND AUART !='ZP03'))  -->
+<!-- 		   AND CONF_DATE IS NOT NULL -->
+<!-- 		   AND   DATE_UPDATED >= date_add(now(), interval -2 day)   -->
+		  SELECT *
+		  FROM 
+		  	LAST_INSPECTION_TBL a
+		  WHERE 
+		  	SAP_SEND_YN = 'N'
+		  	AND LAST_STS = 'L5'
+		  	AND (  AUART = 'ZP01' OR  AUART = 'ZP02' OR (DEPT_CD ='1210' AND AUART !='ZP03')) 
+		  	AND CONF_DATE IS NOT NULL
+		  	AND   DATE_UPDATED >= date_add(now(), interval -2 day)  
+		  	and routing_no = (
+		  		select max(b.routing_no) 
+		  		from prod_ord_tbl b
+		  		where a.pordno = b.pordno
+		  		and (select routing_code from routing_header_master where b.routing_no = routing_no) = 'T1'
+		  	) 	
+	</select>
+	
+	<update id="batch_lastInsp_update" parameterType="SYqmVo">
+		update last_inspection_tbl set
+			SAP_SEND_YN = 'Y'
+			,mblnr = #{mblnr}
+			,mjahr = #{mjahr}
+		where PORDNO = #{pordno}
+		   AND PORDNO_SEQ = #{pordno_seq}
+		   AND SAP_SEND_YN = 'N'
+		   AND LAST_STS = 'L5'
+		<!--     AND (  AUART = 'ZP01' OR  AUART = 'ZP02') -->
+	</update>
+	
+	<select id="inspection_state_select" parameterType="SYQmVo" resultType="SYQmVo">
+		select 
+			concat(ent.atwtb_l, ' - ',ent.atwtb_m) group_key, ent.atwtb_l, ent.atwtb_m, ent.atwtb_s, 
+			sum(ent.pre_remain_cnt) pre_remain_cnt, 
+			sum(ent.now_remain_cnt) now_remain_cnt, 
+			(sum(ent.pre_remain_cnt) + sum(ent.now_remain_cnt)) total_remain_cnt,
+			sum(ent.now_done_cnt) now_done_cnt,
+			sum(ent.entire_remain_cnt) entire_remain_cnt, 
+			sum(ent.now_pass_cnt) now_pass_cnt, 
+			sum(ent.now_nonpass_cnt) now_nonpass_cnt, 
+			round(ifnull(((sum(ent.now_pass_cnt) / sum(ent.now_done_cnt))*100),0)) pass_rate
+		from
+        (
+	      select a.matnr, a.werks, a.atwtb_l, a.atwtb_m, a.atwtb_s,
+	        (
+				select count(*) pre_remain_cnt
+				From last_inspection_tbl b
+				where a.matnr = b.itnbr
+				and a.werks = b.dept_cd
+				and b.pdsts = 'p8'
+				and (DATE_FORMAT(b.cmdat, '%Y%m%d')) <![CDATA[<]]> #{f_cmdat} 
+			) pre_remain_cnt,
+	        (
+				select count(*) now_remain_cnt
+				From last_inspection_tbl b
+				where a.matnr = b.itnbr
+				and a.werks = b.dept_cd
+				and b.pdsts = 'p8'
+				and (DATE_FORMAT(b.cmdat, '%Y%m%d')) <![CDATA[>=]]> #{f_cmdat} AND (DATE_FORMAT(b.cmdat, '%Y%m%d') <![CDATA[<=]]> #{t_cmdat})
+			) now_remain_cnt,
+			(
+				select count(*) now_done_cnt 
+				From last_inspection_tbl b
+				where a.matnr = b.itnbr
+				and a.werks = b.dept_cd
+				and b.pdsts <![CDATA[<>]]> 'p8'
+				and (DATE_FORMAT(b.cmdat, '%Y%m%d')) <![CDATA[>=]]> #{f_cmdat} AND (DATE_FORMAT(b.cmdat, '%Y%m%d') <![CDATA[<=]]> #{t_cmdat})
+			) now_done_cnt,
+			(
+				select count(*) now_pass_cnt 
+				From last_inspection_tbl b
+				where a.matnr = b.itnbr
+				and a.werks = b.dept_cd
+				and b.pdsts = 'p9'
+				and (DATE_FORMAT(b.cmdat, '%Y%m%d')) <![CDATA[>=]]> #{f_cmdat} AND (DATE_FORMAT(b.cmdat, '%Y%m%d') <![CDATA[<=]]> #{t_cmdat})
+			) now_pass_cnt,
+			(
+				select count(*) now_nonpass_cnt 
+				From last_inspection_tbl b
+				where a.matnr = b.itnbr
+				and a.werks = b.dept_cd
+				and b.pdsts = 'p10'
+				and (DATE_FORMAT(b.cmdat, '%Y%m%d')) <![CDATA[>=]]> #{f_cmdat} AND (DATE_FORMAT(b.cmdat, '%Y%m%d') <![CDATA[<=]]> #{t_cmdat})
+			) now_nonpass_cnt,
+			(
+				select count(*) entire_remain_cnt 
+				From last_inspection_tbl b
+				where a.matnr = b.itnbr
+				and a.werks = b.dept_cd
+				and b.pdsts = 'p8'
+			) entire_remain_cnt
+			from material_recv_detail a
+			where a.atwtb_s <![CDATA[<>]]>  ''
+			<if test="werks != null and !''.equals(werks) ">
+				and a.werks = #{werks}
+			</if>
+			<if test="atwtb_l != null and !''.equals(atwtb_l) ">
+				AND a.atwtb_l LIKE CONCAT('%', #{atwtb_l}, '%')
+			</if>
+			<if test="atwtb_m != null and !''.equals(atwtb_m) ">
+				AND a.atwtb_m LIKE CONCAT('%', #{atwtb_m}, '%')
+			</if>
+		) ent
+		group by ent.atwtb_s
+	</select>		
+	
+	<select id="inspection_state_monthly_select" parameterType="SYQmVo" resultType="SYQmVo">
+	select 
+			concat(ent.atwtb_l, ' - ',ent.atwtb_m) group_key, ent.atwtb_l, ent.atwtb_m, ent.atwtb_s, 
+			sum(ent.onenow_done_cnt) onenow_done_cnt,
+			sum(ent.onenow_pass_cnt) onenow_pass_cnt, 
+			round(ifnull(((sum(ent.onenow_pass_cnt) / sum(ent.onenow_done_cnt))*100),0)) onepass_rate,
+			sum(ent.twonow_done_cnt) twonow_done_cnt,
+			sum(ent.twonow_pass_cnt) twonow_pass_cnt,
+			round(ifnull(((sum(ent.twonow_pass_cnt) / sum(ent.twonow_done_cnt))*100),0)) twopass_rate, 
+			sum(ent.threenow_done_cnt) threenow_done_cnt,
+			sum(ent.threenow_pass_cnt) threenow_pass_cnt, 
+			round(ifnull(((sum(ent.threenow_pass_cnt) / sum(ent.threenow_done_cnt))*100),0)) threepass_rate, 
+			sum(ent.fournow_done_cnt) fournow_done_cnt,
+			sum(ent.fournow_pass_cnt) fournow_pass_cnt, 
+			round(ifnull(((sum(ent.fournow_pass_cnt) / sum(ent.fournow_done_cnt))*100),0)) fourpass_rate, 
+			sum(ent.fivenow_done_cnt) fivenow_done_cnt,
+			sum(ent.fivenow_pass_cnt) fivenow_pass_cnt, 
+			round(ifnull(((sum(ent.fivenow_pass_cnt) / sum(ent.fivenow_done_cnt))*100),0)) fivepass_rate,
+			sum(ent.sixnow_done_cnt) sixnow_done_cnt,
+			sum(ent.sixnow_pass_cnt) sixnow_pass_cnt, 
+			round(ifnull(((sum(ent.sixnow_pass_cnt) / sum(ent.sixnow_done_cnt))*100),0)) sixpass_rate,
+			sum(ent.sevennow_done_cnt) sevennow_done_cnt,
+			sum(ent.sevennow_pass_cnt) sevennow_pass_cnt, 
+			round(ifnull(((sum(ent.sevennow_pass_cnt) / sum(ent.sevennow_done_cnt))*100),0)) sevenpass_rate,
+			sum(ent.eightnow_done_cnt) eightnow_done_cnt,
+			sum(ent.eightnow_pass_cnt) eightnow_pass_cnt, 
+			round(ifnull(((sum(ent.eightnow_pass_cnt) / sum(ent.eightnow_done_cnt))*100),0)) eightpass_rate,
+			sum(ent.ninenow_done_cnt) ninenow_done_cnt,
+			sum(ent.ninenow_pass_cnt) ninenow_pass_cnt, 
+			round(ifnull(((sum(ent.ninenow_pass_cnt) / sum(ent.ninenow_done_cnt))*100),0)) ninepass_rate,
+			sum(ent.tennow_done_cnt) tennow_done_cnt,
+			sum(ent.tennow_pass_cnt) tennow_pass_cnt, 
+			round(ifnull(((sum(ent.tennow_pass_cnt) / sum(ent.tennow_done_cnt))*100),0)) tenpass_rate,
+			sum(ent.elevennow_done_cnt) elevennow_done_cnt,
+			sum(ent.elevennow_pass_cnt) elevennow_pass_cnt, 
+			round(ifnull(((sum(ent.elevennow_pass_cnt) / sum(ent.elevennow_done_cnt))*100),0)) elevenpass_rate,
+			sum(ent.twelvenow_done_cnt) twelvenow_done_cnt,
+			sum(ent.twelvenow_pass_cnt) twelvenow_pass_cnt, 
+			round(ifnull(((sum(ent.twelvenow_pass_cnt) / sum(ent.twelvenow_done_cnt))*100),0)) twelvepass_rate		
+		from
+        (
+	      select a.matnr, a.werks, a.atwtb_l, a.atwtb_m, a.atwtb_s,
+			(
+				select count(*) onenow_done_cnt 
+				From last_inspection_tbl b
+				where a.matnr = b.itnbr
+				and a.werks = b.dept_cd
+				and b.pdsts <![CDATA[<>]]> 'p8'
+		    	and b.sudat is not null
+				and (DATE_FORMAT(b.sudat, '%Y%m')) = concat(#{cmdat},'01') 
+			) onenow_done_cnt,
+			(
+				select count(*) onenow_pass_cnt 
+				From last_inspection_tbl b
+				where a.matnr = b.itnbr
+				and a.werks = b.dept_cd
+				and b.pdsts = 'p9'
+				and b.sudat is not null
+				and (DATE_FORMAT(b.sudat, '%Y%m'))  = concat(#{cmdat},'01') 
+			) onenow_pass_cnt,
+			(
+				select count(*) twonow_done_cnt 
+				From last_inspection_tbl b
+				where a.matnr = b.itnbr
+				and a.werks = b.dept_cd
+				and b.pdsts <![CDATA[<>]]> 'p8'
+				and b.sudat is not null
+				and (DATE_FORMAT(b.sudat, '%Y%m'))  = concat(#{cmdat},'02') 
+			) twonow_done_cnt,
+			(
+				select count(*) twonow_pass_cnt 
+				From last_inspection_tbl b
+				where a.matnr = b.itnbr
+				and a.werks = b.dept_cd
+				and b.pdsts = 'p9'
+				and b.sudat is not null
+				and (DATE_FORMAT(b.sudat, '%Y%m')) = concat(#{cmdat},'02') 
+			) twonow_pass_cnt,
+			(
+				select count(*) threenow_done_cnt 
+				From last_inspection_tbl b
+				where a.matnr = b.itnbr
+				and a.werks = b.dept_cd
+				and b.pdsts <![CDATA[<>]]> 'p8'
+				and b.sudat is not null
+				and (DATE_FORMAT(b.sudat, '%Y%m')) = concat(#{cmdat},'03') 
+			) threenow_done_cnt,
+			(
+				select count(*) threenow_pass_cnt 
+				From last_inspection_tbl b
+				where a.matnr = b.itnbr
+				and a.werks = b.dept_cd
+				and b.pdsts = 'p9'
+				and b.sudat is not null
+				and (DATE_FORMAT(b.sudat, '%Y%m'))= concat(#{cmdat},'03') 
+			) threenow_pass_cnt,
+			(
+				select count(*) fournow_done_cnt 
+				From last_inspection_tbl b
+				where a.matnr = b.itnbr
+				and a.werks = b.dept_cd
+				and b.pdsts <![CDATA[<>]]> 'p8'
+				and b.sudat is not null
+				and (DATE_FORMAT(b.sudat, '%Y%m')) = concat(#{cmdat},'04') 
+			) fournow_done_cnt,
+			(
+				select count(*) fournow_pass_cnt 
+				From last_inspection_tbl b
+				where a.matnr = b.itnbr
+				and a.werks = b.dept_cd
+				and b.pdsts = 'p9'
+				and b.sudat is not null
+				and (DATE_FORMAT(b.sudat, '%Y%m')) = concat(#{cmdat},'04') 
+			) fournow_pass_cnt,
+			(
+				select count(*) fivenow_done_cnt 
+				From last_inspection_tbl b
+				where a.matnr = b.itnbr
+				and a.werks = b.dept_cd
+				and b.pdsts <![CDATA[<>]]> 'p8'
+				and b.sudat is not null
+				and (DATE_FORMAT(b.sudat, '%Y%m')) = concat(#{cmdat},'05') 
+			) fivenow_done_cnt,
+			(
+				select count(*) fivenow_pass_cnt 
+				From last_inspection_tbl b
+				where a.matnr = b.itnbr
+				and a.werks = b.dept_cd
+				and b.pdsts = 'p9'
+				and b.sudat is not null
+				and (DATE_FORMAT(b.sudat, '%Y%m'))  = concat(#{cmdat},'05')
+			) fivenow_pass_cnt,
+				(
+				select count(*) sixnow_done_cnt 
+				From last_inspection_tbl b
+				where a.matnr = b.itnbr
+				and a.werks = b.dept_cd
+				and b.pdsts <![CDATA[<>]]> 'p8'
+				and b.sudat is not null
+				and (DATE_FORMAT(b.sudat, '%Y%m')) = concat(#{cmdat},'06') 
+			) sixnow_done_cnt,
+			(
+				select count(*) sixnow_pass_cnt 
+				From last_inspection_tbl b
+				where a.matnr = b.itnbr
+				and a.werks = b.dept_cd
+				and b.pdsts = 'p9'
+				and b.sudat is not null
+				and (DATE_FORMAT(b.sudat, '%Y%m')) = concat(#{cmdat},'06') 
+			) sixnow_pass_cnt,
+				(
+				select count(*) sevennow_done_cnt 
+				From last_inspection_tbl b
+				where a.matnr = b.itnbr
+				and a.werks = b.dept_cd
+				and b.pdsts <![CDATA[<>]]> 'p8'
+				and b.sudat is not null
+				and (DATE_FORMAT(b.sudat, '%Y%m')) = concat(#{cmdat},'07') 
+			) sevennow_done_cnt,
+			(
+				select count(*) sevennow_pass_cnt 
+				From last_inspection_tbl b
+				where a.matnr = b.itnbr
+				and a.werks = b.dept_cd
+				and b.pdsts = 'p9'
+				and b.sudat is not null
+				and (DATE_FORMAT(b.sudat, '%Y%m')) = concat(#{cmdat},'07') 
+			) sevennow_pass_cnt,
+				(
+				select count(*) eightnow_done_cnt 
+				From last_inspection_tbl b
+				where a.matnr = b.itnbr
+				and a.werks = b.dept_cd
+				and b.pdsts <![CDATA[<>]]> 'p8'
+				and b.sudat is not null
+				and (DATE_FORMAT(b.sudat, '%Y%m')) = concat(#{cmdat},'08') 
+			) eightnow_done_cnt,
+			(
+				select count(*) eightnow_pass_cnt 
+				From last_inspection_tbl b
+				where a.matnr = b.itnbr
+				and a.werks = b.dept_cd
+				and b.pdsts = 'p9'
+				and b.sudat is not null
+				and (DATE_FORMAT(b.sudat, '%Y%m')) = concat(#{cmdat},'08') 
+			) eightnow_pass_cnt,
+				(
+				select count(*) ninenow_done_cnt 
+				From last_inspection_tbl b
+				where a.matnr = b.itnbr
+				and a.werks = b.dept_cd
+				and b.pdsts <![CDATA[<>]]> 'p8'
+				and b.sudat is not null
+				and (DATE_FORMAT(b.sudat, '%Y%m')) = concat(#{cmdat},'09') 
+			) ninenow_done_cnt,
+			(
+				select count(*) ninenow_pass_cnt 
+				From last_inspection_tbl b
+				where a.matnr = b.itnbr
+				and a.werks = b.dept_cd
+				and b.pdsts = 'p9'
+				and b.sudat is not null
+				and (DATE_FORMAT(b.sudat, '%Y%m')) = concat(#{cmdat},'09') 
+			) ninenow_pass_cnt,
+			(
+				select count(*) tennow_done_cnt 
+				From last_inspection_tbl b
+				where a.matnr = b.itnbr
+				and a.werks = b.dept_cd
+				and b.pdsts <![CDATA[<>]]> 'p8'
+				and b.sudat is not null
+				and (DATE_FORMAT(b.sudat, '%Y%m')) = concat(#{cmdat},'10') 
+			) tennow_done_cnt,
+			(
+				select count(*) tennow_pass_cnt 
+				From last_inspection_tbl b
+				where a.matnr = b.itnbr
+				and a.werks = b.dept_cd
+				and b.pdsts = 'p9'
+				and b.sudat is not null
+				and (DATE_FORMAT(b.sudat, '%Y%m')) = concat(#{cmdat},'10') 
+			) tennow_pass_cnt,
+				(
+				select count(*) elevennow_done_cnt 
+				From last_inspection_tbl b
+				where a.matnr = b.itnbr
+				and a.werks = b.dept_cd
+				and b.pdsts <![CDATA[<>]]> 'p8'
+				and b.sudat is not null
+				and (DATE_FORMAT(b.sudat, '%Y%m')) = concat(#{cmdat},'11') 
+			) elevennow_done_cnt,
+			(
+				select count(*) elevennow_pass_cnt 
+				From last_inspection_tbl b
+				where a.matnr = b.itnbr
+				and a.werks = b.dept_cd
+				and b.pdsts = 'p9'
+				and b.sudat is not null
+				and (DATE_FORMAT(b.sudat, '%Y%m')) = concat(#{cmdat},'11') 
+			) elevennow_pass_cnt,
+				(
+				select count(*) twelvenow_done_cnt 
+				From last_inspection_tbl b
+				where a.matnr = b.itnbr
+				and a.werks = b.dept_cd
+				and b.pdsts <![CDATA[<>]]> 'p8'
+				and b.sudat is not null
+				and (DATE_FORMAT(b.sudat, '%Y%m')) = concat(#{cmdat},'12') 
+			) twelvenow_done_cnt,
+			(
+				select count(*) twelvenow_pass_cnt 
+				From last_inspection_tbl b
+				where a.matnr = b.itnbr
+				and a.werks = b.dept_cd
+				and b.pdsts = 'p9'
+				and b.sudat is not null
+				and (DATE_FORMAT(b.sudat, '%Y%m'))= concat(#{cmdat},'12')
+			) twelvenow_pass_cnt
+			from material_recv_detail a
+			where a.atwtb_s <![CDATA[<>]]>  ''
+			<if test="werks != null and !''.equals(werks) ">
+				and a.werks = #{werks}
+			</if>
+			<if test="atwtb_l != null and !''.equals(atwtb_l) ">
+				AND a.atwtb_l LIKE CONCAT('%', #{atwtb_l}, '%')
+			</if>
+			<if test="atwtb_m != null and !''.equals(atwtb_m) ">
+				AND a.atwtb_m LIKE CONCAT('%', #{atwtb_m}, '%')
+			</if>
+		) ent
+		group by ent.atwtb_s
+	</select>		
+	
+	<select id="import_inspection_state_select" parameterType="SYQmVo" resultType="SYQmVo">
+	select lifnr, name1, (insp_total) insp_entire_cnt, insp_incomplete_cnt, insp_complete_cnt, insp_pass_cnt, insp_nonpass_cnt,
+		    Round((insp_pass_cnt/insp_complete_cnt)*100) insp_pass_rate from  
+	(
+		select b.lifnr,b.name1,
+		 (select count(*) from raw_proc_tbl  d
+			where d.rorder_status ='r4' and (((DATE_FORMAT(d.order_delivery_date, '%Y%m%d'))  <![CDATA[>=]]> #{f_cmdat} AND (DATE_FORMAT(d.order_delivery_date, '%Y%m%d') <![CDATA[<=]]> #{t_cmdat})))
+  			  and ( d.ebeln,d.ebelp) not in (
+   				 select c.ebeln,c.ebelp  from in_insp_tbl c where  c.lifnr =b.lifnr   and  c.insp_status !='i2' and (((DATE_FORMAT(c.in_confirm_date, '%Y%m%d')) <![CDATA[>=]]> #{f_cmdat}  AND (DATE_FORMAT(c.in_confirm_date, '%Y%m%d') <![CDATA[<=]]> #{t_cmdat})))    
+  					  ) and   d.lifnr=b.lifnr 
+  		    <if test="werks != null and !''.equals(werks) ">
+				and d.werks = #{werks}
+			</if>
+  		) insp_total,
+		( select count(*) from in_insp_tbl c
+			 where c.lifnr =a.lifnr and  (((DATE_FORMAT(c.in_confirm_date, '%Y%m%d')) <![CDATA[>=]]> #{f_cmdat}  AND (DATE_FORMAT(c.in_confirm_date, '%Y%m%d')<![CDATA[<=]]> #{t_cmdat}))          
+	     ||   ((DATE_FORMAT(c.in_fail_date, '%Y%m%d')) <![CDATA[>=]]> #{f_cmdat}  AND (DATE_FORMAT(c.in_fail_date, '%Y%m%d') <![CDATA[<=]]> #{t_cmdat})))  
+	 	    <if test="werks != null and !''.equals(werks) ">
+				and c.werks = #{werks}
+			</if> 
+	      ) insp_incomplete_cnt,
+		 ( select count(*) from in_insp_tbl c where c.lifnr =b.lifnr and (c.insp_status ='i2' or c.insp_status ='i3') 
+ 			  and (((DATE_FORMAT(c.in_confirm_date, '%Y%m%d')) <![CDATA[>=]]> #{f_cmdat} AND (DATE_FORMAT(c.in_confirm_date, '%Y%m%d')<![CDATA[<=]]> #{t_cmdat}))          
+	     ||   ((DATE_FORMAT(c.in_fail_date, '%Y%m%d')) <![CDATA[>=]]> #{f_cmdat} AND (DATE_FORMAT(c.in_fail_date, '%Y%m%d') <![CDATA[<=]]> #{t_cmdat}))) 
+	  	    <if test="werks != null and !''.equals(werks) ">
+				and c.werks = #{werks}
+			</if> 
+	     )  insp_complete_cnt,
+		 ( select count(*) from in_insp_tbl c where c.lifnr =b.lifnr and c.insp_status ='i2'  
+		 	    and (((DATE_FORMAT(c.in_confirm_date, '%Y%m%d')) <![CDATA[>=]]> #{f_cmdat} AND (DATE_FORMAT(c.in_confirm_date, '%Y%m%d')  <![CDATA[<=]]> #{t_cmdat})) )
+		 	 <if test="werks != null and !''.equals(werks) ">
+				and c.werks = #{werks}
+			</if> 
+		 )  insp_pass_cnt, 
+		 ( select count(*) from in_insp_tbl c where c.lifnr =b.lifnr and c.insp_status ='i3'  and (((DATE_FORMAT(c.in_fail_date, '%Y%m%d')) <![CDATA[>=]]> #{f_cmdat} AND (DATE_FORMAT(c.in_fail_date, '%Y%m%d') <![CDATA[<=]]> #{t_cmdat})) )
+		     <if test="werks != null and !''.equals(werks) ">
+				and c.werks = #{werks}
+			</if> 
+		 )  insp_nonpass_cnt 
+		from in_insp_tbl  a,(select lifnr,name1 from vendor_tbl a,  sy_organ_member_map b where a.lifnr =b.member_emp_no and b.dept_Cd ='1063') b
+		where a.lifnr =b.lifnr 
+		and (((DATE_FORMAT(a.in_confirm_date, '%Y%m%d')) <![CDATA[>=]]> #{f_cmdat} AND (DATE_FORMAT(a.in_confirm_date, '%Y%m%d') <![CDATA[<=]]> #{t_cmdat}))
+		<![CDATA[||]]> ((DATE_FORMAT(a.in_fail_date, '%Y%m%d')) <![CDATA[>=]]> #{f_cmdat} AND (DATE_FORMAT(a.in_fail_date, '%Y%m%d') <![CDATA[<=]]> #{t_cmdat})))
+		group by lifnr
+	) aa
+	<where>
+		<if test="lifnr != null and !''.equals(lifnr) ">
+			and lifnr = #{lifnr}
+		</if>
+		<if test="name1 != null and !''.equals(name1) ">
+			AND name1 LIKE CONCAT('%', #{name1}, '%')
+		</if>
+	</where>
+	</select>
+	
+	<select id="import_inspection_monthly_state_select" parameterType="SYQmVo" resultType="SYQmVo">
+		select 
+			lifnr,name1,
+			onenow_done_cnt, onenow_pass_cnt, round(ifnull((onenow_pass_cnt/onenow_done_cnt)*100,0)) onepass_rate,
+			twonow_done_cnt, twonow_pass_cnt, round(ifnull((twonow_pass_cnt/twonow_done_cnt)*100,0)) twopass_rate,
+			threenow_done_cnt, threenow_pass_cnt, round(ifnull((threenow_pass_cnt/threenow_done_cnt)*100,0)) threepass_rate,
+			fournow_done_cnt, fournow_pass_cnt, round(ifnull((fournow_pass_cnt/fournow_done_cnt)*100,0)) fourpass_rate,
+			fivenow_done_cnt, fivenow_pass_cnt, round(ifnull((fivenow_pass_cnt/fivenow_done_cnt)*100,0)) fivepass_rate,
+			sixnow_done_cnt, sixnow_pass_cnt, round(ifnull((sixnow_pass_cnt/sixnow_done_cnt)*100,0)) sixpass_rate,
+			sevennow_done_cnt, sevennow_pass_cnt, round(ifnull((sevennow_pass_cnt/sevennow_done_cnt)*100,0)) sevenpass_rate,
+			eightnow_done_cnt, eightnow_pass_cnt, round(ifnull((eightnow_pass_cnt/eightnow_done_cnt)*100,0)) eightpass_rate,
+			ninenow_done_cnt, ninenow_pass_cnt, round(ifnull((ninenow_pass_cnt/ninenow_done_cnt)*100,0)) ninepass_rate,
+			tennow_done_cnt, tennow_pass_cnt, round(ifnull((tennow_pass_cnt/tennow_done_cnt)*100,0)) tenpass_rate,
+			elevennow_done_cnt, elevennow_pass_cnt, round(ifnull((elevennow_pass_cnt/elevennow_done_cnt)*100,0)) elevenpass_rate,
+			twelvenow_done_cnt, twelvenow_pass_cnt, round(ifnull((twelvenow_pass_cnt/twelvenow_done_cnt)*100,0)) twelvepass_rate 
+		from			
+		(			
+			select b.lifnr,b.name1,
+			(
+				select count(*)  from in_insp_tbl c
+				where c.lifnr =b.lifnr
+				and (c.insp_status ='i2' or c.insp_status ='i3')
+				and (((DATE_FORMAT(c.in_confirm_date, '%Y%m')) = concat(#{cmdat},'01')) 
+				or ((DATE_FORMAT(c.in_fail_date, '%Y%m')) = concat(#{cmdat},'01')))
+				<if test="werks != null and !''.equals(werks) ">
+					and werks = #{werks}
+				</if>
+			) onenow_done_cnt,
+			(
+				select count(*)  from in_insp_tbl c
+				where c.lifnr =b.lifnr
+				and (c.insp_status ='i2')
+				and ((DATE_FORMAT(c.in_confirm_date, '%Y%m')) = concat(#{cmdat},'01'))
+				<if test="werks != null and !''.equals(werks) ">
+					and werks = #{werks}
+				</if>
+			) onenow_pass_cnt,
+			(
+				select count(*)  from in_insp_tbl c
+				where c.lifnr =b.lifnr
+				and (c.insp_status ='i2' or c.insp_status ='i3')
+				and (((DATE_FORMAT(c.in_confirm_date, '%Y%m')) = concat(#{cmdat},'02')) 
+				or ((DATE_FORMAT(c.in_fail_date, '%Y%m')) = concat(#{cmdat},'02')))
+				<if test="werks != null and !''.equals(werks) ">
+					and werks = #{werks}
+				</if>
+			) twonow_done_cnt,
+			(
+				select count(*)  from in_insp_tbl c
+				where c.lifnr =b.lifnr
+				and (c.insp_status ='i2')
+				and ((DATE_FORMAT(c.in_confirm_date, '%Y%m')) = concat(#{cmdat},'02'))
+				<if test="werks != null and !''.equals(werks) ">
+					and werks = #{werks}
+				</if>
+			) twonow_pass_cnt,
+			(
+				select count(*)  from in_insp_tbl c
+				where c.lifnr =b.lifnr
+				and (c.insp_status ='i2' or c.insp_status ='i3')
+				and (((DATE_FORMAT(c.in_confirm_date, '%Y%m')) = concat(#{cmdat},'03')) 
+				or ((DATE_FORMAT(c.in_fail_date, '%Y%m')) = concat(#{cmdat},'03')))
+				<if test="werks != null and !''.equals(werks) ">
+					and werks = #{werks}
+				</if>
+			) threenow_done_cnt,
+			(
+				select count(*)  from in_insp_tbl c
+				where c.lifnr =b.lifnr
+				and (c.insp_status ='i2')
+				and ((DATE_FORMAT(c.in_confirm_date, '%Y%m')) = concat(#{cmdat},'03'))
+				<if test="werks != null and !''.equals(werks) ">
+					and werks = #{werks}
+				</if>
+			) threenow_pass_cnt,
+			(
+				select count(*)  from in_insp_tbl c
+				where c.lifnr =b.lifnr
+				and (c.insp_status ='i2' or c.insp_status ='i3')
+				and (((DATE_FORMAT(c.in_confirm_date, '%Y%m')) = concat(#{cmdat},'04')) 
+				or ((DATE_FORMAT(c.in_fail_date, '%Y%m')) = concat(#{cmdat},'04')))
+				<if test="werks != null and !''.equals(werks) ">
+					and werks = #{werks}
+				</if>
+			) fournow_done_cnt,
+			(
+				select count(*)  from in_insp_tbl c
+				where c.lifnr =b.lifnr
+				and (c.insp_status ='i2')
+				and ((DATE_FORMAT(c.in_confirm_date, '%Y%m')) = concat(#{cmdat},'04'))
+				<if test="werks != null and !''.equals(werks) ">
+					and werks = #{werks}
+				</if>
+			) fournow_pass_cnt,
+			(
+				select count(*)  from in_insp_tbl c
+				where c.lifnr =b.lifnr
+				and (c.insp_status ='i2' or c.insp_status ='i3')
+				and (((DATE_FORMAT(c.in_confirm_date, '%Y%m')) = concat(#{cmdat},'05')) 
+				or ((DATE_FORMAT(c.in_fail_date, '%Y%m')) = concat(#{cmdat},'05')))
+				<if test="werks != null and !''.equals(werks) ">
+					and werks = #{werks}
+				</if>
+			) fivenow_done_cnt,
+			(
+				select count(*)  from in_insp_tbl c
+				where c.lifnr =b.lifnr
+				and (c.insp_status ='i2')
+				and ((DATE_FORMAT(c.in_confirm_date, '%Y%m')) = concat(#{cmdat},'05'))
+				<if test="werks != null and !''.equals(werks) ">
+					and werks = #{werks}
+				</if>
+			) fivenow_pass_cnt,
+			(
+				select count(*)  from in_insp_tbl c
+				where c.lifnr =b.lifnr
+				and (c.insp_status ='i2' or c.insp_status ='i3')
+				and (((DATE_FORMAT(c.in_confirm_date, '%Y%m')) = concat(#{cmdat},'06')) 
+				or ((DATE_FORMAT(c.in_fail_date, '%Y%m')) = concat(#{cmdat},'06')))
+				<if test="werks != null and !''.equals(werks) ">
+					and werks = #{werks}
+				</if>
+			) sixnow_done_cnt,
+			(
+				select count(*)  from in_insp_tbl c
+				where c.lifnr =b.lifnr
+				and (c.insp_status ='i2')
+				and ((DATE_FORMAT(c.in_confirm_date, '%Y%m')) = concat(#{cmdat},'06'))
+				<if test="werks != null and !''.equals(werks) ">
+					and werks = #{werks}
+				</if>
+			) sixnow_pass_cnt,
+			(
+				select count(*)  from in_insp_tbl c
+				where c.lifnr =b.lifnr
+				and (c.insp_status ='i2' or c.insp_status ='i3')
+				and (((DATE_FORMAT(c.in_confirm_date, '%Y%m')) = concat(#{cmdat},'07')) 
+				or ((DATE_FORMAT(c.in_fail_date, '%Y%m')) = concat(#{cmdat},'07')))
+				<if test="werks != null and !''.equals(werks) ">
+					and werks = #{werks}
+				</if>
+			) sevennow_done_cnt,
+			(
+				select count(*)  from in_insp_tbl c
+				where c.lifnr =b.lifnr
+				and (c.insp_status ='i2')
+				and ((DATE_FORMAT(c.in_confirm_date, '%Y%m')) = concat(#{cmdat},'07'))
+				<if test="werks != null and !''.equals(werks) ">
+					and werks = #{werks}
+				</if>
+			) sevennow_pass_cnt,
+			(
+				select count(*)  from in_insp_tbl c
+				where c.lifnr =b.lifnr
+				and (c.insp_status ='i2' or c.insp_status ='i3')
+				and (((DATE_FORMAT(c.in_confirm_date, '%Y%m')) = concat(#{cmdat},'08')) 
+				or ((DATE_FORMAT(c.in_fail_date, '%Y%m')) = concat(#{cmdat},'08')))
+				<if test="werks != null and !''.equals(werks) ">
+					and werks = #{werks}
+				</if>
+			) eightnow_done_cnt,
+			(
+				select count(*)  from in_insp_tbl c
+				where c.lifnr =b.lifnr
+				and (c.insp_status ='i2')
+				and ((DATE_FORMAT(c.in_confirm_date, '%Y%m')) = concat(#{cmdat},'08'))
+				<if test="werks != null and !''.equals(werks) ">
+					and werks = #{werks}
+				</if>
+			) eightnow_pass_cnt,
+			(
+				select count(*)  from in_insp_tbl c
+				where c.lifnr =b.lifnr
+				and (c.insp_status ='i2' or c.insp_status ='i3')
+				and (((DATE_FORMAT(c.in_confirm_date, '%Y%m')) = concat(#{cmdat},'09')) 
+				or ((DATE_FORMAT(c.in_fail_date, '%Y%m')) = concat(#{cmdat},'09')))
+				<if test="werks != null and !''.equals(werks) ">
+					and werks = #{werks}
+				</if>
+			) ninenow_done_cnt,
+			(
+				select count(*)  from in_insp_tbl c
+				where c.lifnr =b.lifnr
+				and (c.insp_status ='i2')
+				and ((DATE_FORMAT(c.in_confirm_date, '%Y%m')) = concat(#{cmdat},'09'))
+				and werks = #{werks}
+			) ninenow_pass_cnt,
+			(
+				select count(*)  from in_insp_tbl c
+				where c.lifnr =b.lifnr
+				and (c.insp_status ='i2' or c.insp_status ='i3')
+				and (((DATE_FORMAT(c.in_confirm_date, '%Y%m')) = concat(#{cmdat},'10')) 
+				or ((DATE_FORMAT(c.in_fail_date, '%Y%m')) = concat(#{cmdat},'10')))
+				<if test="werks != null and !''.equals(werks) ">
+					and werks = #{werks}
+				</if>
+			) tennow_done_cnt,
+			(
+				select count(*)  from in_insp_tbl c
+				where c.lifnr =b.lifnr
+				and (c.insp_status ='i2')
+				and ((DATE_FORMAT(c.in_confirm_date, '%Y%m')) = concat(#{cmdat},'10'))
+				<if test="werks != null and !''.equals(werks) ">
+					and werks = #{werks}
+				</if>
+			) tennow_pass_cnt,
+			(
+				select count(*)  from in_insp_tbl c
+				where c.lifnr =b.lifnr
+				and (c.insp_status ='i2' or c.insp_status ='i3')
+				and (((DATE_FORMAT(c.in_confirm_date, '%Y%m')) = concat(#{cmdat},'11')) 
+				or ((DATE_FORMAT(c.in_fail_date, '%Y%m')) = concat(#{cmdat},'11')))
+				<if test="werks != null and !''.equals(werks) ">
+					and werks = #{werks}
+				</if>
+			) elevennow_done_cnt,
+			(
+				select count(*)  from in_insp_tbl c
+				where c.lifnr =b.lifnr
+				and (c.insp_status ='i2')
+				and ((DATE_FORMAT(c.in_confirm_date, '%Y%m')) = concat(#{cmdat},'11'))
+				<if test="werks != null and !''.equals(werks) ">
+					and werks = #{werks}
+				</if>
+			) elevennow_pass_cnt,
+			(
+				select count(*)  from in_insp_tbl c
+				where c.lifnr =b.lifnr
+				and (c.insp_status ='i2' or c.insp_status ='i3')
+				and (((DATE_FORMAT(c.in_confirm_date, '%Y%m')) = concat(#{cmdat},'12')) 
+				or ((DATE_FORMAT(c.in_fail_date, '%Y%m')) = concat(#{cmdat},'12')))
+				<if test="werks != null and !''.equals(werks) ">
+					and werks = #{werks}
+				</if>
+			) twelvenow_done_cnt,
+			(
+				select count(*)  from in_insp_tbl c
+				where c.lifnr =b.lifnr
+				and (c.insp_status ='i2')
+				and ((DATE_FORMAT(c.in_confirm_date, '%Y%m')) = concat(#{cmdat},'12'))
+				<if test="werks != null and !''.equals(werks) ">
+					and werks = #{werks}
+				</if>
+			) twelvenow_pass_cnt
+			from in_insp_tbl  a,(select lifnr,name1 from vendor_tbl a,  sy_organ_member_map b where a.lifnr =b.member_emp_no and b.dept_Cd ='1063') b
+			where a.lifnr =b.lifnr
+			group by lifnr
+		) aa 
+	</select>
+	
+	<select id="import_inspection_m_state_select" parameterType="SYQmVo" resultType="SYQmVo">
+		select dispo, dsnam, (insp_incomplete_cnt + insp_complete_cnt) insp_entire_cnt, insp_incomplete_cnt, insp_complete_cnt, insp_pass_cnt, insp_nonpass_cnt,
+		round(ifnull((insp_pass_cnt/insp_complete_cnt )*100,0)) insp_pass_rate, werks, fn_mes_code_nm('dept_cd',werks) werks_nm
+		from
+		( 
+			select aa.*,
+			(
+				select count(*) 
+				from in_insp_tbl a 
+				where (select dispo from material_recv_detail where a.matnr = matnr and a.werks = werks) = aa.dispo
+				and (a.insp_status ='i1') 
+				and aa.werks = a.werks
+				and (((DATE_FORMAT(a.confirm_date, '%Y%m%d')) <![CDATA[>=]]> #{f_cmdat} AND (DATE_FORMAT(a.confirm_date, '%Y%m%d') <![CDATA[<=]]> #{t_cmdat})))
+			) insp_incomplete_cnt,
+			(
+				select count(*) 
+				from in_insp_tbl a 
+				where (select dispo from material_recv_detail where a.matnr = matnr and a.werks = werks) = aa.dispo
+				and (a.insp_status ='i2' or a.insp_status ='i3') 
+				and aa.werks = a.werks
+				and (((DATE_FORMAT(a.in_confirm_date, '%Y%m%d')) <![CDATA[>=]]> #{f_cmdat} AND (DATE_FORMAT(a.in_confirm_date, '%Y%m%d') <![CDATA[<=]]> #{t_cmdat}))
+					<![CDATA[||]]> ((DATE_FORMAT(a.in_fail_date, '%Y%m%d')) <![CDATA[>=]]> #{f_cmdat} AND (DATE_FORMAT(a.in_fail_date, '%Y%m%d') <![CDATA[<=]]> #{t_cmdat})))
+			) insp_complete_cnt,
+			(
+				select count(*) 
+				from in_insp_tbl a 
+				where (select dispo from material_recv_detail where a.matnr = matnr and a.werks = werks) = aa.dispo
+				and (a.insp_status ='i2') 
+				and aa.werks = a.werks
+				and (((DATE_FORMAT(a.in_confirm_date, '%Y%m%d')) <![CDATA[>=]]> #{f_cmdat} AND (DATE_FORMAT(a.in_confirm_date, '%Y%m%d') <![CDATA[<=]]> #{t_cmdat}))
+					<![CDATA[||]]> ((DATE_FORMAT(a.in_fail_date, '%Y%m%d')) <![CDATA[>=]]> #{f_cmdat} AND (DATE_FORMAT(a.in_fail_date, '%Y%m%d') <![CDATA[<=]]> #{t_cmdat})))
+			) insp_pass_cnt,
+			(
+				select count(*) 
+				from in_insp_tbl a 
+				where (select dispo from material_recv_detail where a.matnr = matnr and a.werks = werks) = aa.dispo
+				and (a.insp_status ='i3') 
+				and aa.werks = a.werks
+				and (((DATE_FORMAT(a.in_confirm_date, '%Y%m%d')) <![CDATA[>=]]> #{f_cmdat} AND (DATE_FORMAT(a.in_confirm_date, '%Y%m%d') <![CDATA[<=]]> #{t_cmdat}))
+					<![CDATA[||]]> ((DATE_FORMAT(a.in_fail_date, '%Y%m%d')) <![CDATA[>=]]> #{f_cmdat} AND (DATE_FORMAT(a.in_fail_date, '%Y%m%d') <![CDATA[<=]]> #{t_cmdat})))
+			) insp_nonpass_cnt
+			from 
+			(
+			select b.dispo, b.dsnam, b.werks
+			from material_recv_detail b
+			<where>
+				<if test="dispo != null and !''.equals(dispo) ">
+					and b.dispo = #{dispo}
+				</if>
+				<if test="dsnam != null and !''.equals(dsnam) ">
+					and b.dsnam LIKE CONCAT('%', #{dsnam}, '%')
+				</if>
+				<if test="werks != null and !''.equals(werks) ">
+					and b.werks = #{werks}
+				</if>
+			</where>
+			group by b.dispo, b.werks
+			) aa
+		) aaa
+		where ((dispo like '4%') or (dispo like '5%')) 
+		order by werks, dispo
+	</select>
+	<select id="import_inspection_m_monthly_state_select" parameterType="SYQmVo" resultType="SYQmVo">
+		select 
+			dispo, dsnam,
+			onenow_done_cnt, onenow_pass_cnt, round(ifnull((onenow_pass_cnt/onenow_done_cnt)*100,0)) onepass_rate,
+			twonow_done_cnt, twonow_pass_cnt, round(ifnull((twonow_pass_cnt/twonow_done_cnt)*100,0)) twopass_rate,
+			threenow_done_cnt, threenow_pass_cnt, round(ifnull((threenow_pass_cnt/threenow_done_cnt)*100,0)) threepass_rate,
+			fournow_done_cnt, fournow_pass_cnt, round(ifnull((fournow_pass_cnt/fournow_done_cnt)*100,0)) fourpass_rate,
+			fivenow_done_cnt, fivenow_pass_cnt, round(ifnull((fivenow_pass_cnt/fivenow_done_cnt)*100,0)) fivepass_rate,
+			sixnow_done_cnt, sixnow_pass_cnt, round(ifnull((sixnow_pass_cnt/sixnow_done_cnt)*100,0)) sixpass_rate,
+			sevennow_done_cnt, sevennow_pass_cnt, round(ifnull((sevennow_pass_cnt/sevennow_done_cnt)*100,0)) sevenpass_rate,
+			eightnow_done_cnt, eightnow_pass_cnt, round(ifnull((eightnow_pass_cnt/eightnow_done_cnt)*100,0)) eightpass_rate,
+			ninenow_done_cnt, ninenow_pass_cnt, round(ifnull((ninenow_pass_cnt/ninenow_done_cnt)*100,0)) ninepass_rate,
+			tennow_done_cnt, tennow_pass_cnt, round(ifnull((tennow_pass_cnt/tennow_done_cnt)*100,0)) tenpass_rate,
+			elevennow_done_cnt, elevennow_pass_cnt, round(ifnull((elevennow_pass_cnt/elevennow_done_cnt)*100,0)) elevenpass_rate,
+			twelvenow_done_cnt, twelvenow_pass_cnt, round(ifnull((twelvenow_pass_cnt/twelvenow_done_cnt)*100,0)) twelvepass_rate 
+		from
+		(
+			select dispo, dsnam,
+			(
+				select count(*)  from in_insp_tbl c
+				where aa.dispo = (select dispo from material_recv_detail where c.matnr = matnr and c.werks = werks)
+				and (c.insp_status ='i2' or c.insp_status ='i3')
+				and (((DATE_FORMAT(c.in_confirm_date, '%Y%m')) = concat(left(DATE_FORMAT(NOW(),'%Y%m%d'),4),'01')) 
+				or ((DATE_FORMAT(c.in_fail_date, '%Y%m')) = concat(left(DATE_FORMAT(NOW(),'%Y%m%d'),4),'01')))
+			) onenow_done_cnt,
+			(
+				select count(*)  from in_insp_tbl c
+				where aa.dispo = (select dispo from material_recv_detail where c.matnr = matnr and c.werks = werks)
+				and (c.insp_status ='i2')
+				and ((DATE_FORMAT(c.in_confirm_date, '%Y%m')) = concat(left(DATE_FORMAT(NOW(),'%Y%m%d'),4),'01'))
+			) onenow_pass_cnt,
+			(
+				select count(*)  from in_insp_tbl c
+				where aa.dispo = (select dispo from material_recv_detail where c.matnr = matnr and c.werks = werks)
+				and (c.insp_status ='i2' or c.insp_status ='i3')
+				and (((DATE_FORMAT(c.in_confirm_date, '%Y%m')) = concat(left(DATE_FORMAT(NOW(),'%Y%m%d'),4),'02')) 
+				or ((DATE_FORMAT(c.in_fail_date, '%Y%m')) = concat(left(DATE_FORMAT(NOW(),'%Y%m%d'),4),'02')))
+			) twonow_done_cnt,
+			(
+				select count(*)  from in_insp_tbl c
+				where aa.dispo = (select dispo from material_recv_detail where c.matnr = matnr and c.werks = werks)
+				and (c.insp_status ='i2')
+				and ((DATE_FORMAT(c.in_confirm_date, '%Y%m')) = concat(left(DATE_FORMAT(NOW(),'%Y%m%d'),4),'02'))
+			) twonow_pass_cnt,
+			(
+				select count(*)  from in_insp_tbl c
+				where aa.dispo = (select dispo from material_recv_detail where c.matnr = matnr and c.werks = werks)
+				and (c.insp_status ='i2' or c.insp_status ='i3')
+				and (((DATE_FORMAT(c.in_confirm_date, '%Y%m')) = concat(left(DATE_FORMAT(NOW(),'%Y%m%d'),4),'03')) 
+				or ((DATE_FORMAT(c.in_fail_date, '%Y%m')) = concat(left(DATE_FORMAT(NOW(),'%Y%m%d'),4),'03')))
+			) threenow_done_cnt,
+			(
+				select count(*)  from in_insp_tbl c
+				where aa.dispo = (select dispo from material_recv_detail where c.matnr = matnr and c.werks = werks)
+				and (c.insp_status ='i2')
+				and ((DATE_FORMAT(c.in_confirm_date, '%Y%m')) = concat(left(DATE_FORMAT(NOW(),'%Y%m%d'),4),'03'))
+			) threenow_pass_cnt,
+			(
+				select count(*)  from in_insp_tbl c
+				where aa.dispo = (select dispo from material_recv_detail where c.matnr = matnr and c.werks = werks)
+				and (c.insp_status ='i2' or c.insp_status ='i3')
+				and (((DATE_FORMAT(c.in_confirm_date, '%Y%m')) = concat(left(DATE_FORMAT(NOW(),'%Y%m%d'),4),'04')) 
+				or ((DATE_FORMAT(c.in_fail_date, '%Y%m')) = concat(left(DATE_FORMAT(NOW(),'%Y%m%d'),4),'04')))
+			) fournow_done_cnt,
+			(
+				select count(*)  from in_insp_tbl c
+				where aa.dispo = (select dispo from material_recv_detail where c.matnr = matnr and c.werks = werks)
+				and (c.insp_status ='i2')
+				and ((DATE_FORMAT(c.in_confirm_date, '%Y%m')) = concat(left(DATE_FORMAT(NOW(),'%Y%m%d'),4),'04'))
+			) fournow_pass_cnt,
+			(
+				select count(*)  from in_insp_tbl c
+				where aa.dispo = (select dispo from material_recv_detail where c.matnr = matnr and c.werks = werks)
+				and (c.insp_status ='i2' or c.insp_status ='i3')
+				and (((DATE_FORMAT(c.in_confirm_date, '%Y%m')) = concat(left(DATE_FORMAT(NOW(),'%Y%m%d'),4),'05')) 
+				or ((DATE_FORMAT(c.in_fail_date, '%Y%m')) = concat(left(DATE_FORMAT(NOW(),'%Y%m%d'),4),'05')))
+			) fivenow_done_cnt,
+			(
+				select count(*)  from in_insp_tbl c
+				where aa.dispo = (select dispo from material_recv_detail where c.matnr = matnr and c.werks = werks)
+				and (c.insp_status ='i2')
+				and ((DATE_FORMAT(c.in_confirm_date, '%Y%m')) = concat(left(DATE_FORMAT(NOW(),'%Y%m%d'),4),'05'))
+			) fivenow_pass_cnt,
+			(
+				select count(*)  from in_insp_tbl c
+				where aa.dispo = (select dispo from material_recv_detail where c.matnr = matnr and c.werks = werks)
+				and (c.insp_status ='i2' or c.insp_status ='i3')
+				and (((DATE_FORMAT(c.in_confirm_date, '%Y%m')) = concat(left(DATE_FORMAT(NOW(),'%Y%m%d'),4),'06')) 
+				or ((DATE_FORMAT(c.in_fail_date, '%Y%m')) = concat(left(DATE_FORMAT(NOW(),'%Y%m%d'),4),'06')))
+			) sixnow_done_cnt,
+			(
+				select count(*)  from in_insp_tbl c
+				where aa.dispo = (select dispo from material_recv_detail where c.matnr = matnr and c.werks = werks)
+				and (c.insp_status ='i2')
+				and ((DATE_FORMAT(c.in_confirm_date, '%Y%m')) = concat(left(DATE_FORMAT(NOW(),'%Y%m%d'),4),'06'))
+			) sixnow_pass_cnt,
+			(
+				select count(*)  from in_insp_tbl c
+				where aa.dispo = (select dispo from material_recv_detail where c.matnr = matnr and c.werks = werks)
+				and (c.insp_status ='i2' or c.insp_status ='i3')
+				and (((DATE_FORMAT(c.in_confirm_date, '%Y%m')) = concat(left(DATE_FORMAT(NOW(),'%Y%m%d'),4),'07')) 
+				or ((DATE_FORMAT(c.in_fail_date, '%Y%m')) = concat(left(DATE_FORMAT(NOW(),'%Y%m%d'),4),'07')))
+			) sevennow_done_cnt,
+			(
+				select count(*)  from in_insp_tbl c
+				where aa.dispo = (select dispo from material_recv_detail where c.matnr = matnr and c.werks = werks)
+				and (c.insp_status ='i2')
+				and ((DATE_FORMAT(c.in_confirm_date, '%Y%m')) = concat(left(DATE_FORMAT(NOW(),'%Y%m%d'),4),'07'))
+			) sevennow_pass_cnt,
+			(
+				select count(*)  from in_insp_tbl c
+				where aa.dispo = (select dispo from material_recv_detail where c.matnr = matnr and c.werks = werks)
+				and (c.insp_status ='i2' or c.insp_status ='i3')
+				and (((DATE_FORMAT(c.in_confirm_date, '%Y%m')) = concat(left(DATE_FORMAT(NOW(),'%Y%m%d'),4),'08')) 
+				or ((DATE_FORMAT(c.in_fail_date, '%Y%m')) = concat(left(DATE_FORMAT(NOW(),'%Y%m%d'),4),'08')))
+			) eightnow_done_cnt,
+			(
+				select count(*)  from in_insp_tbl c
+				where aa.dispo = (select dispo from material_recv_detail where c.matnr = matnr and c.werks = werks)
+				and (c.insp_status ='i2')
+				and ((DATE_FORMAT(c.in_confirm_date, '%Y%m')) = concat(left(DATE_FORMAT(NOW(),'%Y%m%d'),4),'08'))
+			) eightnow_pass_cnt,
+			(
+				select count(*)  from in_insp_tbl c
+				where aa.dispo = (select dispo from material_recv_detail where c.matnr = matnr and c.werks = werks)
+				and (c.insp_status ='i2' or c.insp_status ='i3')
+				and (((DATE_FORMAT(c.in_confirm_date, '%Y%m')) = concat(left(DATE_FORMAT(NOW(),'%Y%m%d'),4),'09')) 
+				or ((DATE_FORMAT(c.in_fail_date, '%Y%m')) = concat(left(DATE_FORMAT(NOW(),'%Y%m%d'),4),'09')))
+			) ninenow_done_cnt,
+			(
+				select count(*)  from in_insp_tbl c
+				where aa.dispo = (select dispo from material_recv_detail where c.matnr = matnr and c.werks = werks)
+				and (c.insp_status ='i2')
+				and ((DATE_FORMAT(c.in_confirm_date, '%Y%m')) = concat(left(DATE_FORMAT(NOW(),'%Y%m%d'),4),'09'))
+			) ninenow_pass_cnt,
+			(
+				select count(*)  from in_insp_tbl c
+				where aa.dispo = (select dispo from material_recv_detail where c.matnr = matnr and c.werks = werks)
+				and (c.insp_status ='i2' or c.insp_status ='i3')
+				and (((DATE_FORMAT(c.in_confirm_date, '%Y%m')) = concat(left(DATE_FORMAT(NOW(),'%Y%m%d'),4),'10')) 
+				or ((DATE_FORMAT(c.in_fail_date, '%Y%m')) = concat(left(DATE_FORMAT(NOW(),'%Y%m%d'),4),'10')))
+			) tennow_done_cnt,
+			(
+				select count(*)  from in_insp_tbl c
+				where aa.dispo = (select dispo from material_recv_detail where c.matnr = matnr and c.werks = werks)
+				and (c.insp_status ='i2')
+				and ((DATE_FORMAT(c.in_confirm_date, '%Y%m')) = concat(left(DATE_FORMAT(NOW(),'%Y%m%d'),4),'10'))
+			) tennow_pass_cnt,
+			(
+				select count(*)  from in_insp_tbl c
+				where aa.dispo = (select dispo from material_recv_detail where c.matnr = matnr and c.werks = werks)
+				and (c.insp_status ='i2' or c.insp_status ='i3')
+				and (((DATE_FORMAT(c.in_confirm_date, '%Y%m')) = concat(left(DATE_FORMAT(NOW(),'%Y%m%d'),4),'11')) 
+				or ((DATE_FORMAT(c.in_fail_date, '%Y%m')) = concat(left(DATE_FORMAT(NOW(),'%Y%m%d'),4),'11')))
+			) elevennow_done_cnt,
+			(
+				select count(*)  from in_insp_tbl c
+				where aa.dispo = (select dispo from material_recv_detail where c.matnr = matnr and c.werks = werks)
+				and (c.insp_status ='i2')
+				and ((DATE_FORMAT(c.in_confirm_date, '%Y%m')) = concat(left(DATE_FORMAT(NOW(),'%Y%m%d'),4),'11'))
+			) elevennow_pass_cnt,
+			(
+				select count(*)  from in_insp_tbl c
+				where aa.dispo = (select dispo from material_recv_detail where c.matnr = matnr and c.werks = werks)
+				and (c.insp_status ='i2' or c.insp_status ='i3')
+				and (((DATE_FORMAT(c.in_confirm_date, '%Y%m')) = concat(left(DATE_FORMAT(NOW(),'%Y%m%d'),4),'12')) 
+				or ((DATE_FORMAT(c.in_fail_date, '%Y%m')) = concat(left(DATE_FORMAT(NOW(),'%Y%m%d'),4),'12')))
+			) twelvenow_done_cnt,
+			(
+				select count(*)  from in_insp_tbl c
+				where aa.dispo = (select dispo from material_recv_detail where c.matnr = matnr and c.werks = werks)
+				and (c.insp_status ='i2')
+				and ((DATE_FORMAT(c.in_confirm_date, '%Y%m')) = concat(left(DATE_FORMAT(NOW(),'%Y%m%d'),4),'12'))
+			) twelvenow_pass_cnt
+			from 
+			(
+				select b.dispo, b.dsnam
+				from material_recv_detail b
+				group by b.dispo
+			) aa
+		) aaa
+		where ((dispo like '4%') or (dispo like '5%')) 
+	</select>
+	
+	<update id="inspSave" parameterType="SYInInspDetailVo">
+		update 
+			in_insp_detail_tbl
+		set
+			INSPECTION_VALUE1 = #{inspection_value1}, 
+			INSPECTION_VALUE2 = #{inspection_value2}, 
+			INSPECTION_VALUE3 = #{inspection_value3}, 
+			INSPECTION_VALUE4 = #{inspection_value4}, 
+			INSPECTION_VALUE5 = #{inspection_value5}, 
+			INSPECTION_VALUE6 = #{inspection_value6}, 
+			INSPECTION_VALUE7 = #{inspection_value7}, 
+			INSPECTION_VALUE8 = #{inspection_value8}, 
+			INSPECTION_VALUE9 = #{inspection_value9}, 
+			INSPECTION_VALUE10 = #{inspection_value10}, 			
+			INSPECTION_VALUE11 = #{inspection_value11}, 
+			INSPECTION_VALUE12 = #{inspection_value12}, 
+			INSPECTION_VALUE13 = #{inspection_value13}, 
+			INSPECTION_VALUE14 = #{inspection_value14}, 
+			INSPECTION_VALUE15 = #{inspection_value15}, 
+			INSPECTION_VALUE16 = #{inspection_value16},
+			INSPECTION_VALUE17 = #{inspection_value17}, 
+			INSPECTION_VALUE18 = #{inspection_value18}, 
+			INSPECTION_VALUE19 = #{inspection_value19}, 
+			INSPECTION_VALUE20 = #{inspection_value20}, 			
+			INSPECTION_VALUE21 = #{inspection_value21}, 
+			INSPECTION_VALUE22 = #{inspection_value22}, 
+			INSPECTION_VALUE23 = #{inspection_value23}, 
+			INSPECTION_VALUE24 = #{inspection_value24}, 
+			INSPECTION_VALUE25 = #{inspection_value25}, 
+			INSPECTION_VALUE26 = #{inspection_value26}, 
+			INSPECTION_VALUE27 = #{inspection_value27}, 
+			INSPECTION_VALUE28 = #{inspection_value28}, 
+			INSPECTION_VALUE29 = #{inspection_value29}, 
+			INSPECTION_VALUE30 = #{inspection_value30}, 			
+			INSPECTION_VALUE31 = #{inspection_value31}, 
+			INSPECTION_VALUE32 = #{inspection_value32}, 			
+			INSPECTION_DECISION = #{inspection_decision},
+			INSPECTION_CN = #{inspection_cn}
+		where
+			ebeln = #{ebeln}
+			and ebelp = #{ebelp}
+			and partial_seq = #{partial_seq}
+			and insp_header_seq = #{insp_header_seq}
+			and inspection_code = #{inspection_code}
+	</update>
+	
+	<update id="inspHeaderSave" parameterType="SYInInspHeaderVo">
+		update 
+			in_insp_header_tbl
+		set
+			insp_model = #{insp_model},
+			insp_ecr = #{insp_ecr},
+			insp_maql = #{insp_maql},
+			insp_vaql = #{insp_vaql},
+			insp_doc = #{insp_doc},
+			insp_remark = #{insp_remark}
+		where
+			ebeln = #{ebeln}
+			and ebelp = #{ebelp}
+			and partial_seq = #{partial_seq}
+	</update>
+	
+	<insert id="vendor_prod_insert" parameterType="SYVprodVo">
+		INSERT INTO vprod_tbl
+		(vpordno,vreg_date,matnr,maktx,menge,dept_cd,sernr,lifnr)
+		VALUES
+		(fn_vprod_seq('v_prod_seq'),date_format(curdate( ),'%Y%m%d'),#{matnr},#{maktx},#{menge},#{dept_cd},#{sernr},#{lifnr})
+	</insert>
+	
+	<!-- <select id="vprod_select" parameterType="SYVprodVo" resultType="SYVprodVo">
+		select 
+			c.vpordno,
+			c.vreg_date,
+			c.vpdsts,
+			c.dept_cd,
+			c.matnr,
+			c.maktx,
+			c.menge,
+			c.sernr,
+			c.confirm_user_nm,
+			c.delivery_yn,
+			c.del_yn,
+			c.lifnr,
+			c.gr_no,
+			c.gr_seq,
+			c.date_created,
+			c.date_updated,
+			(select name1 from vendor_tbl where c.lifnr = lifnr and id_yn = 'Y' limit 1) name1,
+			(case when c.vpdsts='v3' then 'Y'  else 'N' end) confirm_yn,
+			(case 
+				when 
+					(SELECT count(*) 
+					FROM RAW_PROC_SERNR_tBL  A , RAW_PROC_tBL B 
+					WHERE A.EBELN=B.EBELN AND A.EBELP= B.EBELP and B.matnr = c.matnr AND A.EQUNR = c.sernr and B.lifnr = c.lifnr) > 0
+				then 'Y'
+				else 'N'
+				end	
+			) delivery_yn
+      	from 
+      		vprod_tbl c
+		<where>
+			<if test="f_date != null and !''.equals(f_date) ">
+				AND (vreg_date <![CDATA[ >= ]]> #{f_date} and vreg_date <![CDATA[ <= ]]> #{t_date})
+			</if>
+			<if test="matnr != null and !''.equals(matnr) ">
+				AND matnr LIKE CONCAT('%', #{matnr}, '%')
+			</if>
+				<if test="maktx != null and !''.equals(maktx) ">
+				AND maktx LIKE CONCAT('%', #{maktx}, '%')
+			</if>
+				<if test="sernr != null and !''.equals(sernr) ">
+				AND sernr LIKE CONCAT('%', #{sernr}, '%')
+			</if>
+			<if test="vpdsts != null and !''.equals(vpdsts) ">
+				and vpdsts = #{vpdsts}
+			</if>
+			<if test="vpordno != null and !''.equals(vpordno) ">
+				and vpordno = #{vpordno}
+			</if>
+			<if test="name1 != null and !''.equals(name1) ">
+				and (select name1 from vendor_tbl where c.lifnr = lifnr and id_yn = 'Y' limit 1) LIKE CONCAT('%', #{name1}, '%')
+			</if>
+			<if test="lifnr != null and !''.equals(lifnr) ">
+				and lifnr = #{lifnr}
+			</if>
+			<if test="del_yn != null and !''.equals(del_yn) ">
+				and del_yn = 'N'
+			</if>
+			<if test="list != null and list.size() > 0">
+		  			AND vpordno IN
+				<foreach collection="list" item="item" index="index" separator="," open="(" close=")">
+		     		 #{item}
+		  		</foreach>
+			</if>
+		</where>
+	</select> -->	
+	
+	<select id="v_prod_matnr_select" parameterType="SYVprodVo" resultType="SYVprodVo">
+		select a.matnr, a.werks as dept_cd,
+		(select maktx from material_recv_master where a.matnr = matnr) maktx,
+		(select wrkst from material_recv_master where a.matnr = matnr) wrkst
+		from
+		(
+		select matnr, werks 	 
+		from raw_proc_tbl	 
+		where lifnr = #{lifnr}	
+		and matnr <![CDATA[<>]]> ''
+		group  by matnr, werks
+		) a
+		<where>
+			<if test="matnr != null and !''.equals(matnr) ">
+				AND matnr LIKE CONCAT('%', #{matnr}, '%')
+			</if>
+			<if test="maktx != null and !''.equals(maktx) ">
+				AND (select maktx from material_recv_master where a.matnr = matnr) LIKE CONCAT('%', #{maktx}, '%')
+			</if>
+		</where>
+	</select>	
+
+	<!-- <update id="selfInspSernrSave" parameterType="SYVprodVo">
+		update 
+			vprod_tbl 
+		set
+			sernr =  #{sernr},
+			date_updated = current_timestamp()
+		where vpordno = #{vpordno}
+	</update>	 -->	
+	
+<!-- 	<update id="vOrdStatusChange" parameterType="SYVprodVo"> -->
+<!-- 		update  -->
+<!-- 			vprod_tbl  -->
+<!-- 		set -->
+<!-- 			vpdsts =  #{vpdsts}, -->
+<!-- 			date_updated = current_timestamp() -->
+<!-- 		where vpordno = #{vpordno} -->
+<!-- 	</update>		 -->
+	
+	<select id="chkVpdsts" parameterType="SYVprodVo" resultType="SYVprodVo">
+		select * 
+		from vprod_tbl 
+		where vpordno = #{vpordno}
+	</select>	
+	
+	<!-- <update id="vorder_del" parameterType="SYVprodVo">
+		update 
+			vprod_tbl 
+		set
+			del_yn = 'Y',
+			date_updated = current_timestamp()
+		where vpordno = #{vpordno}
+	</update> -->		
+	
+	<!-- <select id="showDmrInfo" parameterType="SYDmrMasterVo" resultType="SYDmrMasterVo">
+		select 
+			* 
+		from 
+			dmr_master_tbl a, dmr_matnr_tbl b
+		where 
+			a.gr_no = b.gr_no
+			<if test="apply_yn != null and !''.equals(apply_yn) ">
+				and a.apply_yn = #{apply_yn}
+			</if>
+			<if test="use_yn != null and !''.equals(use_yn) ">
+				and b.use_yn = #{use_yn}
+			</if>
+			<if test="matnr != null and !''.equals(matnr) ">
+				and b.matnr = #{matnr}
+			</if>
+			<if test="gr_no != null and !''.equals(gr_no) ">
+				and a.gr_no = #{gr_no}
+			</if>
+			<if test="gr_seq != null and !''.equals(gr_seq) ">
+				and a.gr_seq = #{gr_seq}
+			</if>
+	</select> -->
+	
+	<!-- <select id="vph_chkDupSernr" parameterType="SYVprodVo" resultType="SYVprodVo">
+		SELECT * 
+		FROM RAW_PROC_SERNR_tBL  A , RAW_PROC_tBL B 
+		WHERE A.EBELN=B.EBELN AND A.EBELP= B.EBELP and B.matnr = #{matnr}
+		and A.EQUNR = #{sernr}
+	</select> -->	
+	
+	<update id="updateDmr" parameterType="SYVprodVo">
+		update 
+			vprod_tbl 
+		set
+			gr_no = #{gr_no},
+			gr_seq = #{gr_seq},
+			date_updated = current_timestamp()
+		where vpordno = #{vpordno}
+	</update>		
+	
+	<select id="select_fault_his_data" parameterType="SYQmFaultHisVo" resultType="SYQmFaultHisVo">
+		select 
+			k.*
+		from
+		(
+		select 
+		 	aa.*, (select routing_dscr from routing_header_master where routing_no = aa.routing_no) as routing_nm ,
+ 			(select lgobe from   sloc_master where  werks = aa.werks and    lgort =f_lgort) as f_lgort_nm ,
+ 			(select ITNBR from prod_tbl where aa.pordno = pordno) as ord_matnr, (select PORDNO_STATUS from prod_tbl where aa.pordno = pordno) as ord_maktx,
+  			(select project_no from prod_tbl where aa.pordno = pordno) as ord_sernr
+  		from 
+  			( select 
+  					a.*,b.* 
+  			  from 
+  			  		fault_his_tbl a, issue_detail_tbl b 
+  			  where 
+  			  		a.issue_code = b.level3_code and  a.werks =b.dept_cd 
+					<if test="matnr != null and !''.equals(matnr) ">
+						AND matnr LIKE CONCAT('%', #{matnr}, '%')
+					</if>
+					<if test="maktx != null and !''.equals(maktx) ">
+						AND maktx LIKE CONCAT('%', #{maktx}, '%')
+					</if>
+					<if test="sernr != null and !''.equals(sernr) ">
+						AND sernr LIKE CONCAT('%', #{sernr}, '%')
+					</if>
+					<if test="gr_code != null and !''.equals(gr_code) ">
+						AND gr_code LIKE CONCAT('%', #{gr_code}, '%')
+					</if>
+					<if test="level1_code != null and !''.equals(level1_code) ">
+						AND level1_code LIKE CONCAT('%', #{level1_code}, '%')
+					</if>
+					<if test="level2_code != null and !''.equals(level2_code) ">
+						AND level2_code LIKE CONCAT('%', #{level2_code}, '%')
+					</if>
+					<if test="level3_code != null and !''.equals(level3_code) ">
+						AND level3_code LIKE CONCAT('%', #{level3_code}, '%')
+					</if>
+					<if test="f_date != null and !''.equals(f_date) ">
+						AND (DATE_FORMAT(a.date_created, '%Y%m%d')) <![CDATA[ >= ]]> #{f_date} AND (DATE_FORMAT(a.date_created, '%Y%m%d') <![CDATA[ <= ]]> #{t_date})
+					</if>
+				) aa
+		) k
+		where
+			1=1
+			<if test="pordno != null and !''.equals(pordno) ">
+				AND k.pordno LIKE CONCAT('%', #{pordno}, '%')
+			</if>
+			<if test="ord_matnr != null and !''.equals(ord_matnr) ">
+				AND k.ord_matnr LIKE CONCAT('%', #{ord_matnr}, '%')
+			</if>
+			<if test="ord_maktx != null and !''.equals(ord_maktx) ">
+				AND k.ord_maktx LIKE CONCAT('%', #{ord_maktx}, '%')
+			</if>
+			<if test="ord_sernr != null and !''.equals(ord_sernr) ">
+				AND k.ord_sernr LIKE CONCAT('%', #{ord_sernr}, '%')
+			</if>
+			<if test="werks != null and !''.equals(werks) ">
+				AND k.werks LIKE CONCAT('%', #{werks}, '%')
+			</if>
+	</select>
+	
+	<select id="issueDataSelc" parameterType="SYScmIssueDetailVo" resultType="SYScmIssueDetailVo">
+		select * from issue_detail_tbl
+		where dept_cd = #{dept_cd}
+		<if test="'c1'.equals(level_case)">
+			and gr_code = #{gr_code}
+			group by level1_code
+		</if>
+		<if test="'c2'.equals(level_case)">
+			and gr_code = #{gr_code}
+			and level1_code =#{level1_code}
+			group by level2_code
+		</if>
+		<if test="'c3'.equals(level_case)">
+			and gr_code = #{gr_code}
+			and level1_code = #{level1_code}
+			and level2_code = #{level2_code}
+			group by level3_code
+		</if>
+	</select>
+	
+	<update id="issueDataProc" parameterType="SYScmIssueDetailVo">
+		update 
+			fault_his_tbl
+		set                
+			issue_code = #{level3_code},
+			issue_memo = (select level3_name from issue_detail_tbl where level3_code =  #{level3_code} limit 1),
+			 updater = #{updater},
+		    date_updated = current_timestamp(),
+			fault_status = #{status}
+		where fault_no = #{fault_no}
+		and fault_no_seq = #{fault_no_seq}
+	</update>
+	
+	<select id="issueValidChk" parameterType="SYQmFaultHisVo" resultType="SYQmFaultHisVo">
+		select * from issue_detail_tbl
+		where dept_cd = #{werks}
+		<if test="level1_code != null and !''.equals(level1_code) ">
+			and level1_code = #{level1_code}
+		</if>
+		<if test="level2_code != null and !''.equals(level2_code) ">
+			and level2_code = #{level2_code}
+		</if>
+		<if test="level3_code != null and !''.equals(level3_code) ">
+			and level3_code = #{level3_code}
+		</if>
+	</select>
+	
+	<select id="fault_stats_data" parameterType="SYQmFaultStatsVo" resultType="SYQmFaultStatsVo">
+		select matnr, maktx, wrkst, wgbez, round(sum(bdmng)) f_bdmng
+		from 
+		(
+				select pordno, matnr, maktx,  
+				(select wrkst from material_recv_master where a.matnr = matnr) wrkst,
+				(select wgbez from material_recv_master where a.matnr = matnr) wgbez,
+				date_updated, bdmng, werks, issue_code, (select gubun from issue_detail_tbl where level3_code = a.issue_code) gubun
+				from fault_his_tbl a 
+				where fault_status = 'O'
+				and werks = #{werks}
+				AND (DATE_FORMAT(date_updated, '%Y%m%d')) <![CDATA[ >= ]]> #{f_f_date} AND (DATE_FORMAT(date_updated, '%Y%m%d') <![CDATA[ <= ]]> #{f_t_date})
+		) t
+		<where>
+			<if test="gubun != null and !''.equals(gubun) ">
+				and  t.gubun = #{gubun}
+			</if>
+			<if test="matnr != null and !''.equals(matnr) ">
+				and  t.matnr LIKE CONCAT('%', #{matnr}, '%')
+			</if>
+			<if test="maktx != null and !''.equals(maktx) ">
+				and  t.maktx LIKE CONCAT('%', #{maktx}, '%')
+			</if>
+			<if test="wgbez != null and !''.equals(wgbez) ">
+				and  t.wgbez LIKE CONCAT('%', #{wgbez}, '%')
+			</if>
+		</where>
+		group by matnr
+	</select>
+	
+	<select id="input_stats_data" parameterType="SYQmFaultStatsVo" resultType="SYQmFaultStatsVo">
+		select matnr, round(sum(menge)) i_bdmng
+		from
+		(
+		select matnr, menge, budat
+		from prod_tbl a, sernr_manage_tbl b
+		where a.pordno = b.pordno
+		and a.dept_cd = #{werks}
+		and b.menge > 0
+		AND (DATE_FORMAT(budat, '%Y%m%d')) <![CDATA[ >= ]]> #{i_f_date} AND (DATE_FORMAT(budat, '%Y%m%d') <![CDATA[ <= ]]> #{i_t_date})
+		) t
+		<where>
+			<if test="matnr != null and !''.equals(matnr) ">
+				and  t.matnr LIKE CONCAT('%', #{matnr}, '%')
+			</if>
+		</where>
+		group by matnr
+	</select>
+	
+	<select id="fault_stats_dtl_data" parameterType="SYQmFaultStatsVo" resultType="SYQmFaultStatsVo">
+		select matnr, maktx, round(sum(bdmng)) bdmng,
+		(select level2_code from issue_detail_tbl where level3_code = a.issue_code) level2_code,
+		(select level2_name from issue_detail_tbl where level3_code = a.issue_code) level2_name
+		from fault_his_tbl a
+		where matnr = #{matnr}
+		and werks = #{werks}
+		AND (DATE_FORMAT(date_updated, '%Y%m%d')) <![CDATA[ >= ]]> #{f_f_date} AND (DATE_FORMAT(date_updated, '%Y%m%d') <![CDATA[ <= ]]> #{f_t_date})
+		group by level2_name
+	</select>
+</mapper>

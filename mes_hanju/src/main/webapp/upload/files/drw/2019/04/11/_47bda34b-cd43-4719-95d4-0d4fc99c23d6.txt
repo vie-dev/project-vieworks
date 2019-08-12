@@ -1,0 +1,31 @@
+case1)
+https://stackoverflow.com/questions/8686616/how-can-i-get-jqgrid-frozen-columns-to-work-with-word-wrap-on/8771429#8771429
+
+하단의
+ $grid.jqGrid('gridResize', {
+                minWidth: 450,
+                stop: function () {
+                    fixPositionsOfFrozenDivs.call(this);
+                    fixGboxHeight.call(this);
+                }
+            });
+            $grid.bind("jqGridResizeStop", function () {
+                resizeColumnHeader.call(this);
+                fixPositionsOfFrozenDivs.call(this);
+                fixGboxHeight.call(this);
+            });
+            resizeColumnHeader.call($grid[0]);
+            $grid.jqGrid('setFrozenColumns');
+            $grid.triggerHandler("jqGridAfterGridComplete");
+            fixPositionsOfFrozenDivs.call($grid[0]);
+도 실행해보자
+
+case2)
+https://stackoverflow.com/questions/12067945/freezing-column-in-jqgrid-is-not-working/35327554
+
+scroll: false 
+or
+$("#sample").jqGrid("destroyFrozenColumns")
+            .jqGrid("setColProp", "id", { frozen: true })
+            .jqGrid("setFrozenColumns")
+            .trigger("reloadGrid", [{ current: true}]);

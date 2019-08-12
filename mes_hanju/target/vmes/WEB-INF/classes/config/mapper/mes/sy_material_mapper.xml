@@ -1,0 +1,334 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.co.passcombine.mes.dao.SYMaterialDAO">
+	<select id="material_master_select_count" parameterType="SYMaterialMasVo" resultType="int">				
+		SELECT  COUNT(*) as cnt 
+		FROM material_master 
+		WHERE 1=1
+			<if test="matnr != null and !matnr.equals('')">
+				AND matnr LIKE concat('%', #{matnr}, '%')  
+			</if>
+			<if test="maktx != null and !maktx.equals('')">
+				AND maktx LIKE concat('%', #{maktx}, '%')
+			</if>
+			<if test="wrkst != null and !wrkst.equals('')">
+				AND wrkst LIKE concat('%', #{wrkst}, '%')
+			</if>
+			<if test="lvorm != null and !lvorm.equals('')">
+				AND lvorm = #{lvorm}
+			</if>
+			<if test="kzumw != null and !kzumw.equals('')">
+				AND kzumw = #{kzumw}
+			</if>
+			<if test="iloos != null and !iloos.equals('')">
+				AND iloos  = #{iloos}
+			</if>
+			<if test="ihivi != null and !ihivi.equals('')">
+				AND ihivi  = #{ihivi}
+			</if>
+<!-- 			<if test="mtartList != null  and mtartList.size() > 0"> -->
+<!-- 		     AND a.mtart IN -->
+<!-- 			 <foreach collection="mtartList" index="key" item="value"  separator="," open="(" close=")"> -->
+<!-- 	     		 #{mtart} -->
+<!-- 	  		</foreach> -->
+<!-- 			</if> -->
+	</select>
+	
+	<select id="material_master_select" parameterType="SYMaterialMasVo" resultType="SYMaterialMasVo">
+		SELECT  matnr, mtart, meins, maktx, wrkst, lvorm, brgew, ntgew, price, ihivi, iloos, kzumw, 
+				gewei, wgbez, bdmg, updater, creator, date_created, date_updated 
+		FROM material_master 
+		WHERE 1=1
+		<if test="matnr != null and !matnr.equals('')">
+			AND matnr LIKE concat('%', #{matnr}, '%')  
+		</if>
+		<if test="mtart != null and !mtart.equals('')">
+			AND mtart LIKE concat('%', #{mtart}, '%')  
+		</if>
+		<if test="maktx != null and !maktx.equals('')">
+			AND maktx LIKE concat('%', #{maktx}, '%')
+		</if>
+		<if test="wrkst != null and !wrkst.equals('')">
+			AND wrkst LIKE concat('%', #{wrkst}, '%')
+		</if>
+		<if test="wgbez != null and !wgbez.equals('')">
+			AND wgbez = #{wgbez}
+		</if>
+		<if test="lvorm != null and !lvorm.equals('')">
+			AND lvorm = #{lvorm}
+		</if>
+		<if test="kzumw != null and !kzumw.equals('')">
+			AND kzumw = #{kzumw}
+		</if>
+		<if test="iloos != null and !iloos.equals('')">
+			AND iloos  = #{iloos}
+		</if>
+		<if test="ihivi != null and !ihivi.equals('')">
+			AND ihivi  = #{ihivi}
+		</if>
+		<if test="page != null and !page.equals('')">
+			 limit #{page}, #{rows}
+		</if>
+	</select>
+
+	<select id="material_master_select_pop" parameterType="SYMaterialMasVo" resultType="SYMaterialMasVo">
+		SELECT  matnr, mtart, meins, maktx, wrkst, lvorm, brgew, ntgew, price, ihivi, iloos, kzumw, 
+				gewei, wgbez, bdmg, updater, creator, date_created, date_updated 
+		FROM material_master 
+		WHERE 1=1
+		<if test="matnr != null and !matnr.equals('')">
+			AND matnr LIKE concat('%', #{matnr}, '%')  
+		</if>
+		<if test="mtart != null and !mtart.equals('')">
+			AND mtart LIKE concat('%', #{mtart}, '%')  
+		</if>
+		<if test="maktx != null and !maktx.equals('')">
+			AND maktx LIKE concat('%', #{maktx}, '%')
+		</if>
+		<if test="wrkst != null and !wrkst.equals('')">
+			AND wrkst LIKE concat('%', #{wrkst}, '%')
+		</if>
+		<if test="wgbez != null and !wgbez.equals('')">
+			AND wgbez = #{wgbez}
+		</if>
+		<if test="lvorm != null and !lvorm.equals('')">
+			AND lvorm = #{lvorm}
+		</if>
+		<if test="kzumw != null and !kzumw.equals('')">
+			AND kzumw = #{kzumw}
+		</if>
+		<if test="iloos != null and !iloos.equals('')">
+			AND iloos  = #{iloos}
+		</if>
+		<if test="ihivi != null and !ihivi.equals('')">
+			AND ihivi  = #{ihivi}
+		</if>
+	</select>
+	
+	<select id="material_master_select_one" parameterType="SYMaterialMasVo" resultType="SYMaterialMasVo">
+		SELECT * 
+		FROM material_master 
+		WHERE 1=1
+		AND matnr = #{matnr}
+	</select>
+	
+	<select id="material_master_dup_check" parameterType="SYMaterialMasVo" resultType="int">
+		select count(*) as cnt
+		  from material_master
+		 where 1=1
+		   and matnr = #{matnr}
+	</select>
+	
+	<insert id="material_master_insert" parameterType="SYMaterialMasVo">
+		INSERT INTO material_master (
+			matnr, mtart, meins, maktx, wrkst, lvorm, brgew, kzumw, iloos, ihivi, ntgew, gewei, wgbez, price, bdmg,
+			updater, creator, date_created, date_updated)
+		values
+		( #{matnr}, #{mtart}, #{meins}, #{maktx}, #{wrkst}, #{lvorm}, #{brgew}, #{kzumw}, #{iloos}, #{ihivi}, #{ntgew}, #{gewei}, #{wgbez}, #{price}, 
+			#{bdmg}, #{updater}, #{creator}, current_timestamp(), current_timestamp() ) 
+	</insert>
+	
+	<update id="material_master_update" parameterType="SYMaterialMasVo">
+		update material_master set
+		<if test="mtart != null and !mtart.equals('')">
+			mtart = #{mtart},
+		</if> 
+		<if test="meins != null and !meins.equals('')">
+			meins = #{meins},
+		</if> 
+		<if test="maktx != null and !maktx.equals('')"> 
+			maktx = #{maktx},
+		</if> 
+		<if test="wrkst != null and !wrkst.equals('')"> 
+			wrkst = #{wrkst},
+		</if> 
+		<if test="kzumw != null and !kzumw.equals('')">
+			kzumw = #{kzumw},
+		</if> 
+		<if test="iloos != null and !iloos.equals('')"> 
+			iloos = #{iloos},
+		</if> 
+		<if test="ihivi != null and !ihivi.equals('')"> 
+			ihivi = #{ihivi},
+		</if> 
+		<if test="lvorm != null and !lvorm.equals('')"> 
+			lvorm = #{lvorm},
+		</if> 
+		<if test="brgew != null and !brgew.equals('')"> 
+			brgew = #{brgew}, 
+		</if> 
+		<if test="ntgew != null and !ntgew.equals('')">
+			ntgew = #{ntgew},
+		</if> 
+		<if test="gewei != null and !gewei.equals('')"> 
+			gewei = #{gewei},
+		</if> 
+		<if test="wgbez != null and !wgbez.equals('')"> 
+			wgbez = #{wgbez},
+		</if> 
+		<if test="price != null and !price.equals('')"> 
+			price = #{price},
+		</if> 
+		<if test="bdmg != null and bdmg != 0 "> 
+			bdmg = #{bdmg},
+		</if>
+			updater = #{updater}, 
+			date_updated = current_timestamp()
+		where matnr = #{matnr}
+	</update>
+	
+	<delete id="material_master_delete" parameterType="SYMaterialMasVo">
+		delete 
+		  from material_master
+		where matnr = #{matnr}
+	</delete>
+	
+	<select id="material_mng_select" parameterType="SYMaterialMngVo" resultType="SYMaterialMngVo">
+		SELECT *
+		FROM material_manager 
+		WHERE 1=1
+		<if test="matnr != null and !matnr.equals('')">
+			AND matnr LIKE concat('%', #{matnr}, '%')  
+		</if>
+		<if test="mtart != null and !mtart.equals('')">
+			AND mtart LIKE concat('%', #{mtart}, '%')  
+		</if>
+		<if test="maktx != null and !maktx.equals('')">
+			AND maktx LIKE concat('%', #{maktx}, '%')
+		</if>
+		<if test="wrkst != null and !wrkst.equals('')">
+			AND wrkst LIKE concat('%', #{wrkst}, '%')
+		</if>
+		<if test="wgbez != null and !wgbez.equals('')">
+			AND wgbez = #{wgbez}
+		</if>
+		<if test="lvorm != null and !lvorm.equals('')">
+			AND lvorm = #{lvorm}
+		</if>
+		<if test="kzumw != null and !kzumw.equals('')">
+			AND kzumw = #{kzumw}
+		</if>
+		<if test="iloos != null and !iloos.equals('')">
+			AND iloos  = #{iloos}
+		</if>
+		<if test="ihivi != null and !ihivi.equals('')">
+			AND ihivi  = #{ihivi}
+		</if>
+		<if test="page != null and !page.equals('')">
+			 limit #{page}, #{rows}
+		</if>
+	</select>
+	
+	<select id="material_mng_select_count" parameterType="SYMaterialMngVo" resultType="int">
+		SELECT  COUNT(*) as cnt 
+		FROM material_manager 
+		WHERE 1=1
+			<if test="matnr != null and !matnr.equals('')">
+				AND matnr LIKE concat('%', #{matnr}, '%')  
+			</if>
+			<if test="maktx != null and !maktx.equals('')">
+				AND maktx LIKE concat('%', #{maktx}, '%')
+			</if>
+			<if test="wrkst != null and !wrkst.equals('')">
+				AND wrkst LIKE concat('%', #{wrkst}, '%')
+			</if>
+			<if test="lvorm != null and !lvorm.equals('')">
+				AND lvorm = #{lvorm}
+			</if>
+			<if test="kzumw != null and !kzumw.equals('')">
+				AND kzumw = #{kzumw}
+			</if>
+			<if test="iloos != null and !iloos.equals('')">
+				AND iloos  = #{iloos}
+			</if>
+			<if test="ihivi != null and !ihivi.equals('')">
+				AND ihivi  = #{ihivi}
+			</if>
+	</select>
+	
+	<insert id="material_mng_insert" parameterType="SYMaterialMngVo">
+		insert into material_manager (
+			matnr, mtart, meins, maktx, wrkst, lvorm, kzumw, iloos, ihivi, price, bdmg,
+			brgew, ntgew, gewei, wkurs, waers, wgbez, creator, updater, date_created, date_updated )
+		values
+		( #{matnr}, #{mtart}, #{meins}, #{maktx}, #{wrkst}, #{lvorm}, #{kzumw}, #{iloos}, #{ihivi}, #{price}, #{bdmg},
+		  #{brgew}, #{ntgew}, #{gewei}, #{wkurs}, #{waers}, #{wgbez}, #{creator}, #{updater}, current_timestamp(), current_timestamp() )
+		
+	</insert>
+	
+	<update id="material_mng_update" parameterType="SYMaterialMngVo">
+		update material_manager set
+		<if test="bdmg!=null and !bdmg.equals('')">
+			bdmg = #{bdmg},
+		</if>
+		<if test="wkurs!=null and !wkurs.equals('')">
+			wkurs= #{wkurs},
+		</if>
+		<if test="maktx!=null and !maktx.equals('')">
+			maktx= #{maktx},
+		</if>
+		<if test="waers!=null and !waers.equals('')">
+			waers= #{waers}
+		</if>
+		where matnr = #{matnr}
+	</update>
+	
+	<delete id="material_mng_delete" parameterType="SYMaterialMngVo">
+		delete from material_manager
+		where matnr = #{matnr}
+	</delete>
+	<!-- <select id="qualityMaster_select" parameterType="SYHubRevInsMasVo" resultType="SYHubRevInsMasVo">
+		SELECT rvmaster_gr_code, gr_name, gr_dscr, dept_cd, fn_code_filter_nm('MC1009','1',dept_cd) as dept_nm, temp1, temp2, temp3, temp4, 
+				use_yn, creator, updater, substring(date_created,1,10) as date_created, 
+				substring(date_updated,1,10) as date_updated
+		  FROM RECEIVING_INSPECTION_MASTER
+		WHERE use_yn = 'Y' 
+		<if test="comp_kind != null and !''.equals(comp_kind) ">
+			AND gr_name like CONCAT('%', #{comp_kind}, '%')
+		</if>
+		<if test="dept_cd != null and !''.equals(dept_cd) ">
+			AND dept_cd = #{dept_cd}
+		</if>
+	</select>
+
+	<insert id="routingHeader_insert" parameterType="SYHubRoutingHeaderVo">
+		INSERT INTO ROUTING_HEADER_MASTER (
+		  ROUTING_GNO, ROUTING_GNM, ROUTING_NO, ROUTING_DSCR, ROUTING_CODE, ROUTING_GUBUN,ROUTING_GNO_GUBUN, DEPT_CD,
+		  USE_YN, CREATOR, UPDATER, DATE_CREATED, DATE_UPDATED )
+		VALUES (
+		  #{routing_gno}, #{routing_gnm}, #{routing_no}, #{routing_dscr}, #{routing_code}, #{routing_gubun},#{routing_gno_gubun}, #{dept_cd},
+		  'Y', #{creator}, #{updater}, current_timestamp(), current_timestamp()
+		)
+	</insert>
+
+	<update id="dmrFw_update" parameterType="SYDmrFwVo">
+		UPDATE DMR_FW_TBL SET 
+		<if test="fw_gubun != null and !fw_gubun.equals('')">
+			FW_GUBUN = #{fw_gubun}, 
+		</if>
+		<if test="fw_type != null and !fw_type.equals('')">
+			FW_TYPE = #{fw_type}, 
+		</if>
+		<if test="fw_info != null and !fw_info.equals('')">
+			FW_INFO = #{fw_info}, 
+		</if>
+			UPDATER = #{updater},
+			DATE_UPDATED = current_timestamp() 
+		WHERE GR_NO = #{gr_no}
+		  AND GR_SEQ = #{gr_seq}
+		  AND FW_SEQ = #{fw_seq} 
+	</update>
+
+	<delete id="dmrFw_delete" parameterType="SYDmrFwVo">
+		DELETE
+		  FROM DMR_FW_TBL
+		 WHERE GR_NO = #{gr_no}
+		   AND GR_SEQ = #{gr_seq}
+		<if test="fw_seq != null and !fw_seq.equals('')">
+		   AND FW_SEQ = #{fw_seq}
+		</if>
+	</delete> -->
+ 
+</mapper>

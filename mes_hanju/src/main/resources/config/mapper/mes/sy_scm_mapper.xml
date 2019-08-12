@@ -1,0 +1,1363 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.co.passcombine.mes.dao.SYScmDAO">
+	<select id="getStaCodeList_select" parameterType="SYMesCodeVo" resultType="SYMesCodeVo">
+		SELECT CODE, CODE_NM
+		  FROM MES_CODE_TBL
+		 WHERE USE_YN = 'Y'
+	       AND CODE_CAT = #{code_cat}
+		ORDER BY DIS_SEQ
+	</select>
+	
+	<select id="rawProcSernr_select" parameterType="SYScmRawProcSernrVo" resultType="SYScmRawProcSernrVo">
+		SELECT A.*, CONCAT(A.EBELN, A.EBELP, A.PARTIAL_SEQ) AS UKEY
+  		  FROM RAW_PROC_SERNR_TBL A
+		 WHERE A.USE_YN = 'Y'
+		 <if test="ebeln != null and !''.equals(ebeln) ">
+		   AND A.EBELN = #{ebeln}
+		 </if>
+		 <if test="ebelp != null and !''.equals(ebelp) ">
+		   AND A.EBELP = #{ebelp}
+		 </if>
+		 <if test="matnr != null and !''.equals(matnr) ">
+		   AND A.matnr = #{matnr}
+		 </if>
+		 <if test="partial_seq != null and !''.equals(partial_seq) ">
+		   AND A.partial_seq = #{partial_seq}
+		 </if>
+		 <if test="equnr != null and !''.equals(equnr) ">
+		   AND A.equnr = #{equnr}
+		 </if>
+		ORDER BY EBELN, EBELP, PARTIAL_SEQ, MATNR, EQUNR
+	</select>
+	
+	<delete id="rawProcSernr_delete" parameterType="SYScmRawProcSernrVo">
+		DELETE FROM RAW_PROC_SERNR_TBL
+		WHERE EBELN = #{ebeln}
+		AND EBELP = #{ebelp}
+		AND PARTIAL_SEQ = #{partial_seq}
+		AND MATNR = #{matnr}
+		AND TXZ01 = #{txz01}
+	</delete>
+	
+<!-- 	<select id="rawSernr_select" parameterType="SYScmRawSernrVo" resultType="SYScmRawSernrVo"> -->
+<!-- 		SELECT A.*, CONCAT(A.EBELN, A.EBELP, A.PARTIAL_SEQ) AS UKEY -->
+<!--   		  FROM RAW_SERNR_TBL A -->
+<!-- 		 WHERE A.USE_YN = 'Y' -->
+<!-- 		 <if test="ebeln != null and ebeln != ''"> -->
+<!-- 		   AND A.EBELN = #{ebeln} -->
+<!-- 		 </if> -->
+<!-- 		 <if test="ebelp != null and ebelp != ''"> -->
+<!-- 		   AND A.EBELP = #{ebelp} -->
+<!-- 		 </if> -->
+<!-- 		 <if test="partial_seq != null and partial_seq != ''"> -->
+<!-- 		   AND A.partial_seq = #{partial_seq} -->
+<!-- 		 </if> -->
+<!-- 	</select> -->
+	
+	<insert id="scmProcSernr_insert" parameterType="SYScmRawProcSernrVo">
+		INSERT INTO RAW_PROC_SERNR_TBL 
+		( ebeln, ebelp, equnr, matnr, partial_seq, txz01, zdeli_menge, b_werks,
+		  b_lager, labnr, if_status, if_msg, use_yn, creator, updater, date_created, date_updated )
+		VALUES (
+		#{ebeln}, #{ebelp}, #{equnr}, #{matnr}, #{partial_seq}, #{txz01}, #{zdeli_menge}, #{b_werks}, 
+		#{b_lager}, #{labnr}, #{if_status}, #{if_msg}, #{use_yn}, #{creator}, #{updater}, current_timestamp(), current_timestamp() )
+	</insert>
+
+	<update id="scmProcSernr_update" parameterType="SYScmRawProcSernrVo">
+		UPDATE RAW_PROC_SERNR_TBL SET 
+			equnr = #{equnr},
+			updater = #{updater},
+			date_updated = current_timestamp()
+		WHERE ebeln = #{ebeln}
+		  AND ebelp = #{ebelp}
+		  AND matnr = #{matnr}
+		  AND partial_seq = #{partial_seq} 
+	</update>
+	
+	<select id="scmProcMat_select" parameterType="String" resultType="SYScmRawProcVo">
+		SELECT VV.*,(CASE VV.gubun WHEN 'M' THEN  '000000' else  dd.ROWNUM  END) rnum  
+		  FROM(
+				select aa.*, (CASE aa.gubun when 'M' then  concat('01',LPAD(@ROWNUM := @ROWNUM +1,4,'0')) else  LPAD(@ROWNUM := @ROWNUM +1,6,'0')   end)  as ROWNUM  
+				  from (
+						select  ebeln ,ebelp,matnr,'M' AS gubun,sernp   from raw_proc_tbl 
+						union all
+						select  ebeln ,ebelp,matnr,'S' AS gubun,sernp  from raw_proc_sub_tbl  
+						)aa, (select @ROWNUM := 000000) R 
+				 where aa.ebeln =  #{ebeln}
+				ORDER BY  aa.ebeln, aa.ebelp,aa.gubun	)VV
+		join  ( select   tt.ebeln , tt.ebelp, tt.matnr ,tt.gubun ,tt.ROWNUM 
+				    from (
+							select aa.ebeln , aa.ebelp, aa.matnr ,aa.gubun ,(CASE aa.gubun when 'M'  then concat('01',LPAD(@ROWNUM2 := @ROWNUM2 +1,4,'0')) else LPAD(@ROWNUM2 := @ROWNUM2 +1,6,'0') end)   as ROWNUM  
+							  from (
+									select  ebeln ,ebelp,matnr,'M' AS gubun,sernp   
+									  from raw_proc_tbl 
+									union all
+									select  ebeln ,ebelp,matnr,'S' AS gubun,sernp   
+									  from raw_proc_sub_tbl  
+									)aa, (select @ROWNUM2 := 000000) R 
+							 where aa.ebeln =  #{ebeln}
+							ORDER BY  aa.ebeln, aa.ebelp,aa.gubun )tt 
+					where tt.gubun ='M' ) dd
+		on VV.ebeln =dd.ebeln AND  VV.ebelp =dd.ebelp
+		order by   VV.ebeln ,VV.ebelp ,VV.gubun,VV.ROWNUM
+	</select>
+	
+	<select id="rawProc_sernr_duplication_chk" parameterType="String" resultType="SYScmRawProcSernrVo">
+		select * from raw_proc_sernr_tbl where equnr in 
+		<foreach collection="list" item="item" index="index" separator="," open="(" close=")">
+			#{item}
+		</foreach>
+	</select>
+	
+	<select id="rawProc_select" parameterType="SYScmRawProcVo" resultType="SYScmRawProcVo">
+		SELECT A.*, 
+			   CONCAT(EBELN, '-', EBELP,'') AS UKEY,
+			   fn_mes_code_nm('rorder_status', RORDER_STATUS) AS RORDER_STATUS_NM,
+			   fn_mes_code_nm('rvendor_status', RVENDOR_STATUS) AS RVENDOR_STATUS_NM
+		 FROM RAW_PROC_TBL A 
+		WHERE USE_YN = 'Y'
+<!-- 			<if test="confirm_yn != null and confirm_yn != ''"> -->
+<!-- 			   AND CONFIRM_YN = #{confirm_yn} -->
+<!-- 			</if> -->
+			<if test="jidat_from != null and !''.equals(jidat_from) ">
+			   AND (EINDT <![CDATA[ >= ]]> #{jidat_from} and EINDT <![CDATA[ <= ]]> #{jidat_to})
+<!-- 			   AND (AEDAT <![CDATA[ >= ]]> #{jidat_from} and AEDAT <![CDATA[ <= ]]> #{jidat_to}) -->
+			</if>
+			<if test="pstyp != null and !''.equals(pstyp) ">
+			   AND PSTYP = #{pstyp}
+			</if>
+			<if test="rorder_status != null and !''.equals(rorder_status) ">
+			   AND RORDER_STATUS = #{rorder_status}
+			</if>
+			<if test="rvendor_status != null and !''.equals(rvendor_status) ">
+			   AND RVENDOR_STATUS = #{rvendor_status}
+			</if>
+			<if test="ebeln != null and !''.equals(ebeln) ">
+			   AND EBELN LIKE CONCAT('%', #{ebeln}, '%')
+			</if>
+			<if test="sap_doc_no != null and !''.equals(sap_doc_no) ">
+			   AND sap_doc_no = #{sap_doc_no}
+			</if>
+			<if test="lifnr != null and !''.equals(lifnr) ">
+			   AND LIFNR = #{lifnr}
+			</if>
+			<if test="eknam != null and !''.equals(eknam) ">
+			   AND EKNAM = #{eknam}
+			</if>
+			<if test="matnr != null and !''.equals(matnr) ">
+			   AND MATNR LIKE CONCAT('%',#{matnr},'%')
+			</if>
+			<if test="bsart != null and !''.equals(bsart) ">
+			   AND BSART = #{bsart}
+			</if>
+			<if test="zcsreq != null and !''.equals(zcsreq) ">
+			   AND ZCSREQ LIKE CONCAT('%',#{zcsreq},'%')
+			</if>
+			AND ifnull(LOEKZ,0) <![CDATA[ <> ]]> 'L' 
+			AND ifnull(LOEKZ_I,0) <![CDATA[ <> ]]> 'L'
+		ORDER BY EBELN, EBELP, PARTIAL_SEQ
+	</select>
+
+	<select id="rawProcSub_select" parameterType="SYScmRawProcSubVo" resultType="SYScmRawProcSubVo">
+		SELECT A.*, fn_mes_code_nm('dept_cd', A.WERKS) AS WERKS_NM
+		 FROM RAW_PROC_SUB_TBL A 
+		WHERE EBELN = #{ebeln}
+		  AND EBELP = #{ebelp}
+	</select>
+
+	<select id="rawProc_parsingChk" parameterType="SYScmRawProcVo" resultType="int">
+		SELECT sum(zdeli_menge)
+		  FROM RAW_PROC_TBL
+		 WHERE EBELN = #{ebeln}
+		   AND EBELP = #{ebelp}
+	</select>
+	
+	<select id="rawProc_selectByKey" parameterType="SYScmRawProcVo" resultType="SYScmRawProcVo">
+		SELECT *
+		  FROM RAW_PROC_TBL
+		 WHERE EBELN = #{ebeln}
+		   AND EBELP = #{ebelp}
+	   <if test="partial_seq != null and !''.equals(partial_seq) ">
+	   	   AND PARTIAL_SEQ = #{partial_seq}
+	   </if>
+	   <if test="item_seq != null and !''.equals(item_seq) ">
+		   AND ITEM_SEQ = #{item_seq}
+		</if>
+	   <if test="labnr != null and !''.equals(labnr) ">
+		   AND LABNR = #{labnr}
+		 </if>
+	</select>
+
+	<update id="rawProcSernr_update" parameterType="SYScmRawProcVo">
+		UPDATE RAW_PROC_SERNR_TBL SET
+			<if test="labnr != null and !''.equals(labnr) ">
+				LABNR = #{labnr}
+			</if>
+		 WHERE EBELN = #{ebeln}
+		   AND EBELP = #{ebelp}
+		   AND PARTIAL_SEQ = #{partial_seq}
+	</update>
+
+	<update id="rawProcSernrEbelp_update" parameterType="SYScmRawProcVo">
+		UPDATE RAW_PROC_SERNR_TBL SET
+			<if test="ebelp != null and !''.equals(ebelp) ">
+				EBELP = #{ebelp}
+			</if>
+		 WHERE EBELN = #{ebeln}
+		   AND LABNR = #{labnr}
+	</update>
+	
+<!-- 	<update id="rawSernrEbelp_update" parameterType="SYScmRawVendorResultVo"> -->
+<!-- 		UPDATE RAW_SERNR_TBL SET -->
+<!-- 			<if test="ebelp != null and ebelp != ''"> -->
+<!-- 				EBELP = #{ebelp} -->
+<!-- 			</if> -->
+<!-- 		 WHERE EBELN = #{ebeln} -->
+<!-- 		   AND LABNR = #{labnr} -->
+<!-- 	</update> -->
+	
+	<select id="rawProcBringin_select" parameterType="SYScmRawProcVo" resultType="SYScmRawProcVo">
+		SELECT b.matnr as ch_matnr, b.maktx as ch_maktx, a.matnr as mom_matnr, a.txz01 as mon_maktx,
+				a.ebeln, a.aedat, a.eindt, a.zdeli_menge, sum(a.zdue_menge) as zdue_menge_sum, b.bdmng, 
+				sum(a.zdue_menge*b.bdmng) as total_demand, b.zvendor_sllab, b.z1110_labst, b.z1210_labst,
+				((sum(a.zdue_menge *b.bdmng)) - b.zvendor_sllab) as over_quantity
+		  FROM RAW_PROC_TBL A ,RAW_PROC_SUB_TBL B
+		 WHERE A.EBELN = B.EBELN 
+		   AND A.EBELP =B.EBELP
+		GROUP BY B.MATNR 
+		ORDER BY B.MATNR,A.MATNR,A.EBELN
+	</select>
+
+	<select id="makeRefDocNo" resultType="String">
+		SELECT raw_unique_key() FROM DUAL
+	</select>
+	
+	<insert id="raw_comment_insert" parameterType="SYScmRawCommentVo">
+		INSERT INTO RAW_COMMENT_TBL (EBELN, EBELP, PARTIAL_SEQ, ORDER_DELIVERY_DATE, VENDOR_DELIVERY_DATE, COMMENT)
+		VALUES (
+		#{ebeln}, #{ebelp}, #{partial_seq}, #{order_delivery_date}, #{vendor_delivery_date}, #{comment} )
+	</insert>
+	
+	<select id="getProcUniqueKeyList" parameterType="String" resultType="SYScmRawProcVo">
+		 SELECT ebeln,ebelp,partial_Seq,confirm_Date,vcode,rnum1,concat(ebeln,'-',vcode,'-',rnum1) as unikey
+			FROM (
+		    SELECT a.*, 
+		            lpad((CASE @vcode WHEN a.code THEN @arownum:=@arownum+1     ELSE @arownum:=1 END),'4',0) rnum1,
+		            (@vcode:=a.code) vcode
+		      FROM ( SELECT ebeln,ebelp,partial_Seq,confirm_Date, lpad(rnum,'4',0) as code
+						FROM (
+							    SELECT a.*, 
+							            (CASE @vconfirm_Date WHEN a.confirm_Date THEN @rownum:=@rownum  ELSE @rownum:=@rownum+1  END) rnum,
+							            (@vconfirm_Date:=a.confirm_Date) vconfirm_Date
+							    FROM raw_proc_tbl a, (SELECT @vconfirm_Date:='', @rownum:=0 FROM DUAL) b
+							     where a.ebeln in 
+							     <foreach collection="list" item="item" index="index" separator="," open="(" close=")">
+									#{item}
+								</foreach>
+		    					ORDER BY a.confirm_Date, a.ebelp
+		 						) g   ) a, 
+								 (SELECT @vcode:='', @arownum:=0 FROM DUAL) b
+			   ORDER BY  a.confirm_Date, a.code, a.ebelp
+			 ) c 
+	</select>
+	
+	<select id="matnr_select" parameterType="SYReqmMatnrTblVo" resultType="SYReqmMatnrTblVo">
+		select 
+			a.matnr, b.werks, a.meins, a.maktx, a.wrkst, a.mesg_medical_yn, a.mesg_optical_yn, a.mess_medical_yn, a.mess_optical_yn, 
+		    (case when b.werks = '1110' then a.mesg_medical_yn when b.werks = '1210' then a.mesg_optical_yn end) grade_yn,
+		    (case when b.werks = '1110' then a.mess_medical_yn when b.werks = '1210' then a.mess_optical_yn end) serial_yn,
+		    fn_mes_code_nm("dept_cd", b.werks) werks_nm
+		from 
+			material_recv_master a, material_recv_detail b
+		<where>
+			<if test="true">
+				and a.matnr = b.matnr
+			</if>
+			<if test="true">
+				and a.lvorm = ""
+			</if>
+			<if test="matnr != null and !''.equals(matnr) ">
+				AND a.matnr LIKE CONCAT('%',#{matnr},'%')
+			</if>
+			<if test="werks != null and !''.equals(werks) ">
+				and b.werks = #{werks}
+			</if>
+			<if test="maktx != null and !''.equals(maktx) ">
+				AND a.maktx LIKE CONCAT('%',#{maktx},'%')
+			</if>
+			<if test="wrkst != null and !''.equals(wrkst) ">
+				AND a.wrkst LIKE CONCAT('%',#{wrkst},'%')
+			</if>
+			<if test="sidx != null and !sidx.equals('')">
+				order by a.${sidx} ${sord}      
+			</if>
+			<if test="page != null and !page.equals('')">
+				limit #{page}, #{rows}
+			</if> 
+		</where>
+	</select>
+	
+	
+	
+	<delete id="str_stock_header_delete" parameterType="SYStockVo">
+		delete 
+		from stock_header_tbl
+		<where>
+			<if test="werks != null and !werks.equals('')">
+				and werks = #{werks}      
+			</if>
+			<if test="lgort != null and !lgort.equals('')">
+				and lgort = #{lgort}      
+			</if>
+			<if test="matnr != null and !''.equals(matnr) ">
+				AND matnr LIKE CONCAT('%', #{matnr}, '%')
+			</if>
+			<if test="matnrList != null  and matnrList.size() > 0">
+				 and MATNR IN 
+			 	<foreach collection="matnrList" item="item" index="index" separator="," open="(" close=")">
+					#{item}
+			 	</foreach>
+		 	</if>
+		</where>
+	</delete>
+
+	<delete id="str_stock_detail_delete" parameterType="SYStockVo">
+		delete 
+		from stock_item_tbl
+		<where>
+			<if test="werks != null and !werks.equals('')">
+				and b_werk = #{werks}      
+			</if>
+			<if test="lgort != null and !lgort.equals('')">
+				and b_lager = #{lgort}      
+			</if>
+			<if test="matnr != null and !''.equals(matnr) ">
+				AND matnr LIKE CONCAT('%', #{matnr}, '%')
+			</if>
+			<if test="matnrList != null  and matnrList.size() > 0">
+				 and MATNR IN 
+			 	<foreach collection="matnrList" item="item" index="index" separator="," open="(" close=")">
+					#{item}
+			 	</foreach>
+		 	</if>
+		</where>
+	</delete>
+		
+	<select id="str_stock_select" parameterType="SYStockVo" resultType="SYStockVo">				
+   		select 
+	   		a.*, 
+	   		(fn_mes_code_nm("dept_cd", a.werks)) werks_nm,
+			(select lgobe from sloc_master where a.werks = werks and a.lgort = lgort) lgort_nm,
+			(
+        case when 
+				 (case when a.werks = '1110' then (select mess_medical_yn from material_recv_master where a.matnr = matnr and sap_manage_yn = 'Y')
+				 when a.werks = '1210' then (select mess_optical_yn from material_recv_master where a.matnr = matnr and sap_manage_yn = 'Y')
+				 end) = 'Y'
+         then 'V001' else '' end
+      ) sernp,
+			(select meins from material_recv_master where a.matnr = matnr) meins
+ 		from 
+ 			stock_header_tbl a
+		<where>
+			<if test="werks != null and !''.equals(werks) ">
+				AND a.werks = #{werks}
+			</if>
+			<if test="matnr != null and !''.equals(matnr) ">
+				AND a.matnr LIKE CONCAT(#{matnr},'%')
+			</if>
+			<if test="lgort != null and !''.equals(lgort) ">
+				AND a.lgort = #{lgort}
+			</if>
+		</where>
+	</select>
+	
+	<select id="scm_sloc_code_select" parameterType="SYSlocMasterVo" resultType="SYSlocMasterVo">				
+   		 select   werks as werks  ,lgort as lgort ,    concat(concat(CONCAT('(',lgort) ,')') , lgobe)  as  lgobe, lgobe as lgort_nm            
+   		 from sloc_master
+		<where>
+			<if test="werks != null and !''.equals(werks) ">
+				AND werks = #{werks}
+			</if>
+			<if test="lgort != null and !''.equals(lgort) ">
+				AND lgort LIKE CONCAT(#{lgort},'%')
+			</if>
+		</where>
+	</select>
+	
+	<select id="matnr_select_count" parameterType="SYReqmMatnrTblVo" resultType="int">				
+		select 
+			count(*)
+		from 
+			material_recv_master a, material_recv_detail b
+		<where>
+			<if test="true">
+				and a.matnr = b.matnr
+			</if>
+			<if test="true">
+				and a.lvorm = ""
+			</if>
+			<if test="matnr != null and !''.equals(matnr) ">
+				AND a.matnr LIKE CONCAT('%',#{matnr},'%')
+			</if>
+			<if test="werks != null and !''.equals(werks) ">
+				and b.werks = #{werks}
+			</if>
+			<if test="maktx != null and !''.equals(maktx) ">
+				AND a.maktx LIKE CONCAT('%',#{maktx},'%')
+			</if>
+			<if test="wrkst != null and !''.equals(wrkst) ">
+				AND a.wrkst LIKE CONCAT('%',#{wrkst},'%')
+			</if>
+		</where>
+	</select>
+	
+	<select id="reqm_matnr_tbl_key_select_1" resultType="String">
+		select
+		fn_lastinsp_seq()  reqm_matnr_key from dual
+	</select>
+	
+	<insert id="mstk_request_insert" parameterType="SYReqmMatnrTblVo">
+		INSERT INTO
+		reqm_matnr_tbl
+		(reqm_matnr_key, matnr, werks, bdter, lgort, bdmng, proc_gubun,
+		meins, request_bdmng, grade_yn,creator,requester_status, pgm_nm, creator_date, date_created,
+		date_updated)
+		VALUES
+		(#{reqm_matnr_key}, #{matnr}, #{werks}, #{bdter},
+		#{lgort}, #{bdmng}, #{proc_gubun}, #{meins}, #{request_bdmng}, #{grade_yn},
+		#{creator}, #{requester_status}, #{pgm_nm}, current_timestamp(), current_timestamp(),
+		current_timestamp())
+	</insert>
+	
+	<insert id="dstk_request_insert" parameterType="SYReqmMatnrTblVo">
+		INSERT INTO
+		reqd_matnr_tbl
+		(reqm_matnr_key, reqm_sub_key, matnr, grade_nm,
+		request_bdmng, stge_loc, move_stloc, plant, move_plant, creator_date)
+		VALUES
+		(#{reqm_matnr_key}, #{reqm_sub_key},
+		#{matnr}, #{grade_nm}, #{request_bdmng}, #{stge_loc}, #{move_stloc}, #{plant}, #{move_plant}, current_timestamp())
+	</insert>
+	
+	<select id="reqd_matnr_key_select_1" parameterType="String" resultType="SYReqmMatnrTblVo">
+		select * from reqm_matnr_tbl
+		where reqm_matnr_key =
+		#{reqm_matnr_key}
+	</select>
+	
+	<select id="req_matnr_select" parameterType="String" resultType="SYReqmMatnrTblVo">
+		select * from reqm_matnr_tbl
+		where reqm_matnr_key =
+		#{reqm_matnr_key}
+	</select>
+
+
+	<select id="req_matnr_ord_select" parameterType="SYReqmMatnrTblVo" resultType="SYReqmMatnrTblVo">
+		select 
+		b.reqm_matnr_key, b.reqm_sub_key, b.matnr, b.reqd_matnr_key, b.grade_nm, a.proc_gubun, 
+		b.grade_code, b.request_bdmng, b.confirm_bdmng, b.matdoc_itm, b.plant, 
+		b.stge_loc, b.move_plant, b.move_stloc, b.move_type,
+		a.creator_date, a.creator , grantor_status, requester_status, a.meins, a.pgm_nm, 
+		fn_mes_code_nm('dept_cd', b.plant) plant_nm, fn_mes_sloc_nm(b.plant, b.stge_loc) stge_loc_nm, 
+		fn_mes_code_nm('dept_cd', b.move_plant) move_plant_nm, fn_mes_sloc_nm(b.move_plant, b.move_stloc) move_stloc_nm,
+		(select member_nm from sy_member_master where member_emp_no = a.confirm_user) member_nm,
+		(select maktx from  material_recv_master where b.matnr = matnr) maktx
+		from reqm_matnr_tbl a, reqd_matnr_tbl b
+		<where>
+			<if test="true">
+				and requester_status = 'Y'
+			</if>
+			<if test="true">
+				and a.reqm_matnr_key = b.reqm_matnr_key
+			</if>
+			<if test="true">
+				and a.reqm_sub_key = b.reqm_sub_key
+			</if>
+			 <if test="plant != null and !''.equals(plant) ">
+				and b.plant = #{plant}
+			</if>
+			 <if test="pgm_nm != null and !''.equals(pgm_nm) ">
+				and a.pgm_nm = #{pgm_nm}
+			</if>
+			<if test="grantor_status != null and !''.equals(grantor_status) ">
+				and grantor_status = #{grantor_status}
+			</if>			
+			<if test="stge_loc != null and !''.equals(stge_loc) ">
+				and stge_loc = #{stge_loc}
+			</if>
+			<if test="move_stloc != null and !''.equals(move_stloc) ">
+				and move_stloc = #{move_stloc}
+			</if>			
+			<if test="reqm_matnr_key != null and !''.equals(reqm_matnr_key) ">
+				and b.reqm_matnr_key = #{reqm_matnr_key}
+			</if>
+			<if test="from_req_date != null and !''.equals(from_req_date) ">
+				AND (DATE_FORMAT(a.creator_date, '%Y%m%d')) <![CDATA[ >= ]]> #{from_req_date} AND (DATE_FORMAT(a.creator_date, '%Y%m%d') <![CDATA[ <= ]]> #{to_req_date})
+			</if>
+			<if test="sidx == null and sidx.equals('')">
+				order by b.reqm_matnr_key, b.reqm_sub_key      
+			</if>
+			<if test="sidx != null and !sidx.equals('')">
+				order by ${sidx} ${sord}      
+			</if>
+			<if test="page != null and !page.equals('')">
+				limit #{page}, #{rows}
+			</if> 
+		</where>
+	</select>		
+	
+	<select id="req_matnr_ord_select_nopage" parameterType="SYReqmMatnrTblVo" resultType="SYReqmMatnrTblVo">
+		select 
+		b.reqm_matnr_key, b.reqm_sub_key, b.matnr, b.reqd_matnr_key, b.grade_nm, a.proc_gubun,
+		b.grade_code, b.request_bdmng, b.confirm_bdmng, b.matdoc_itm, b.plant, 
+		b.stge_loc, b.move_plant, b.move_stloc, b.move_type,
+		a.creator_date, a.creator , grantor_status, requester_status, a.meins, a.pgm_nm, 
+		fn_mes_code_nm('dept_cd', b.plant) plant_nm, fn_mes_sloc_nm(b.plant, b.stge_loc) stge_loc_nm, 
+		fn_mes_code_nm('dept_cd', b.move_plant) move_plant_nm, fn_mes_sloc_nm(b.move_plant, b.move_stloc) move_stloc_nm,
+		(select member_nm from sy_member_master where member_emp_no = a.confirm_user) member_nm
+		from reqm_matnr_tbl a, reqd_matnr_tbl b
+		<where>
+			<if test="true">
+				and requester_status = 'Y'
+			</if>
+			<if test="true">
+				and a.reqm_matnr_key = b.reqm_matnr_key
+			</if>
+			<if test="true">
+				and a.reqm_sub_key = b.reqm_sub_key
+			</if>
+			 <if test="pgm_nm != null and !''.equals(pgm_nm) ">
+				and a.pgm_nm = #{pgm_nm}
+			</if>
+			<if test="grantor_status != null and !''.equals(grantor_status) ">
+				and grantor_status = #{grantor_status}
+			</if>			
+			<if test="stge_loc != null and !''.equals(stge_loc) ">
+				and stge_loc = #{stge_loc}
+			</if>
+			<if test="move_stloc != null and !''.equals(move_stloc) ">
+				and move_stloc = #{move_stloc}
+			</if>			
+			<if test="reqm_matnr_key != null and !''.equals(reqm_matnr_key) ">
+				and b.reqm_matnr_key = #{reqm_matnr_key}
+			</if>
+			<if test="from_req_date != null and !''.equals(from_req_date) ">
+				AND (DATE_FORMAT(a.creator_date, '%Y%m%d')) <![CDATA[ >= ]]> #{from_req_date} AND (DATE_FORMAT(a.creator_date, '%Y%m%d') <![CDATA[ <= ]]> #{to_req_date})
+			</if> 
+		</where>
+	</select>
+	
+	<select id="req_matnr_ord_select_count" parameterType="SYReqmMatnrTblVo" resultType="int">
+		select 
+		count(*)
+		from reqm_matnr_tbl a, reqd_matnr_tbl b
+		<where>
+			<if test="true">
+				and a.reqm_matnr_key = b.reqm_matnr_key
+			</if>
+			<if test="true">
+				and a.reqm_sub_key = b.reqm_sub_key
+			</if>
+			<if test="plant != null and !''.equals(plant) ">
+				and b.plant = #{plant}
+			</if>
+			 <if test="pgm_nm != null and !''.equals(pgm_nm) ">
+				and a.pgm_nm = #{pgm_nm}
+			</if>
+			<if test="grantor_status != null and !''.equals(grantor_status) ">
+				and grantor_status = #{grantor_status}
+			</if>			
+			<if test="stge_loc != null and !''.equals(stge_loc) ">
+				and stge_loc = #{stge_loc}
+			</if>
+			<if test="move_stloc != null and !''.equals(move_stloc) ">
+				and move_stloc = #{move_stloc}
+			</if>			
+			<if test="reqm_matnr_key != null and !''.equals(reqm_matnr_key) ">
+				and b.reqm_matnr_key = #{reqm_matnr_key}
+			</if>
+			<if test="from_req_date != null and !''.equals(from_req_date) ">
+				AND (DATE_FORMAT(a.creator_date, '%Y%m%d')) <![CDATA[ >= ]]> #{from_req_date} AND (DATE_FORMAT(a.creator_date, '%Y%m%d') <![CDATA[ <= ]]> #{to_req_date})
+			</if>
+		</where>
+	</select>	
+	
+	<insert id="inInsp_insert" parameterType="SYInInspVo">
+		INSERT INTO IN_INSP_TBL
+		( EBELN, EBELP, PARTIAL_SEQ, MATNR, RORDER_STATUS, RVENDOR_STATUS, CONFIRM_DATE, ORDER_DELIVERY_DATE, 
+		  VENDOR_DELIVERY_DATE, MENGE, ZDELI_MENGE, WERKS, BUKRS, LGORT, DIFF_DATE, MBLNR, MJAHR, SAP_DOC_NO, 
+		  LABNR,IN_LABNR, LIFNR, SUCCESS_YN, FAIL_YN, REF_DOC_NO, MAKTX, WRKST, MEINS, INSP_GUBUN, INSP_CHECK_GUBUN, INSP_STATUS, 
+		  IN_DELIVERY_DATE, IN_CONFIRM_DATE )
+		VALUES
+		( #{ebeln}, #{ebelp}, #{partial_seq}, #{matnr}, #{rorder_status}, #{rvendor_status}, #{confirm_date}, #{order_delivery_date}, 
+		  #{vendor_delivery_date}, #{menge}, #{zdeli_menge}, #{werks}, #{bukrs}, #{lgort}, #{diff_date}, #{mblnr}, #{mjahr}, #{sap_doc_no}, 
+		  #{labnr},#{in_labnr}, #{lifnr}, #{success_yn}, #{fail_yn}, #{ref_doc_no}, #{maktx}, #{wrkst}, #{meins}, #{insp_gubun}, #{insp_check_gubun}, 
+		  #{insp_status}, #{in_delivery_date}, #{in_confirm_date} )
+	</insert>
+	
+	<select id="exist_insp_select" parameterType="SYInInspVo">
+		SELECT * 
+		  FROM IN_INSP_TBL
+		 WHERE EBELN = #{ebeln}
+		   AND EBELP = #{ebelp}
+		   AND PARTIAL_SEQ = #{partial_seq}
+	</select>
+	
+	<select id="fwother_select" parameterType="SYWfwotherVo" resultType="SYWfwotherVo">
+		select 
+		a.*, (select maktx from material_recv_master where a.material = matnr) maktx,
+	    (select fn_mes_code_nm('dept_cd', a.plant)) plant_nm,
+	    (select lgobe from sloc_master where a.plant = werks and a.stge_loc = lgort) stge_loc_nm,
+	    (select ktext from cost_type_tbl where a.costcenter = kostl) costcenter_nm,
+	    (select ktext from io_type_tbl where a.orderid = aufnr) orderid_nm,
+	    (select fn_mes_code_nm('fwother_status', a.status)) status_nm
+		from fwother_account_master a
+		<where>
+			<if test="plant != null and !''.equals(plant) ">
+				and a.plant = #{plant}
+			</if>
+			<if test="stge_loc != null and !''.equals(stge_loc) ">
+				and a.stge_loc = #{stge_loc}	
+			</if>			
+			<if test="status != null and !''.equals(status) ">
+				and a.status = #{status}
+			</if>
+			<if test="from != null and !''.equals(from) ">
+				AND (DATE_FORMAT(a.req_dt, '%Y%m%d')) <![CDATA[ >= ]]> #{from} AND (DATE_FORMAT(a.req_dt, '%Y%m%d') <![CDATA[ <= ]]> #{to})
+			</if>
+			<if test="true">
+				AND a.use_yn = "Y"
+			</if>
+			<if test="sidx != null and !sidx.equals('')">
+				order by ${sidx} ${sord}      
+			</if>
+			<if test="page != null and !page.equals('')">
+				limit #{page}, #{rows}
+			</if> 
+		</where>
+	</select>	
+	
+	<select id="fwother_select_count" parameterType="SYWfwotherVo" resultType="int">
+		select 
+		count(*)
+		from fwother_account_master
+		<where>
+			<if test="plant != null and !''.equals(plant) ">
+				and plant = #{plant}
+			</if>
+			<if test="stge_loc != null and !''.equals(stge_loc) ">
+				and stge_loc = #{stge_loc}	
+			</if>			
+			<if test="status != null and !''.equals(status) ">
+				and status = #{status}
+			</if>
+			<if test="from != null and !''.equals(from) ">
+				AND (DATE_FORMAT(req_dt, '%Y%m%d')) <![CDATA[ >= ]]> #{from} AND (DATE_FORMAT(req_dt, '%Y%m%d') <![CDATA[ <= ]]> #{to})
+			</if>
+			<if test="true">
+				AND use_yn = "Y"
+			</if>
+		</where>
+	</select>	
+	
+	<insert id="fwother_mst_insert" parameterType="SYWfwotherVo">
+		insert into vmes.fwother_account_master
+			(ref_doc_no, matdoc_itm, status, material, move_type, plant, stge_loc, reserv_no, res_item, proc_gubun,
+			costcenter, orderid, entry_qnt, entry_uom, gr_rcpt, item_text, s_mblnr, s_mjahr, c_mblnr, c_mjahr, serial_yn, header_txt, req_dt,
+			spec_stock,creator, updater, date_created, date_updated) 
+		values 
+			(#{ref_doc_no}, #{matdoc_itm}, #{status}, #{material}, #{move_type}, #{plant}, #{stge_loc}, #{reserv_no}, #{res_item},#{proc_gubun}, 
+			#{costcenter}, #{orderid}, #{entry_qnt}, #{entry_uom}, #{gr_rcpt}, #{item_text}, #{s_mblnr}, #{s_mjahr}, #{c_mblnr}, #{c_mjahr}, #{serial_yn}, #{header_txt},#{req_dt},
+			#{spec_stock},#{creator}, #{updater}, current_timestamp(), current_timestamp())
+	</insert>
+
+	<update id="req_matr_status_update" parameterType="SYWfwotherVo">
+		update 
+			fwother_account_master			
+		<set>
+			<if test="status != null and !''.equals(status) ">
+				status = #{status},
+			</if>
+			<if test="conf_date != null and !''.equals(conf_date) ">
+				sudat = #{conf_date},
+			</if>
+			<if test="c_mblnr != null and !''.equals(c_mblnr) ">
+				c_mblnr = #{c_mblnr},
+			</if>
+			<if test="c_mjahr != null and !''.equals(c_mjahr) ">
+				c_mjahr = #{c_mjahr},
+			</if>
+			<if test="true">
+				date_updated = current_timestamp(),
+			</if>
+			<if test="updater != null and !''.equals(updater) ">
+				updater = #{updater}
+			</if>
+		</set>
+		where
+			ref_doc_no = #{ref_doc_no}
+	</update>
+
+	<update id="fwother_serial_insert" parameterType="SYWfwotherVo">
+		insert into fwother_account_sernp
+			(ref_doc_no, matdoc_itm, serialno)
+		values
+			(#{ref_doc_no}, #{matdoc_itm}, #{serialno}) 
+	</update>
+
+	<update id="fwother_restore_update" parameterType="SYWfwotherVo">
+		update
+			fwother_account_master
+		set
+			UPDATER = #{updater},
+			DATE_UPDATED = current_timestamp(),			
+			status = #{status}
+		where
+			ref_doc_no = #{ref_doc_no} 
+	</update>
+	
+	<delete id="fwother_restore_delete" parameterType="SYWfwotherVo">
+		delete 
+		from fwother_account_sernp
+		where ref_doc_no = #{ref_doc_no}
+	</delete>
+	
+<!-- 	<delete id="cancel_req_ord" parameterType="SYWfwotherVo"> -->
+<!-- 		update fwother_account_master -->
+<!-- 		set  -->
+<!-- 			use_yn = #{use_yn}, -->
+<!-- 			UPDATER = #{updater}, -->
+<!-- 			DATE_UPDATED = current_timestamp() -->
+<!-- 		where  -->
+<!-- 			ref_doc_no = #{ref_doc_no} -->
+<!-- 	</delete> -->
+	
+	
+	<select id="fwother_serial_select" parameterType="SYWfwotherVo" resultType="SYWfwotherVo">
+		select 
+			a.*, b.sernp_seq, b.serialno 
+		from 
+			fwother_account_master a, fwother_account_sernp b
+		<where>
+			<if test="true">
+				and a.ref_doc_no = b.ref_doc_no
+			</if>
+			<if test="true">
+				and a.matdoc_itm = b.matdoc_itm
+			</if>
+			<if test="ref_doc_no != null and !''.equals(ref_doc_no) ">
+				and a.ref_doc_no = #{ref_doc_no}
+			</if>
+		</where>
+	</select>
+	
+	<select id="fwother_select_nopage" parameterType="SYWfwotherVo" resultType="SYWfwotherVo">
+		select 
+		*
+		from fwother_account_master
+		<where>
+			<if test="ref_doc_no != null and !''.equals(ref_doc_no) ">
+				and ref_doc_no = #{ref_doc_no}
+			</if>
+			<if test="plant != null and !''.equals(plant) ">
+				and ref_doc_no = #{ref_doc_no}
+			</if>
+			<if test="stge_loc != null and !''.equals(stge_loc) ">
+				and stge_loc = #{stge_loc}	
+			</if>			
+			<if test="status != null and !''.equals(status) ">
+				and status = #{status}
+			</if>
+			<if test="true">
+				and use_yn = "Y"
+			</if>
+			<if test="from != null and !''.equals(from) ">
+				AND (DATE_FORMAT(a.req_dt, '%Y%m%d')) <![CDATA[ >= ]]> #{from} AND (DATE_FORMAT(a.req_dt, '%Y%m%d') <![CDATA[ <= ]]> #{to})
+			</if>
+		</where>
+	</select>	
+	
+	<select id="fwother_conf_header_select" parameterType="SYWfwotherVo" resultType="SYWfwotherVo">
+    select aa.*,
+    (select fn_mes_code_nm('dept_cd', plant)) plant_nm,
+    (select lgobe from sloc_master where aa.plant = werks and aa.stge_loc = lgort) stge_loc_nm,
+    (select ktext from cost_type_tbl where aa.costcenter = kostl) costcenter_nm,
+    (select ktext from io_type_tbl where aa.orderid = aufnr) orderid_nm,
+    (select fn_mes_code_nm('fwother_status', aa.status)) status_nm
+    from
+    (
+    select ref_doc_no, max(status) status, max(material) material, max(move_type) move_type, max(plant) plant, max(stge_loc) stge_loc,
+	    max(costcenter) costcenter, max(orderid) orderid, max(gr_rcpt)gr_rcpt, max(date_created) date_created, max(header_txt) header_txt, max(spec_stock) spec_stock
+	    from (
+	    select * from fwother_account_master
+      <where>
+	    	<if test="from != null and !''.equals(from) ">
+				AND (DATE_FORMAT(req_dt, '%Y%m%d')) <![CDATA[ >= ]]> #{from} AND (DATE_FORMAT(req_dt, '%Y%m%d')) <![CDATA[ <= ]]> #{to}
+			</if>
+			<if test="ref_doc_no != null and !''.equals(ref_doc_no) ">
+				AND ref_doc_no LIKE CONCAT('%',#{ref_doc_no},'%')
+			</if>
+			<if test="status != null and !''.equals(status) ">
+				and status = #{status}
+			</if>
+			<if test="costcenter != null and !''.equals(costcenter) ">
+				and costcenter = #{costcenter}
+			</if>
+			<if test="plant != null and !''.equals(plant) ">
+				and plant = #{plant}
+			</if>
+			<if test="true">
+				and use_yn = "Y"
+				and proc_gubun is null
+			</if>
+	    </where>
+	    ) a
+	    group by ref_doc_no
+    ) aa
+	</select>
+
+	<select id="move_type_select" parameterType="SYMoveTypeVo" resultType="SYMoveTypeVo">
+		select * from move_type_tbl
+	</select>
+	
+	<select id="cost_type_select" parameterType="SYCostTypeVo" resultType="SYCostTypeVo">
+		select * from cost_type_tbl
+	</select>
+	
+	<select id="io_type_select" parameterType="SYIoTypeVo" resultType="SYIoTypeVo">
+		select * from io_type_tbl
+	</select>
+	
+	<update id="sap_return_update" parameterType="SYWfwotherVo">
+		update
+			fwother_account_master
+		set
+			s_mblnr = #{ev_mblnr},
+			s_mjahr = #{ev_mjahr}
+		where
+			ref_doc_no = #{ref_doc_no} 
+	</update>
+	
+	<update id="cancel_approval_matr" parameterType="SYWfwotherVo">
+		update
+			fwother_account_master
+		set
+			status = #{status},
+			UPDATER = #{updater},
+			DATE_UPDATED = current_timestamp()
+		where
+			ref_doc_no = #{ref_doc_no} 
+	</update>
+	
+	<insert id="rawProcUpload_insert" parameterType="SYScmRawProcVo">
+		INSERT INTO RAW_PROC_TBL (
+			EBELN, EBELP, MATNR, RORDER_STATUS, RVENDOR_STATUS, EINDT, CONFIRM_DATE, ORDER_DELIVERY_DATE, VENDOR_DELIVERY_DATE, TXZ01, SERNP, 
+			MENGE, ZDELI_MENGE, ZDUE_MENGE, MEINS, NETPR, PEINH, NETWR, ELIKZ, EREKZ, PSTYP, KNTTP, BSTYP, BSART, ERNAM, AEDAT, 
+			NAME1, EKGRP, EKNAM, LOEKZ, PARTIAL_YN, USE_YN, WERKS, BUKRS, LGORT, LGOBE, MATKL, WGBEZ, IDNLF, DIFF_DATE, MBLNR, KEY_CNT, 
+			MJAHR, LIFNR, ZCSREQ, CS_USE_YN, CREATOR, UPDATER, DATE_CREATED, DATE_UPDATED)
+		VALUES
+		(#{ebeln}, #{ebelp}, #{matnr}, #{rorder_status}, #{rvendor_status}, #{eindt}, #{confirm_date}, #{order_delivery_date}, #{vendor_delivery_date}, 
+		 #{txz01}, #{sernp}, #{menge}, #{zdeli_menge}, #{zdue_menge}, #{meins}, #{netpr}, #{peinh}, #{netwr}, #{elikz}, #{erekz}, 
+		 #{pstyp}, #{knttp}, #{bstyp}, #{bsart}, #{ernam}, #{aedat}, #{name1}, #{ekgrp}, #{eknam}, #{loekz}, #{partial_yn}, #{use_yn}, 
+		 #{werks}, #{bukrs}, #{lgort}, #{lgobe}, #{matkl}, #{wgbez}, #{idnlf}, #{diff_date}, #{mblnr}, #{key_cnt}, #{mjahr}, #{lifnr}, #{zcsreq}, 
+		 #{cs_use_yn}, #{creator}, #{updater}, current_timestamp(), current_timestamp())
+	</insert>
+	
+	<select id="checkPartialYN" parameterType="SYScmRawProcVo" resultType="java.lang.Integer">
+		SELECT COUNT(*)
+		FROM RAW_PROC_TBL
+		WHERE EBELN = #{ebeln}
+		AND EBELP = #{ebelp}
+		AND PARTIAL_YN = 'Y'
+     <!-- 	AND PARTIAL_SEQ = '0001'  -->
+	</select>
+	
+	<insert id="rawProc_insert" parameterType="SYScmRawProcVo">
+		INSERT INTO RAW_PROC_TBL (
+			EBELN, EBELP, PARTIAL_SEQ, LOEKZ, TXZ01, SERNP, MATNR, BUKRS, WERKS, LGORT, LGOBE, MATKL, WGBEZ, IDNLF, EINDT, 
+			MENGE, ZDELI_MENGE, ZDUE_MENGE, MEINS, NETPR, PEINH, NETWR, ELIKZ, EREKZ, PSTYP, KNTTP, LABNR_1, DATE_CREATED)
+		SELECT * FROM (
+				SELECT #{ebeln} AS EBELN ,#{ebelp} AS EBELP ,'0001' AS PARTIAL_SEQ , #{loekz} AS LOEKZ ,#{txz01} AS TXZ01 ,#{sernp} AS SERNP, #{matnr} AS MATNR ,
+						 #{bukrs} AS BUKRS ,#{werks} AS WERKS ,#{lgort} AS LGORT ,#{lgobe} AS LGOBE ,#{matkl} AS MATKL ,
+						 #{wgbez} AS WGBEZ ,#{idnlf} AS IDNLF ,#{eindt} AS EINDT ,#{menge} AS MENGE ,#{zdeli_menge} AS ZDELI_MENGE ,
+						 #{zdue_menge} AS ZDUE_MENGE ,#{meins} AS MEINS ,#{netpr} AS NETPR ,#{peinh} AS PEINH ,#{netwr} AS NETWR ,
+						 #{elikz} AS ELIKZ ,#{erekz} AS EREKZ ,#{pstyp} AS PSTYP ,#{knttp} AS KNTTP, #{labnr} AS LABNR_1, current_timestamp() AS DATE_CREATED
+						 ) TMP
+		ON DUPLICATE KEY
+		UPDATE 
+			EBELN = TMP.EBELN,
+			EBELP = TMP.EBELP,
+			PARTIAL_SEQ = TMP.PARTIAL_SEQ,
+			LOEKZ = TMP.LOEKZ,
+			TXZ01 = TMP.TXZ01,
+			SERNP = TMP.SERNP,
+			MATNR = TMP.MATNR,
+			BUKRS = TMP.BUKRS,
+			WERKS = TMP.WERKS,
+			LGORT = TMP.LGORT,
+			LGOBE = TMP.LGOBE,
+			MATKL = TMP.MATKL,
+			WGBEZ = TMP.WGBEZ,
+			IDNLF = TMP.IDNLF,
+			EINDT = TMP.EINDT,
+			MENGE = TMP.MENGE,
+			ZDELI_MENGE = TMP.ZDELI_MENGE,
+			ZDUE_MENGE = TMP.ZDUE_MENGE,
+			MEINS = TMP.MEINS,
+			NETPR = TMP.NETPR,
+			PEINH = TMP.PEINH,
+			NETWR = TMP.NETWR,
+			ELIKZ = TMP.ELIKZ,
+			EREKZ = TMP.EREKZ,
+			PSTYP = TMP.PSTYP,
+			KNTTP = TMP.KNTTP,
+			LABNR_1 = TMP.LABNR_1
+	</insert>
+	
+	<update id="rawProcUpload_update" parameterType="SYScmRawProcVo">
+		UPDATE RAW_PROC_TBL SET
+			VENDOR_DELIVERY_DATE = #{vendor_delivery_date}, 
+			ZDELI_MENGE = #{zdeli_menge},
+		  	PARTIAL_YN = #{partial_yn},
+		  	RORDER_STATUS = #{rorder_status}, 
+		  	RVENDOR_STATUS = #{rvendor_status}
+		WHERE EBELN = #{ebeln}
+		  AND EBELP = #{ebelp}
+		  AND PARTIAL_SEQ = #{partial_seq}
+	</update>
+
+	<update id="rawProcPartialYn_update">
+		UPDATE RAW_PROC_TBL SET
+			PARTIAL_YN = 'N'
+		WHERE PARTIAL_YN = 'Y'
+	</update>
+	
+	<update id="rawProc_update" parameterType="SYScmRawProcVo">
+		UPDATE RAW_PROC_TBL SET
+			BSTYP = #{bstyp},
+			BSART = #{bsart},
+			AEDAT = #{aedat},
+			ERNAM = #{ernam},
+			LIFNR = #{lifnr},
+			NAME1 = #{name1},
+			EKGRP = #{ekgrp},
+			EKNAM = #{eknam},
+			ZCSREQ = #{zcsreq},
+			WAERS = #{waers},
+			WKURS = #{wkurs},
+			LOEKZ = #{loekz}	
+		WHERE EBELN = #{ebeln}
+	</update>
+	
+	<update id="rawProcLoekzi_update" parameterType="SYScmRawProcVo">
+		UPDATE RAW_PROC_TBL SET
+			LOEKZ_I = #{loekz_i}
+		 WHERE EBELN = #{ebeln}
+		   AND EBELP = #{ebelp}
+	</update>
+	
+	<update id="rawProcEbelp_update" parameterType="SYScmRawProcVo">
+		UPDATE RAW_PROC_TBL SET
+				EBELP = #{ebelp}
+		 WHERE EBELN = #{ebeln}
+		   AND LABNR = #{labnr}
+		   AND RORDER_STATUS <![CDATA[ <> ]]> 'r4'
+	</update>
+	
+	<update id="rawProc_update_partial" parameterType="SYScmRawProcVo">
+		UPDATE RAW_PROC_TBL SET
+			PARTIAL_SEQ = '0001',
+			PARTIAL_YN = 'N',
+			EINDT = #{eindt}
+		WHERE EBELN = #{ebeln}
+		AND EBELP = #{ebelp}
+		AND RORDER_STATUS = 'r3'
+		AND RVENDOR_STATUS = 'v2'
+<!-- 		AND PARTIAL_YN = 'Y' -->
+		AND LABNR_1 = #{labnr}
+		AND CONFIRM_DATE IS NOT NULL
+	</update>
+
+	<update id="rawProcSernr_update_partial" parameterType="SYScmRawProcVo">
+		UPDATE RAW_PROC_SERNR_TBL SET
+			PARTIAL_SEQ = '0001'
+		WHERE EBELN = #{ebeln}
+		AND EBELP = #{ebelp}
+		AND MATNR = #{matnr}
+		AND LABNR = #{labnr}
+	</update>
+	
+	<update id="rawProcSta_update" parameterType="SYScmRawProcVo">
+		UPDATE RAW_PROC_TBL SET
+			<if test="partial_yn != null and !''.equals(partial_yn) ">
+				PARTIAL_YN = #{partial_yn},
+			</if>
+			<if test="diff_date != null and !''.equals(diff_date) ">
+				DIFF_DATE = #{diff_date},
+			</if>
+			<if test="rorder_status != null and !''.equals(rorder_status) ">
+				RORDER_STATUS = #{rorder_status},
+			</if>
+			<if test="rvendor_status != null and !''.equals(rvendor_status) ">
+				RVENDOR_STATUS = #{rvendor_status},
+			</if>
+			<if test="order_delivery_date != null and !''.equals(order_delivery_date) ">
+				ORDER_DELIVERY_DATE = #{order_delivery_date},
+			</if>
+			<if test="confirm_date != null and !''.equals(confirm_date) ">
+				CONFIRM_DATE = #{confirm_date},
+			</if>
+			<if test="confirm_yn != null and !''.equals(confirm_yn) ">
+				CONFIRM_YN = #{confirm_yn},
+			</if>
+			<if test="mjahr != null and !''.equals(mjahr) ">
+				MJAHR = #{mjahr},
+			</if>
+			<if test="mblnr != null and !''.equals(mblnr) ">
+				MBLNR = #{mblnr},
+			</if>
+			<if test="c_mjahr != null and !''.equals(c_mjahr) ">
+				C_MJAHR = #{c_mjahr},
+			</if>
+			<if test="c_mblnr != null and !''.equals(c_mblnr) ">
+				C_MBLNR = #{c_mblnr},
+			</if>
+			<if test="vendor_delivery_date != null and !''.equals(vendor_delivery_date) ">
+				VENDOR_DELIVERY_DATE = #{vendor_delivery_date},
+			</if>
+			<if test="zdeli_menge != null and !''.equals(zdeli_menge) ">
+				ZDELI_MENGE = #{zdeli_menge},
+			</if>
+			<if test="lifnr != null and !''.equals(lifnr) ">
+				LIFNR = #{lifnr},
+			</if>
+			<if test="labnr != null and !''.equals(labnr) ">
+				LABNR = #{labnr},
+			</if>
+			<if test="labnr_1 != null and !''.equals(labnr_1) ">
+				LABNR_1 = #{labnr_1},
+			</if>
+			<if test="key_cnt != null and !''.equals(key_cnt) ">
+				KEY_CNT = #{key_cnt},
+			</if>
+			<if test="ref_doc_no != null and !''.equals(ref_doc_no) ">
+				REF_DOC_NO = #{ref_doc_no},
+			</if>
+			<if test="sap_doc_no != null and !''.equals(sap_doc_no) ">
+				SAP_DOC_NO = #{sap_doc_no},
+			</if>
+			<if test="updater != null and !''.equals(updater) ">
+				UPDATER = #{updater},
+			</if>
+				DATE_UPDATED = current_timestamp()
+		 WHERE EBELN = #{ebeln}
+		   AND EBELP = #{ebelp}
+	   <if test="partial_seq != null and !''.equals(partial_seq) ">
+		   AND PARTIAL_SEQ = #{partial_seq}
+		</if>		   
+	</update>
+	
+	<select id="getMaxKeYCnt" parameterType="String" resultType="String">
+		SELECT MAX(KEY_CNT) FROM RAW_PROC_TBL WHERE EBELN = #{ebeln}
+	</select>
+	
+	<update id="rawProcKeyCnt_update" parameterType="SYScmRawProcVo">
+		UPDATE RAW_PROC_TBL SET
+			KEY_CNT = #{key_cnt}
+			WHERE EBELN = #{ebeln}
+	</update>
+	
+	<select id="rawProcConfirm_select" parameterType="String" resultType="SYScmRawProcVo">
+		SELECT *
+		  FROM RAW_PROC_TBL
+		 WHERE EBELN = #{ebeln}
+		   AND RORDER_STATUS <![CDATA[ <> ]]> 'r4'
+		   AND ifnull(LOEKZ,0) <![CDATA[ <> ]]> 'L' 
+		   AND ifnull(LOEKZ_I,0) <![CDATA[ <> ]]> 'L'
+	</select>
+	
+	<update id="rawProcNextStep_update" parameterType="SYScmRawProcVo">
+		UPDATE RAW_PROC_TBL SET
+			<if test="rorder_status != null and !''.equals(rorder_status) ">
+				RORDER_STATUS = #{rorder_status},
+			</if>
+			<if test="rvendor_status != null and !''.equals(rvendor_status) ">
+				RVENDOR_STATUS = #{rvendor_status},
+			</if>
+			<if test="order_delivery_date != null and !''.equals(order_delivery_date) ">
+				ORDER_DELIVERY_DATE = #{order_delivery_date},
+			</if>
+			<if test="vendor_delivery_date != null and !''.equals(vendor_delivery_date) ">
+				VENDOR_DELIVERY_DATE = #{vendor_delivery_date},
+			</if>
+			<if test="confirm_date != null and !''.equals(confirm_date) ">
+				CONFIRM_DATE = #{confirm_date},
+			</if>
+			<if test="eindt != null and !''.equals(eindt) ">
+				EINDT = #{eindt},
+			</if>
+			<if test="zdeli_menge != null and !''.equals(zdeli_menge) ">
+				ZDELI_MENGE = #{zdeli_menge},
+			</if>
+			<if test="mjahr != null and !''.equals(mjahr) ">
+				MJAHR = #{mjahr},
+			</if>
+			<if test="updater != null and !''.equals(updater) ">
+				UPDATER = #{updater},
+			</if>
+				DATE_UPDATED = current_timestamp()
+		 WHERE EBELN = #{ebeln}
+		   AND EBELP = #{ebelp}
+		<if test="partial_yn != null and !''.equals(partial_yn) ">
+		   AND PARTIAL_YN = #{partial_yn}
+		</if>
+	</update>
+	
+	<update id="rawProcConfirmYn_update" parameterType="SYScmRawProcVo">
+		UPDATE RAW_PROC_TBL SET
+			<if test="confirm_yn != null and !''.equals(confirm_yn) ">
+				CONFIRM_YN = #{confirm_yn},
+			</if>
+			<if test="diff_date != null and !''.equals(diff_date) ">
+				DIFF_DATE = #{diff_date},
+			</if>
+			<if test="vendor_delivery_date != null and !''.equals(vendor_delivery_date) ">
+				VENDOR_DELIVERY_DATE = #{vendor_delivery_date},
+			</if>
+			<if test="order_delivery_date != null and !''.equals(order_delivery_date) ">
+				ORDER_DELIVERY_DATE = #{order_delivery_date},
+			</if>
+			<if test="confirm_date != null and !''.equals(confirm_date) ">
+				CONFIRM_DATE = #{confirm_date},
+			</if>
+			<if test="zdeli_menge != null and !''.equals(zdeli_menge) ">
+				ZDELI_MENGE = #{zdeli_menge},
+			</if>
+			<if test="partial_yn != null and !''.equals(partial_yn) ">
+				PARTIAL_YN = #{partial_yn},
+			</if>
+			<if test="labnr != null and !''.equals(labnr) ">
+				LABNR = #{labnr},
+			</if>
+			<if test="key_cnt != null and !''.equals(key_cnt) ">
+				KEY_CNT = #{key_cnt},
+			</if>
+			<if test="updater != null and !''.equals(updater) ">
+				UPDATER = #{updater},
+			</if>
+				DATE_UPDATED = current_timestamp()
+		 WHERE EBELN = #{ebeln}
+		   AND EBELP = #{ebelp}
+		   AND PARTIAL_SEQ = #{partial_seq}
+	</update>
+	
+	<!-- <select id="issue_getStep1" parameterType="SYScmIssueDetailVo" resultType="SYScmIssueDetailVo">
+		SELECT *
+		  FROM ISSUE_DETAIL_TBL
+		 WHERE 1=1
+		 <if test="dept_cd != null and !''.equals(dept_cd) ">
+			and dept_cd = #{dept_cd}
+		</if>
+		 GROUP BY GR_CODE
+	</select> -->
+	
+	<!-- <select id="issue_getSteps" parameterType="SYScmIssueDetailVo" resultType="SYScmIssueDetailVo">
+		SELECT *
+		  FROM ISSUE_DETAIL_TBL
+		 WHERE 1=1
+		   AND GR_CODE = #{gr_code}
+		 <if test="level1_code !=null and !level1_code.equals('')">
+		   AND LEVEL1_CODE = #{level1_code}
+		 </if>
+		 <if test="level2_code !=null and !level2_code.equals('')">
+		   AND LEVEL2_CODE = #{level2_code}
+		 </if>
+		 <if test="level3_code !=null and !level3_code.equals('')">
+		   AND LEVEL3_CODE = #{level3_code}
+		 </if>
+		 GROUP BY
+		 
+		 <if test="level1_code ==null and level2_code ==null and level3_code ==null">
+		   LEVEL1_CODE
+		 </if>
+		 <if test="level1_code !=null and level2_code ==null and level3_code ==null">
+		   LEVEL2_CODE
+		 </if>
+		 <if test="level1_code !=null and level2_code !=null and level3_code ==null">
+		   LEVEL3_CODE
+		 </if>
+	</select> -->
+ 
+	<insert id="rawProc_SubInsert" parameterType="SYScmRawVendorResultVo">
+		INSERT INTO raw_proc_sub_tbl (
+			ebeln, ebelp, matnr, maktx, werks, lgort, bdmng, meins, z1110_labst, z1210_labst
+			, zvendor_sllab, rsnum, rspos, xloek, sernp, date_created, date_updated
+		) 
+		SELECT * 
+		FROM (
+			SELECT #{ebeln} as ebeln, #{ebelp} as ebelp, #{matnr} as matnr, #{maktx} as maktx
+			, #{werks} as werks, #{lgort} as lgort, #{bdmng} as bdmng, #{meins} as meins, #{z1110_labst} as z1110_labst, #{z1210_labst} as z1210_labst
+			, #{zvendor_sllab} as zvendor_sllab, #{rsnum} as rsnum, #{rspos} as rspos, #{xloek} as xloek, #{sernp} as sernp
+			, current_timestamp() as date_created, current_timestamp() as date_updated
+		) sp
+		ON DUPLICATE KEY
+		UPDATE ebeln = sp.ebeln
+			, ebelp = sp.ebelp
+			, matnr = sp.matnr
+			, maktx = sp.maktx
+			, werks = sp.werks
+			, lgort = sp.lgort
+			, bdmng = sp.bdmng
+			, meins = sp.meins
+			, z1110_labst = sp.z1110_labst
+			, z1210_labst = sp.z1210_labst
+			, zvendor_sllab = sp.zvendor_sllab
+			, rsnum = sp.rsnum
+			, rspos = sp.rspos
+			, xloek = sp.xloek
+			, sernp = sp.sernp
+			, date_updated = sp.date_updated
+	</insert>
+	
+	<delete id="rawProc_SubDelete" parameterType="SYScmRawVendorResultVo">
+		delete 
+		from raw_proc_sub_tbl
+		<where>
+			<if test="ebeln != null and !ebeln.equals('')">
+				and ebeln = #{ebeln}      
+			</if>
+			<if test="ebelp != null and !ebelp.equals('')">
+				and ebelp = #{ebelp}      
+			</if>
+		 
+		</where>
+	</delete> 
+	
+	<select id="trans_receipt_select" parameterType="SYTransReceiptVo" resultType="SYTransReceiptVo">
+		select a.matnr, a.txz01, a.ebeln, a.ebelp, a.zdeli_menge, a.netpr, a.lifnr, a.eindt, concat(b.name1, " / " ,b.lifnr) name1, 
+			b.j_1kfrepre, b.ort01, a.vendor_delivery_date, a.confirm_date, a.labnr, 
+			(select wrkst from material_recv_master where matnr = a.matnr) wrkst,
+			concat(a.peinh,' ', a.meins) meins, a.werks, a.lgort, a.waers, a.wkurs,
+<!-- 			netwr*1 supply,  -->
+			ROUND((a.zdeli_menge*(a.netpr/a.peinh)),2) supply,
+			a.partial_seq
+		from 
+			RAW_PROC_TBL a, vendor_tbl b 
+		where a.lifnr = b.lifnr
+		<if test="labnr!=null and !''.equals(labnr)">
+<!-- 			and substring(a.labnr, 1, 15) = #{labnr}  -->
+			and a.labnr = #{labnr} 
+		</if>
+		<if test="ebeln!=null and !''.equals(ebeln)">
+			and ebeln = #{ebeln}
+		</if>
+		  AND ifnull(LOEKZ,0) <![CDATA[ <> ]]> 'L' 
+		  AND ifnull(LOEKZ_I,0) <![CDATA[ <> ]]> 'L'
+	</select>
+	
+	<select id="checkVenderMember" parameterType="String" resultType="String">
+		SELECT DEPT_CD
+		  FROM SY_ORGAN_MEMBER_MAP
+		 WHERE MEMBER_EMP_NO = #{member_emp_no}
+	</select>
+	
+	<select id="mes_stock_tbl_select" parameterType="SYSlocMasterVo" resultType="SYSlocMasterVo">				
+   				select * from mes_stock_tbl
+		<where>
+			<if test="dept_cd != null and !''.equals(dept_cd) ">
+				AND dept_cd = #{dept_cd}
+			</if>
+			<if test="menu_code != null and !''.equals(menu_code) ">
+				AND menu_code = #{menu_code}
+			</if>
+			<if test="maching_gubun != null and !''.equals(maching_gubun) ">
+				AND maching_gubun = #{maching_gubun}
+			</if>
+			<if test="lgort != null and !''.equals(lgort) ">
+				AND lgort = #{lgort}
+			</if>
+			<if test="fromto_gubun != null and !''.equals(fromto_gubun) ">
+				AND fromto_gubun = #{fromto_gubun}
+			</if>
+		</where>
+	</select>
+	
+	<update id="scm_trans_req_cancel" parameterType="SYReqmMatnrTblVo">
+		UPDATE reqm_matnr_tbl SET 
+			requester_status = #{requester_status}			
+		WHERE reqm_matnr_key = #{reqm_matnr_key} 
+	</update>
+	
+	<update id="scm_trans_req_user_confirml" parameterType="SYReqmMatnrTblVo">
+		UPDATE reqm_matnr_tbl SET 
+			confirm_user = #{confirm_user}			
+		WHERE reqm_matnr_key = #{reqm_matnr_key} 
+	</update>
+	
+	<select id="trans_req_select" parameterType="SYReqmMatnrTblVo" resultType="SYReqmMatnrTblVo">
+		SELECT *
+		  FROM reqm_matnr_tbl
+		WHERE reqm_matnr_key = #{reqm_matnr_key} 
+	</select>
+	
+	<select id="selectBomtbl_count" parameterType="SYScmBomVo" resultType="int">
+	
+    SELECT COUNT(*) FROM (
+	 	SELECT   *
+			  FROM select_bom
+			  where  zmatnr in (
+				   select distinct(matnr) from raw_proc_tbl 
+				<where>
+				     1=1
+					<if test="lifnr != null and !''.equals(lifnr)">
+						AND lifnr = #{lifnr}
+					</if>
+					<if test="matnr != null and !''.equals(matnr)">
+						AND matnr = #{matnr}
+					</if>
+					<if test="werks != null and !''.equals(werks)">
+						AND werks = #{werks}
+					</if>
+					) GROUP BY IDNRK ) A
+				</where>	  
+	   
+	 
+	</select>
+	
+	<select id="selectBomtbl" parameterType="SYScmBomVo" resultType="SYScmBomVo">
+	
+		SELECT matnr, werks, stlan, stlal, stufe, maktx,zmatnr,zmaktx,idnrk, ojtxp,menge, meins, sortf, potx1, schgt,
+         sobsl,sobsk, sernp, datuv, aennr, datub, aenra  
+			  FROM select_bom
+			  where  zmatnr in (
+				   select distinct(matnr) from raw_proc_tbl 
+				<where>
+				     1=1
+					<if test="lifnr != null and !''.equals(lifnr)">
+						AND lifnr = #{lifnr}
+					</if>
+					<if test="matnr != null and !''.equals(matnr)">
+						AND matnr = #{matnr}
+					</if>
+					<if test="werks != null and !''.equals(werks)">
+						AND werks = #{werks}
+					</if>
+					) GROUP BY IDNRK 
+				</where>	  
+		 	<if test="page != null and !page.equals('')">
+			 limit #{page}, #{rows}
+			</if>
+
+	</select>
+	
+	<select id="vender_nm_grid_add" parameterType="SYVendorVo" resultType="SYVendorVo">
+		select * from vendor_tbl
+		 WHERE lifnr IN 
+		 <foreach collection="list" item="item" index="index" separator="," open="(" close=")">
+				#{item}
+		 </foreach>
+	</select>
+</mapper>
