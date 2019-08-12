@@ -86,7 +86,7 @@ String pageTitle = SessionUtil.getProperties("mes.company");
 																	<div class="input-group">
 																      <input type="text" class="form-control input-sm" id="hga" placeholder="고객사" ><!-- disabled -->
 																      <span class="input-group-btn">
-																        <button class="btn btn-primary btn-sm" type="button" onClick="fnPopupInfo('V');">
+																        <button class="btn btn-primary btn-sm" type="button" onClick="searchInfo('G');">
 																          <span class="glyphicon glyphicon-search" aria-hidden="true"></span><!-- 서치 아이콘 -->
 																        </button>
 																      </span>
@@ -132,7 +132,7 @@ String pageTitle = SessionUtil.getProperties("mes.company");
 																	<div class="input-group">
 																      <input type="text" class="form-control input-sm" id="jaup" placeholder="설비" ><!-- disabled -->
 																      <span class="input-group-btn">
-																        <button class="btn btn-primary btn-sm" type="button" onClick="fnPopupInfo('V');">
+																        <button class="btn btn-primary btn-sm" type="button" onClick="searchInfo('J');">
 																          <span class="glyphicon glyphicon-search" aria-hidden="true"></span><!-- 서치 아이콘 -->
 																        </button>
 																      </span>
@@ -164,7 +164,7 @@ String pageTitle = SessionUtil.getProperties("mes.company");
 																	<div class="input-group">
 																      <input type="text" class="form-control input-sm" id="prod_no" placeholder="제품" ><!-- disabled -->
 																      <span class="input-group-btn">
-																        <button class="btn btn-primary btn-sm" type="button" onClick="fnPopupInfo('V');">
+																        <button class="btn btn-primary btn-sm" type="button" onClick="searchInfo('I');">
 																          <span class="glyphicon glyphicon-search" aria-hidden="true"></span><!-- 서치 아이콘 -->
 																        </button>
 																      </span>
@@ -195,7 +195,7 @@ String pageTitle = SessionUtil.getProperties("mes.company");
 																	<div class="input-group">
 																      <input type="text" class="form-control input-sm" id="sulbi" placeholder="설비" ><!-- disabled -->
 																      <span class="input-group-btn">
-																        <button class="btn btn-primary btn-sm" type="button" onClick="fnPopupInfo('V');">
+																        <button class="btn btn-primary btn-sm" type="button" onClick="searchInfo('S');">
 																          <span class="glyphicon glyphicon-search" aria-hidden="true"></span><!-- 서치 아이콘 -->
 																        </button>
 																      </span>
@@ -252,13 +252,14 @@ String pageTitle = SessionUtil.getProperties("mes.company");
 							<h4 class="modal-title" id="modal_title">등록</h4>
 			        	</div>
 						<div class="modal-body" id="">
-							<form id="frm_info" name="frm_info" class="form-horizontal">							
+									<!-- frm_info -->
+							<form id="frm_insertInfo" name="frm_insertInfo" class="form-horizontal">							
 								<div class="form-group row">
 									<div class="col-sm-1"></div>
 									<label for="" class="col-sm-3 col-form-label" style="line-height: 25px;">작업일</label>
 									<div class="col-sm-7">
 										<div class="input-group">
-											<input type="text" class="form-control pull-right input-sm" id="m_jaup_date_">
+											<input type="text" class="form-control pull-right input-sm" id="m_jaup_date">
 											<div class="input-group-addon">
 												<i class="fa fa-calendar"></i>
 											</div>
@@ -276,50 +277,66 @@ String pageTitle = SessionUtil.getProperties("mes.company");
 									<div class="col-sm-1"></div>
 								</div>
 								
-								<!--  -->
+								<!-- search -->								
 								<div class="form-group row">
 									<div class="col-sm-1"></div>
 									<label for="" class="col-sm-3 col-form-label" style="line-height: 25px;">고객사명</label>
-									<div class="col-sm-7">
-										<input type="text" class="form-control input-sm" id="m_sulbi" value="" maxlength="50" style="width: 280px;">
-										<button type="button" onclick="fnPopupInfo('V');" class="btn btn-success btn-sm"><i class="fa fa-search"></i></button>
-									
+									<div class="col-sm-6">
+										<input type="text" class="form-control input-sm" id="m_sulbi" value=""><!-- style="padding-right:0px" -->
 									</div>
-									
-									
-
+									<div class="col-sm-1" style="padding-left: 0px;">
+										<button type="button" onclick="searchInfo('G');" class="btn btn-success btn-sm"><i class="fa fa-search"></i></button>
+									</div>
+									<div class="col-sm-1"></div>
 								</div>
+								
+								
 								
 								<div class="form-group row">
+									
 									<div class="col-sm-1"></div>
 									<label for="" class="col-sm-3 col-form-label" style="line-height: 25px;">제품 ITEM</label>
-									<div class="col-sm-7">
-										<input type="text" class="form-control input-sm" id="m_sulbi" value="" maxlength="50">
+									<div class="col-sm-6">
+										<input type="text" class="form-control input-sm" id="m_sulbi" value="" maxlength="50"><!-- style="padding-right:0px" -->
+									</div>
+									<div class="col-sm-1" style="padding-left: 0px;">
+										<button type="button" onclick="searchInfo('I');" class="btn btn-success btn-sm"><i class="fa fa-search"></i></button>
 									</div>
 									<div class="col-sm-1"></div>
+									
 								</div>
-								
+									
 								<div class="form-group row">
 									<div class="col-sm-1"></div>
 									<label for="" class="col-sm-3 col-form-label" style="line-height: 25px;">작업자</label>
-									<div class="col-sm-7">
-										<input type="text" class="form-control input-sm" id="m_sulbi" value="" maxlength="50">
+									<div class="col-sm-6">
+										<input type="text" class="form-control input-sm" id="m_jaup" value="" maxlength="50"><!-- style="padding-right:0px" -->
+									</div>
+									<div class="col-sm-1" style="padding-left: 0px;">
+										<button type="button" onclick="searchInfo('J');" class="btn btn-success btn-sm"><i class="fa fa-search"></i></button>
 									</div>
 									<div class="col-sm-1"></div>
 								</div>
 								
+								
 								<div class="form-group row">
+								
 									<div class="col-sm-1"></div>
 									<label for="" class="col-sm-3 col-form-label" style="line-height: 25px;">설비</label>
-									<div class="col-sm-7">
-										<input type="text" class="form-control input-sm" id="m_sulbi" value="" maxlength="50">
+									<div class="col-sm-6">
+										<input type="text" class="form-control input-sm" id="m_sulbi_search" value="" maxlength="50"><!-- style="padding-right:0px" -->
+									</div>
+									<div class="col-sm-1" style="padding-left: 0px;">
+										<button type="button" onclick="searchInfo('S');" class="btn btn-success btn-sm"><i class="fa fa-search"></i></button>
 									</div>
 									<div class="col-sm-1"></div>
+								
 								</div>
-		
-									
+					
 							</form>
+							
 						</div>
+						
 						<div class="modal-footer">
 							<div class="col-md-12 text-center">
 								<button type="button" id="btn_dmr_save" class="btn btn-success btn-sm" onclick="fnInsert();">Save</button>
@@ -331,6 +348,389 @@ String pageTitle = SessionUtil.getProperties("mes.company");
 			</div> 					
 			<!-- end list-modal select/insert/update  -->
 			
+			<!-- 고객사 모달 -->
+			
+			<div class="modal fade" id="modal_go" aria-hidden="true" style="display: none; z-index: 1060;"><!-- data-backdrop="static"> -->
+				<div class="modal-dialog">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h4 class="modal-title" id="modal_title">고객사 목록</h4>
+			        	</div>
+						<div class="modal-body" id="">
+							<form id="go_fm" name="go_fm" class="form-horizontal">							
+	
+								<div class="form-group row">
+									<div class="col-sm-1"></div>
+									<label for="" class="col-sm-3 col-form-label" style="line-height: 25px;">고객사명</label>
+									<div class="col-sm-7">
+										<input type="text" class="form-control input-sm" id="m_m_go" value="" maxlength="50">
+									</div>
+									<div class="col-sm-1"></div>
+								</div>
+								
+								<!-- search -->								
+								<div class="form-group row">
+									<div class="col-sm-1"></div>
+									<label for="" class="col-sm-3 col-form-label" style="line-height: 25px;">사업자번호</label>
+									<div class="col-sm-7">
+										<input type="text" class="form-control input-sm" id="m_m_saup" value=""><!-- style="padding-right:0px" -->
+									</div>
+									<!-- <div class="col-sm-1" style="padding-left: 0px;">
+										<button type="button" onclick="searchInfo('G');" class="btn btn-success btn-sm"><i class="fa fa-search"></i></button>
+									</div> -->
+									<div class="col-sm-1"></div>
+								</div>
+
+									
+								<div class="form-group row">
+									<div class="col-sm-1"></div>
+									<label for="" class="col-sm-3 col-form-label" style="line-height: 25px;">담당자</label>
+									<div class="col-sm-6">
+										<input type="text" class="form-control input-sm" id="m_m_damdang" value="" maxlength="50"><!-- style="padding-right:0px" -->
+									</div>
+									<div class="col-sm-1" style="padding-left: 0px;">
+										<button type="button" onclick="searchInfo('');" class="btn btn-success btn-sm"><i class="fa fa-search"></i></button>
+									</div>
+									<div class="col-sm-1"></div>
+								</div>
+	
+	
+								<div class="form-group row">
+									<div class="col-sm-1"></div>
+									
+								<!-- <div class="form-group row">
+									<div class="col-sm-1"></div>
+									<div class="col-sm-10"> -->
+											<!-- <table class="table table-bordered">
+												<thead>
+													<tr style="border: 1px solid black;">
+														<th>설비명</th>
+														<th>성명</th>
+														<th>이메일</th>
+													</tr>
+												</thead>
+											</table> -->
+											<!-- <div>w2ui.Grid</div> >> -->
+												<!-- <div class="row" style="padding-top: 10px; height: 200px;">
+												 -->		<div class="col-md-11" style="height:100%;width: 100%;">
+															<div id="goGrid" style="width: 560px; height: 180px; "></div>
+														</div>
+												<!-- </div> --> 
+								<!-- 	</div>
+								</div> -->
+								</div>
+					
+							</form>
+							
+						</div>
+						
+						<div class="modal-footer">
+							<div class="col-md-12 text-center">
+								<button type="button" id="btn_dmr_cancel" class="btn btn-default btn-sm" data-dismiss="modal">Close</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div> 
+			
+			<!-- 고객사 모달 끝 -->
+			
+			<!-- 제품 ITEM 모달 -->
+			
+						
+			<div class="modal fade" id="modal_proItem" aria-hidden="true" style="display: none; z-index: 1060;"><!-- data-backdrop="static"> -->
+				<div class="modal-dialog">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h4 class="modal-title" id="modal_title">제품 ITEM 목록</h4>
+			        	</div>
+						<div class="modal-body" id="">
+							<form id="it_fm" name="it_fm" class="form-horizontal">							
+	
+								<div class="form-group row">
+									<div class="col-sm-1"></div>
+									<label for="" class="col-sm-3 col-form-label" style="line-height: 25px;">품명</label>
+									<div class="col-sm-7">
+										<input type="text" class="form-control input-sm" id="m_proName" value="" maxlength="50">
+									</div>
+									<div class="col-sm-1"></div>
+								</div>
+								
+								<!-- search -->								
+								<div class="form-group row">
+									<div class="col-sm-1"></div>
+									<label for="" class="col-sm-3 col-form-label" style="line-height: 25px;">품번</label>
+									<div class="col-sm-7">
+										<input type="text" class="form-control input-sm" id="m_proNo" value=""><!-- style="padding-right:0px" -->
+									</div>
+									<!-- <div class="col-sm-1" style="padding-left: 0px;">
+										<button type="button" onclick="searchInfo('G');" class="btn btn-success btn-sm"><i class="fa fa-search"></i></button>
+									</div> -->
+									<div class="col-sm-1"></div>
+								</div>
+
+									
+								<div class="form-group row">
+									<div class="col-sm-1"></div>
+									<label for="" class="col-sm-3 col-form-label" style="line-height: 25px;">고객사명</label>
+									<div class="col-sm-6">
+										<input type="text" class="form-control input-sm" id="m_goName" value="" maxlength="50"><!-- style="padding-right:0px" -->
+									</div>
+									<div class="col-sm-1" style="padding-left: 0px;">
+										<button type="button" onclick="searchInfo('');" class="btn btn-success btn-sm"><i class="fa fa-search"></i></button>
+									</div>
+									<div class="col-sm-1"></div>
+								</div>
+	
+								<!-- <div class="form-group row">
+									<div class="col-sm-1"></div>
+									<div class="col-sm-10">
+											<table class="table table-bordered">
+												<thead>
+													<tr style="border: 1px solid black;">
+														<th>설비명</th>
+														<th>성명</th>
+														<th>이메일</th>
+													</tr>
+												</thead>
+											</table>
+											<div>w2ui.Grid</div> >> 
+											
+									</div>
+								</div> -->
+								
+
+								<div class="form-group row">
+									<div class="col-sm-1"></div>
+									
+								<!-- <div class="form-group row">
+									<div class="col-sm-1"></div>
+									<div class="col-sm-10"> -->
+											<!-- <table class="table table-bordered">
+												<thead>
+													<tr style="border: 1px solid black;">
+														<th>설비명</th>
+														<th>성명</th>
+														<th>이메일</th>
+													</tr>
+												</thead>
+											</table> -->
+											<!-- <div>w2ui.Grid</div> >> -->
+												<!-- <div class="row" style="padding-top: 10px; height: 200px;">
+												 -->		<div class="col-md-11" style="height:100%;width: 100%;">
+															<div id="itemGrid" style="width: 560px; height: 180px; "></div>
+														</div>
+												<!-- </div> --> 
+								<!-- 	</div>
+								</div> -->
+								</div>
+					
+						
+							</form>
+							
+						</div>
+						
+						<div class="modal-footer">
+							<div class="col-md-12 text-center">
+								<button type="button" id="btn_dmr_cancel" class="btn btn-default btn-sm" data-dismiss="modal">Close</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div> 
+			
+			<!-- 제품 ITEM 모달 끝 -->
+			
+			<!-- 작업자 목록 모달 -->
+			
+			<div class="modal fade" id="modal_jaup" aria-hidden="true" style="display: none; z-index: 1060;"><!-- data-backdrop="static"> -->
+				<div class="modal-dialog">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h4 class="modal-title" id="modal_title">작업자 목록</h4>
+			        	</div>
+						<div class="modal-body" id="">
+							<form id="jaup_fm" name="jaup_fm" class="form-horizontal">							
+	
+								<div class="form-group row">
+									<div class="col-sm-1"></div>
+									<label for="" class="col-sm-3 col-form-label" style="line-height: 25px;">성명</label>
+									<div class="col-sm-7">
+										<input type="text" class="form-control input-sm" id="m_sungName" value="" maxlength="50">
+									</div>
+									<div class="col-sm-1"></div>
+								</div>
+								
+								<!-- search -->								
+
+								<div class="form-group row">
+									<div class="col-sm-1"></div>
+									<label for="" class="col-sm-3 col-form-label" style="line-height: 25px;">사번</label>
+									<div class="col-sm-6">
+										<input type="text" class="form-control input-sm" id="m_jaup_sabun" value="" maxlength="50"><!-- style="padding-right:0px" -->
+									</div>
+									<div class="col-sm-1" style="padding-left: 0px;">
+										<button type="button" onclick="searchInfo('');" class="btn btn-success btn-sm"><i class="fa fa-search"></i></button>
+									</div>
+									<div class="col-sm-1"></div>
+								</div>
+	
+<!-- 								<div class="form-group row">
+									<div class="col-sm-1"></div>
+									<div class="col-sm-10">
+											<table class="table table-bordered">
+												<thead>
+													<tr style="border: 1px solid black;">
+														<th>설비명</th>
+														<th>성명</th>
+														<th>이메일</th>
+													</tr>
+												</thead>
+											</table>
+											<div>w2ui.Grid</div> >> 
+									</div>
+								</div> -->
+					
+								<div class="form-group row">
+									<div class="col-sm-1"></div>
+									
+								<!-- <div class="form-group row">
+									<div class="col-sm-1"></div>
+									<div class="col-sm-10"> -->
+											<!-- <table class="table table-bordered">
+												<thead>
+													<tr style="border: 1px solid black;">
+														<th>설비명</th>
+														<th>성명</th>
+														<th>이메일</th>
+													</tr>
+												</thead>
+											</table> -->
+											<!-- <div>w2ui.Grid</div> >> -->
+												<!-- <div class="row" style="padding-top: 10px; height: 200px;">
+												 -->		<div class="col-md-11" style="height:100%;width: 100%;">
+															<div id="jaupGrid" style="width: 560px; height: 180px; "></div>
+														</div>
+												<!-- </div> --> 
+								<!-- 	</div>
+								</div> -->
+								</div>
+					
+					
+							</form>
+							
+						</div>
+						
+						<div class="modal-footer">
+							<div class="col-md-12 text-center">
+								<button type="button" id="btn_dmr_cancel" class="btn btn-default btn-sm" data-dismiss="modal">Close</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div> 
+			
+			<!-- 작업자 목록 모달 끝 -->
+			
+			<!-- 설비 목록 모달 -->
+			
+			<div class="modal fade" id="modal_sulbi" aria-hidden="true" style="display: none; z-index: 1060;"><!-- data-backdrop="static"> -->
+				<div class="modal-dialog">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h4 class="modal-title" id="modal_title">설비 목록</h4>
+			        	</div>
+						<div class="modal-body" id="">
+							<form id="sulbi_fm" name="sulbi_fm" class="form-horizontal">							
+	
+								<div class="form-group row">
+									<div class="col-sm-1"></div>
+									<label for="" class="col-sm-3 col-form-label" style="line-height: 25px;">설비명</label>
+									<div class="col-sm-7">
+										<input type="text" class="form-control input-sm" id="m_sulbi_name" value="" maxlength="50">
+									</div>
+									<div class="col-sm-1"></div>
+								</div>
+								
+								<div class="form-group row">
+									<div class="col-sm-1"></div>
+									<label for="" class="col-sm-3 col-form-label" style="line-height: 25px;">품명</label>
+									<div class="col-sm-7">
+										<input type="text" class="form-control input-sm" id="m_sulbi_pName" value="" maxlength="50">
+									</div>
+									<div class="col-sm-1"></div>
+								</div>
+								
+								<!-- search -->								
+
+								<div class="form-group row">
+									<div class="col-sm-1"></div>
+									<label for="" class="col-sm-3 col-form-label" style="line-height: 25px;">품번</label>
+									<div class="col-sm-6">
+										<input type="text" class="form-control input-sm" id="m_sulbi_pNo" value="" maxlength="50"><!-- style="padding-right:0px" -->
+									</div>
+									<div class="col-sm-1" style="padding-left: 0px;">
+										<button type="button" onclick="searchInfo('');" class="btn btn-success btn-sm"><i class="fa fa-search"></i></button>
+									</div>
+									<div class="col-sm-1"></div>
+								</div>
+	
+								<!-- <div class="form-group row">
+									<div class="col-sm-1"></div>
+									<div class="col-sm-10">
+											<table class="table table-bordered">
+												<thead>
+													<tr style="border: 1px solid black;">
+														<th>설비명</th>
+														<th>성명</th>
+														<th>이메일</th>
+													</tr>
+												</thead>
+											</table>
+											<div>w2ui.Grid</div> >> 
+									</div>
+								</div> -->
+								
+								<div class="form-group row">
+									<div class="col-sm-1"></div>
+									
+								<!-- <div class="form-group row">
+									<div class="col-sm-1"></div>
+									<div class="col-sm-10"> -->
+											<!-- <table class="table table-bordered">
+												<thead>
+													<tr style="border: 1px solid black;">
+														<th>설비명</th>
+														<th>성명</th>
+														<th>이메일</th>
+													</tr>
+												</thead>
+											</table> -->
+											<!-- <div>w2ui.Grid</div> >> -->
+												<!-- <div class="row" style="padding-top: 10px; height: 200px;">
+												 -->		<div class="col-md-11" style="height:100%;width: 100%;">
+															<div id="sulbiGrid" style="width: 560px; height: 180px; "></div>
+														</div>
+												<!-- </div> --> 
+								<!-- 	</div>
+								</div> -->
+								</div>
+					
+					
+							</form>
+							
+						</div>
+						
+						<div class="modal-footer">
+							<div class="col-md-12 text-center">
+								<button type="button" id="btn_dmr_cancel" class="btn btn-default btn-sm" data-dismiss="modal">Close</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div> 
+			
+			<!-- 설비 목록 모달 끝 -->
 		<!-- modal End -->
 		
 		<jsp:include page="/common/footer_inc" flush="true">
@@ -379,6 +779,9 @@ String pageTitle = SessionUtil.getProperties("mes.company");
 			border: none;
 		}
 		
+		.w2ui-grid-box {
+			width : 560px;
+		}
 	</style>
 	
 	<script src="/res/plugins/pagination.js"></script>
@@ -402,7 +805,7 @@ String pageTitle = SessionUtil.getProperties("mes.company");
 			mdTemp = new Date(), 
 			maxDate = getFormatDate(new Date(mdTemp.setDate(mdTemp.getDate() + 7)));
 			 
-			$('#p_eindt, #p_date_created, #p_date_updated').daterangepicker({
+		/* 	$('#p_eindt, #p_date_created, #p_date_updated').daterangepicker({
 				opens: 'right', 
 				singleDatePicker: true,
 				locale: {
@@ -414,7 +817,7 @@ String pageTitle = SessionUtil.getProperties("mes.company");
 					orientation: "top left"
 				},
 				startDate : moment(minDate)
-			});
+			}); */
 			
 			$("#p_netwr, #p_menge").keyup(function(event) {
 				if(event.which >= 37 && event.which <= 40) return;
@@ -432,7 +835,7 @@ String pageTitle = SessionUtil.getProperties("mes.company");
 		function initComponent() {
 			console.info('initComponent()');
 			
-			$('#p_date').daterangepicker({
+			/* $('#p_date, #m_jaup_date').daterangepicker({
 				opens: 'right',
 				locale: {
 					format : 'YYYY-MM-DD'	,
@@ -442,13 +845,76 @@ String pageTitle = SessionUtil.getProperties("mes.company");
 					showMonthAfterYear : true,
 					yearSuffix : '년'
 			    },
-		 	     /* startDate: getTodayDate(),
-		 	     endDate: getTodayDate() */
-		 	    /*  startDate: '2019-05-01', */
+		 	     /*- startDate: getTodayDate(),
+		 	     endDate: getTodayDate() *-/
+		 	    /*-  startDate: '2019-05-01', *-/
 		 	     endDate: '2019-08-31' 
-			});
+			}); */
+			
+			// Single Date Picker - http://www.daterangepicker.com/
+			 $('#p_date, #m_jaup_date').daterangepicker({
+				    singleDatePicker: true,
+				    showDropdowns: true,
+				    minYear: 1901,
+				    maxYear: parseInt(moment().format('YYYY'),10)
+				  }, function(start, end, label) {
+				    var years = moment().diff(start, 'years');
+				  /*   alert("You are " + years + " years old!"); */
+				  });
 
 		} // 
+		
+		
+		// 검색 searchInfo
+		function searchInfo(flag){
+			
+			if(flag == 'G'){ // 고객사명
+				console.log("searchInfo = " + flag);
+			
+				setTimeout(function(){
+				      w2ui['goGrid'].resize();
+				      w2ui['goGrid'].refresh();
+				   }, 200);
+				
+				$("#modal_go").modal('show');
+				goGrid();
+			
+			} else if(flag == 'I'){ // 제품 ITEM
+				console.log("searchInfo = " + flag);
+			
+				setTimeout(function(){
+				      w2ui['itemGrid'].resize();
+				      w2ui['itemGrid'].refresh();
+				   }, 200);
+			
+				$("#modal_proItem").modal('show');
+				itemGrid();
+			
+			
+			} else if(flag == 'J'){ // 작업자
+				console.log("searchInfo = " + flag);
+			
+				setTimeout(function(){
+				      w2ui['jaupGrid'].resize();
+				      w2ui['jaupGrid'].refresh();
+				   }, 200);
+			
+				$("#modal_jaup").modal('show');
+				jaupGrid();
+			
+			} else if(flag == 'S'){ // 설비
+				console.log("searchInfo = " + flag);
+			
+				setTimeout(function(){
+				      w2ui['sulbiGrid'].resize();
+				      w2ui['sulbiGrid'].refresh();
+				   }, 200);
+			
+				$("#modal_sulbi").modal('show');
+				sulbiGrid();
+			
+			}
+		}
 	
 		// 첫 그리드
 	 	function initGridList() {
@@ -678,6 +1144,130 @@ String pageTitle = SessionUtil.getProperties("mes.company");
 		}
 
 		
+		function goGrid(){
+			console.log('goGrid()');
+			
+			var rowArr = [];
+			
+			$('#goGrid').w2grid({ 
+				name : "goGrid" ,
+				show: { footer: true },
+		        multiSelect: false,
+		        columns: [
+		                  { field: 'gog_Name', caption: '고객사명', size: '185px', sortable: true, attr: 'align=center', resizable: true },
+		                  { field: 'saup_No', caption: '사업자 번호', size: '185px', sortable: true, attr: 'align=center', resizable: true },
+		                  { field: 'damda', caption: '담당자', size: '185px', sortable: true, attr: 'align=center', resizable: true }
+		                 ],
+		        sortData: [{field: 'damda', direction: 'ASC'}],
+				records: [   
+				         ],
+				total : 0,
+				recordHeight : 30,
+				onReload: function(event) {},
+				// sssssbbbb
+				onClick: function (event) {
+				
+				},
+				onDblClick: function(event) {
+					
+				}
+		    }); 
+			
+		}
+		
+		
+		function itemGrid(){
+			console.log('itemGrid()');
+			
+			var rowArr = [];
+			
+			$('#itemGrid').w2grid({ 
+				name : "itemGrid" ,
+				show: { footer: true },
+		        multiSelect: false,
+		        columns: [
+		                  { field: 'pom_name', caption: '품명', size: '185px', sortable: true, attr: 'align=center', resizable: true },
+		                  { field: 'pom_no', caption: '품번', size: '185px', sortable: true, attr: 'align=center', resizable: true },
+		                  { field: 'goga_name', caption: '고객사명', size: '185px', sortable: true, attr: 'align=center', resizable: true }
+		                 ],
+		        sortData: [{field: 'pom_no', direction: 'ASC'}],
+				records: [   
+				         ],
+				total : 0,
+				recordHeight : 30,
+				onReload: function(event) {},
+				// sssssbbbb
+				onClick: function (event) {
+				
+				},
+				onDblClick: function(event) {
+					
+				}
+		    }); 
+			
+		}
+		
+
+		function jaupGrid(){
+			console.log('jaupGrid()');
+			
+			var rowArr = [];
+			
+			$('#jaupGrid').w2grid({ 
+				name : "jaupGrid" ,
+				show: { footer: true },
+		        multiSelect: false,
+		        columns: [
+		                  { field: 's_name', caption: '성명', size: '278px', sortable: true, attr: 'align=center', resizable: true },
+		                  { field: 'sa_no', caption: '사번', size: '278px', sortable: true, attr: 'align=center', resizable: true }
+		                 ],
+		        sortData: [{field: 'sa_no', direction: 'ASC'}],
+				records: [   
+				         ],
+				total : 0,
+				recordHeight : 30,
+				onReload: function(event) {},
+				// sssssbbbb
+				onClick: function (event) {
+				
+				},
+				onDblClick: function(event) {
+					
+				}
+		    }); 
+			
+		}
+		
+		
+		function sulbiGrid(){
+			console.log('sulbiGrid()');
+			
+			var rowArr = [];
+			
+			$('#sulbiGrid').w2grid({ 
+				name : "sulbiGrid" ,
+				show: { footer: true },
+		        multiSelect: false,
+		        columns: [
+		                  { field: 's_name', caption: '설비명', size: '185px', sortable: true, attr: 'align=center', resizable: true },
+		                  { field: 'pomName', caption: '품명', size: '185px', sortable: true, attr: 'align=center', resizable: true },
+		                  { field: 'pomNo', caption: '품번', size: '185px', sortable: true, attr: 'align=center', resizable: true }
+		                 ],
+		        sortData: [{field: 'pomNo', direction: 'ASC'}],
+				records: [ ],
+				total : 0,
+				recordHeight : 30,
+				onReload: function(event) {},
+				// sssssbbbb
+				onClick: function (event) {
+				
+				},
+				onDblClick: function(event) {
+					
+				}
+		    }); 
+			
+		}
 		
 
 		function getFormatDate(d) {
